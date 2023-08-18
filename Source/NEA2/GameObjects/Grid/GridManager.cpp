@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GameObjects/Grid/GridManager.h"
+#include "GridManager.h"
+#include "Grid.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AGridManager::AGridManager()
@@ -15,6 +17,7 @@ AGridManager::AGridManager()
 void AGridManager::BeginPlay()
 {
 	Super::BeginPlay();
+	PopulateGrid();
 	
 }
 
@@ -25,3 +28,26 @@ void AGridManager::Tick(float DeltaTime)
 
 }
 
+void AGridManager::PopulateGrid() {
+	GridArray.Empty();
+	//Calculate Offset
+	if (AGridBP == nullptr){
+		UE_LOG(LogTemp, Warning, TEXT("Grid BP is null"));
+		return;
+	}
+
+	WorldOffset = GridSize*WorldGridSize/2 - WorldGridSize/2;
+	FActorSpawnParameters SpawnInfo;
+	SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	for (int x = 0; x < GridSize; x++) {
+		for (int y = 0; y < GridSize; y++) {
+			float xLoc = x * WorldGridSize - trunc(WorldOffset);
+			float yLoc = y * WorldGridSize - trunc(WorldOffset);
+			FVector GridPosition = FVector(xLoc, yLoc, HeightOffset);
+			FTransform SpawnTransform = UKismetMathLibrary::MakeTransform(GridPosition, FRotator::ZeroRotator, FVector(objsize,objsize,objsize));
+			AGrid* Grid = GetWorld()->SpawnActor<AGrid>(AGridBP, SpawnTransform, SpawnInfo);
+			GridArray.Add(Grid);
+		}
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Grid Generated Count = %d"),GridArray.Num());
+}

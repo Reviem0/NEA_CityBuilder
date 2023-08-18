@@ -15,6 +15,8 @@ class NEA2_API UCB_ClickComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UCB_ClickComponent();
+	UStaticMeshComponent* StaticMeshRef;
+	bool isClicked = false;
 
 protected:
 	// Called when the game starts
@@ -23,6 +25,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	UFUNCTION()
+	void OnMouseClick(AActor* Target, FKey ButtonPressed);
+	
+	UFUNCTION()
+	void OnCursorOver(AActor* Actor);
 
+	UFUNCTION()
+	void OnEndCursorOver(AActor* Actor);
 		
 };

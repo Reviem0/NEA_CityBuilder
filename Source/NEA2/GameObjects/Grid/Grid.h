@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "Grid.generated.h"
 
 UCLASS()
@@ -14,7 +15,7 @@ class NEA2_API AGrid : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AGrid();
-
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

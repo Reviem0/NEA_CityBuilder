@@ -60,12 +60,12 @@ void ACB_CameraControl::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ACB_CameraControl::MoveForward(float Axis)
 {
-	AddMovementInput(GetActorForwardVector()* Axis);
+	AddMovementInput(SpringArm->GetForwardVector()* Axis);
 }
 
 void ACB_CameraControl::MoveRight(float Axis)
 {
-	AddMovementInput(GetActorRightVector()* Axis);  
+	AddMovementInput(SpringArm->GetRightVector()* Axis);  
 }
 
 void ACB_CameraControl::TurnRight() 
@@ -78,7 +78,7 @@ void ACB_CameraControl::TurnRight()
     else {
       isTurning = true;
       CurrentArmRotation = SpringArm->GetComponentRotation();
-      TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw - TurnSens, CurrentArmRotation.Roll); 
+      TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw + TurnSens, CurrentArmRotation.Roll); 
       CurveTimeline.PlayFromStart();
     }
   }
@@ -92,10 +92,9 @@ void ACB_CameraControl::TurnLeft()
       return;
     }
     else {
-      UE_LOG(LogTemp, Warning, TEXT("TurnLeft"));
       isTurning = true;
       CurrentArmRotation = SpringArm->GetComponentRotation();
-      TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw + TurnSens, CurrentArmRotation.Roll); 
+      TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw - TurnSens, CurrentArmRotation.Roll); 
       CurveTimeline.PlayFromStart();
     }
   }
