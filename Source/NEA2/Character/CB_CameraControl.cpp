@@ -33,11 +33,18 @@ void ACB_CameraControl::BeginPlay()
 	SpringArm = SpringArmComponent;
 	CurrentArmRotation = FRotator::ZeroRotator;
 
-  if(CurveFloat) 
+  if(RotationCurveFloat) 
   {
-    FOnTimelineFloat TimelineProgress;
-    TimelineProgress.BindUFunction(this, FName("TimelineProgress"));
-    CurveTimeline.AddInterpFloat(CurveFloat, TimelineProgress);
+    FOnTimelineFloat RotationTimelineProgress;
+    RotationTimelineProgress.BindUFunction(this, FName("RotationTimelineProgress"));
+    RotationCurveTimeline.AddInterpFloat(RotationCurveFloat, RotationTimelineProgress);
+  }
+
+  if(ViewCurveFloat) 
+  {
+    FOnTimelineFloat ViewTimelineProgress;
+    ViewTimelineProgress.BindUFunction(this, FName("ViewTimelineProgress"));
+    ViewCurveTimeline.AddInterpFloat(ViewCurveFloat, ViewTimelineProgress);
   }
 }
 
@@ -45,7 +52,8 @@ void ACB_CameraControl::BeginPlay()
 void ACB_CameraControl::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-  CurveTimeline.TickTimeline(DeltaTime);
+  RotationCurveTimeline.TickTimeline(DeltaTime);
+  ViewCurveTimeline.TickTimeline(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -56,6 +64,7 @@ void ACB_CameraControl::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ACB_CameraControl::MoveRight);
 	PlayerInputComponent->BindAction("TurnRight", IE_Pressed, this, &ACB_CameraControl::TurnRight);
 	PlayerInputComponent->BindAction("TurnLeft", IE_Pressed, this, &ACB_CameraControl::TurnLeft);
+  PlayerInputComponent->BindAction("ChangeView", IE_Pressed, this, &ACB_CameraControl::ChangeView);
 }
 
 void ACB_CameraControl::MoveForward(float Axis)
@@ -72,14 +81,14 @@ void ACB_CameraControl::TurnRight()
 {
   if (CamControl)  
   {
-    if ((CurveTimeline.IsPlaying())) {
+    if ((RotationCurveTimeline.IsPlaying())) {
       return;
     }
     else {
       isTurning = true;
       CurrentArmRotation = SpringArm->GetComponentRotation();
       TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw + TurnSens, CurrentArmRotation.Roll); 
-      CurveTimeline.PlayFromStart();
+      RotationCurveTimeline.PlayFromStart();
     }
   }
 }
@@ -88,21 +97,60 @@ void ACB_CameraControl::TurnLeft()
 {
   if (CamControl)  
   {
-    if (CurveTimeline.IsPlaying()) {
+    if (RotationCurveTimeline.IsPlaying()) {
       return;
     }
     else {
       isTurning = true;
       CurrentArmRotation = SpringArm->GetComponentRotation();
       TargetArmRotation = FRotator(CurrentArmRotation.Pitch, CurrentArmRotation.Yaw - TurnSens, CurrentArmRotation.Roll); 
-      CurveTimeline.PlayFromStart();
+      RotationCurveTimeline.PlayFromStart();
     }
   }
 }
 
+void ACB_CameraControl::ChangeView()
+{
+  UE_LOG(LogTemp, Display, TEXT("ChangeView"));
+  if (CamControl)  
+  {
+    if (RotationCurveTimeline.IsPlaying() || ViewCurveTimeline.IsPlaying()) {
+      return;
+    }
+    if (!TopDown){
+      TopDown = true;
+      isTurning = true;
+      CurrentArmRotation = SpringArm->GetComponentRotation();
+      CurrentArmPitch = CurrentArmRotation.Pitch;
+      CurrentArmDistance = SpringArm->TargetArmLength;
+      TargetArmDistance = 1000.f;
+      TargetArmPitch = -90.f;
+      ViewCurveTimeline.PlayFromStart();
+    } else {
+      TopDown = false;
+      isTurning = true;
+      CurrentArmRotation = SpringArm->GetRelativeRotation();
+      CurrentArmPitch = CurrentArmRotation.Pitch;
+      TargetArmPitch = -30.f;
+      CurrentArmDistance = SpringArm->TargetArmLength;
+      TargetArmDistance = 300.f;
+      ViewCurveTimeline.PlayFromStart();
+    }
+  }
+}
 
-void ACB_CameraControl::TimelineProgress(float Alpha) 
+void ACB_CameraControl::RotationTimelineProgress(float Alpha) 
 {
   FRotator NewArmRotation = FMath::Lerp(CurrentArmRotation, TargetArmRotation, Alpha);
   SpringArm->SetRelativeRotation(NewArmRotation);
+}
+
+void ACB_CameraControl::ViewTimelineProgress(float Value) 
+{
+  float NewArmPitch = FMath::Lerp(CurrentArmPitch, TargetArmPitch, Value);
+  float NewArmDistance = FMath::Lerp(CurrentArmDistance, TargetArmDistance, Value);
+  //UE_LOG(LogTemp, Display, TEXT("New Rotation: %f, %f, %f"), NewArmPitch, CurrentArmRotation.Yaw, CurrentArmRotation.Roll);
+  
+  SpringArm->SetRelativeRotation(FRotator(NewArmPitch, CurrentArmRotation.Yaw, CurrentArmRotation.Roll));
+  SpringArm->TargetArmLength = NewArmDistance;
 }

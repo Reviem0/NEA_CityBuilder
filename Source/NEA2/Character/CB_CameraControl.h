@@ -20,7 +20,16 @@ public:
 	ACB_CameraControl();
 
 	UFUNCTION()
-	void TimelineProgress(float Value);
+	void RotationTimelineProgress(float Value);
+	FTimeline RotationCurveTimeline;
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* RotationCurveFloat;
+
+	UFUNCTION()
+	void ViewTimelineProgress(float Value);
+	FTimeline ViewCurveTimeline;
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	UCurveFloat* ViewCurveFloat;
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,6 +45,9 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	bool isTurning = false;
+
+	UPROPERTY()
+	bool TopDown = false;
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -50,18 +62,27 @@ protected:
 	UPROPERTY(EditAnywhere)
 	USpringArmComponent* SpringArm;
 
-	UPROPERTY(EditAnywhere)
-	FRotator TargetArmRotation;
-
-	UPROPERTY(EditAnywhere)
-	float TurnSens = 90.f;
-	
 	UPROPERTY()
 	FRotator CurrentArmRotation;
 
-	FTimeline CurveTimeline;
-	UPROPERTY(EditAnywhere, Category = "Timeline")
-	UCurveFloat* CurveFloat;
+	UPROPERTY(EditAnywhere)
+	FRotator TargetArmRotation;
+
+	UPROPERTY()
+	float CurrentArmPitch;
+
+	UPROPERTY()
+	float TargetArmPitch;
+
+	UPROPERTY()
+	float CurrentArmDistance;
+
+	UPROPERTY()
+	float TargetArmDistance;
+
+	UPROPERTY(EditAnywhere)
+	float TurnSens = 90.f;
+
 
 	UPROPERTY()
 	float StartLoc = 0.f;
@@ -75,4 +96,5 @@ protected:
 	void MoveRight(float Axis);
 	void TurnRight();
 	void TurnLeft();
+	void ChangeView();
 };
