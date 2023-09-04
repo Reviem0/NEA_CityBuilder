@@ -64,3 +64,7 @@ void UCB_ClickComponent::OnEndCursorOver(AActor *Actor)
 	UE_LOG(LogTemp, Warning, TEXT("End Hovering Over: %s"), *GetOwner()->GetName());
 	StaticMeshRef->UPrimitiveComponent::SetRenderCustomDepth(false);
 }
+
+void UCB_ClickComponent::inPlacementMode() {
+	DestroyComponent();
+}

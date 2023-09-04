@@ -4,19 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "CB_ClickComponent.generated.h"
+#include "CB_PloppableComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class NEA2_API UCB_ClickComponent : public UActorComponent
+class NEA2_API UCB_PloppableComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UCB_ClickComponent();
-	UStaticMeshComponent* StaticMeshRef;
-	bool isClicked = false;
+	UCB_PloppableComponent();
+
+	bool IsPlacementValid;
+	UMaterialInterface* ValidMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Game/GameObjects/Materials/M_Valid.M_Valid"));
+	UMaterialInterface* InvalidMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Game/GameObjects/Materials/M_Invalid.M_Invalid"));
+
+	UFUNCTION()
+	void UpdateState();
+
+	void OnOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	
 
 protected:
 	// Called when the game starts
@@ -25,14 +33,6 @@ protected:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
-	UFUNCTION()
-	void OnMouseClick(AActor* Target, FKey ButtonPressed);
-	
-	UFUNCTION()
-	void OnCursorOver(AActor* Actor);
 
-	UFUNCTION()
-	void OnEndCursorOver(AActor* Actor);
 		
 };
