@@ -15,6 +15,11 @@ public:
 	// Sets default values for this actor's properties
 	AGridCell();
 
+	AGridCell* NNeighbour;
+	AGridCell* SNeighbour;
+	AGridCell* ENeighbour;
+	AGridCell* WNeighbur;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

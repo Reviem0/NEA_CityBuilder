@@ -35,6 +35,9 @@ public:
 	// Populate Grid
 	void PopulateGrid();
 
+	// Populate Neighbours
+	void PopulateNeighbours();
+
 	FVector GetClosestGridPosition(FVector InPosition);
 
 
