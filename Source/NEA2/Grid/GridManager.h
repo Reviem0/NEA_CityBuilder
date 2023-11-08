@@ -22,7 +22,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int GridSizeY = 5;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int WorldGridSize = 1000;
+	int WorldGridSize = 100;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float HeightOffset = 0.5;
 	
@@ -39,6 +39,11 @@ public:
 	void PopulateNeighbours();
 
 	FVector GetClosestGridPosition(FVector InPosition);
+	AGridCell* GetClosestGridCell(FVector InPosition);
+
+	FVector GetGridScale();
+
+	void PopulateGridNeighbours();
 
 
 protected:

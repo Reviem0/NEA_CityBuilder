@@ -11,9 +11,7 @@ ACB_PlayerController::ACB_PlayerController()
 
 void ACB_PlayerController::BeginPlay()
 {
-    SetPlacementModeEnabled(true);
-
-
+    PlacementCheck();
 }
 
 void ACB_PlayerController::SetupInputComponent()
@@ -29,6 +27,17 @@ void ACB_PlayerController::Tick(float DeltaTime)
         UpdatePlacement();
     }
 }
+
+void ACB_PlayerController::PlacementCheck() 
+{
+    GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    if (GridManager){
+        SetPlacementModeEnabled(true);
+    } else {
+        PlacementCheck();
+    }
+}
+
 
 void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
     if (PlacementModeEnabled == bEnabled) {
@@ -47,6 +56,7 @@ void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
         }
     } else {
         PlaceableActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, RelativeTransform, SpawnParams);
+        PlaceableActor->SetActorScale3D(GridManager->GetGridScale());
         if (PlaceableActor->GetComponentByClass<UCB_ClickComponent>()){
             PlaceableActor->GetComponentByClass<UCB_ClickComponent>()->inPlacementMode();
             FName CompName = "Ploppable";
@@ -69,7 +79,6 @@ void ACB_PlayerController::UpdatePlacement() {
     bool HitResult = GetWorld()->LineTraceSingleByChannel(Hit, WorldLocation, WorldLocation + WorldDirection * 7000, ECC_GameTraceChannel1);
 
     if (HitResult){
-        AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
         if (GridManager){
             GridManager->GetClosestGridPosition(Hit.Location);
             PlaceableActor->SetActorLocation(GridManager->GetClosestGridPosition(Hit.Location));
@@ -84,6 +93,10 @@ void ACB_PlayerController::SpawnBuilding() {
     if (PlopComp) {
         if (PlopComp->IsPlacementValid) {
             ACB_BuildingAsset* NewActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
+            if (GridManager) {
+                NewActor->SetActorScale3D(GridManager->GetGridScale());
+                GridManager->GetClosestGridCell(NewActor->GetActorLocation())->SetOccupied(EBuildingType::Placed, NewActor);
+            }
         }
     }
 }

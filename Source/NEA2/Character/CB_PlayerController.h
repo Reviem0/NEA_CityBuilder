@@ -21,6 +21,8 @@ class NEA2_API ACB_PlayerController : public APlayerController
 public:
 	ACB_PlayerController();
 
+	AGridManager* GridManager;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Placement")
 	TSubclassOf<ACB_BuildingAsset> ActorToPlace;
 
@@ -31,6 +33,7 @@ public:
 
 	UFUNCTION()
 	void SetPlacementModeEnabled(bool Enabled);
+	void PlacementCheck();
 	void UpdatePlacement();
 	void SpawnBuilding();
 

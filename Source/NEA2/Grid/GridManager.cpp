@@ -17,6 +17,7 @@ void AGridManager::BeginPlay()
 {
 	Super::BeginPlay();
 	PopulateGrid();
+	PopulateGridNeighbours();
 }
 
 // Called every frame
@@ -31,15 +32,15 @@ void AGridManager::PopulateGrid() {
 	GridArray.Empty(); 
 	FVector GridPos = FVector::ZeroVector;
 
-	FVector GridScale = FVector(WorldGridSize/100, WorldGridSize/100, WorldGridSize/100);
+	FVector GridScale = GetGridScale();
 	GridPos.Z = HeightOffset;
 	
 	
 	int GridSize = GridSizeX * GridSizeY;
 	
 	// Calculate the center offset
-	float CenterOffsetX = (GridSizeX * WorldGridSize) / 2.0f - WorldGridSize / 2.0f; 
-	float CenterOffsetY = (GridSizeY * WorldGridSize) / 2.0f - WorldGridSize / 2.0f;
+	float CenterOffsetX = ((GridSizeX-1) * WorldGridSize) / 2.0f; 
+	float CenterOffsetY = ((GridSizeY-1) * WorldGridSize) / 2.0f;
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -72,4 +73,54 @@ FVector AGridManager::GetClosestGridPosition(FVector InPosition)
 	}
 
     return ClosestPosition;
+}
+
+AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
+{
+	int ClosestIndex = 0;
+	float ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
+
+	for (int i = 0; i < GridArray.Num(); i++) {
+		AGridCell* Grid = GridArray[i];
+		if (FVector::Dist(InPosition, Grid->GetActorLocation()) < ClosestDistance) {
+			ClosestIndex = i;
+			ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
+		}
+	}
+
+    return GridArray[ClosestIndex];
+}
+
+FVector AGridManager::GetGridScale() 
+{
+	return FVector(WorldGridSize/100, WorldGridSize/100, WorldGridSize/100);
+}
+
+void AGridManager::PopulateGridNeighbours() 
+{
+	for (int i = 0; i < GridArray.Num(); i++) {
+		AGridCell* Grid = GridArray[i];
+
+		// Get North Neighbour
+		if ((i+1) % GridSizeX != 0 ) {
+			Grid->NNeighbour = &(GridArray[i + 1]);
+		}
+
+		// Get South Neighbour
+		if (i % GridSizeX != 0 && i != 0) {
+			 Grid->SNeighbour = &(GridArray[i - 1]);
+		}
+
+		// Get East Neighbour
+		if (i + GridSizeX < GridArray.Num()) {
+			Grid->WNeighbour = &GridArray[i + GridSizeX];
+		}
+
+		// Get West Neighbour
+		if (i - GridSizeX >= 0){
+			Grid->ENeighbour = &GridArray[i - GridSizeX];
+		}
+
+
+	}
 }

@@ -25,3 +25,35 @@ void AGridCell::Tick(float DeltaTime)
 
 }
 
+void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
+{
+	isOccupied = true;
+	BuildingType = NewBuildingType;
+	OccupyingActor = NewActor;
+	DebugShowNeighbours();
+}
+
+void AGridCell::DebugShowNeighbours()
+{
+	if (NNeighbour){
+		(*NNeighbour)->DebugSetMAT();
+	}
+	if (SNeighbour){
+		(*SNeighbour)->DebugSetMAT();
+	}
+	if (ENeighbour){
+		(*ENeighbour)->DebugSetMAT();
+	}
+	if (WNeighbour){
+		(*WNeighbour)->DebugSetMAT();
+	}
+}
+
+void AGridCell::DebugSetMAT()
+{
+	TArray<UStaticMeshComponent*> MeshComponents;
+	GetComponents<UStaticMeshComponent>(MeshComponents);
+	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
+		MeshComponent->SetMaterial(0, DebugMAT);
+	}
+}

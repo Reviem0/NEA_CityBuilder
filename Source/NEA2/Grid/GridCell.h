@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Enum/BuildingTypeEnum.h"
+
 #include "GridCell.generated.h"
 
 UCLASS()
@@ -15,10 +17,22 @@ public:
 	// Sets default values for this actor's properties
 	AGridCell();
 
-	AGridCell* NNeighbour;
-	AGridCell* SNeighbour;
-	AGridCell* ENeighbour;
-	AGridCell* WNeighbur;
+	AGridCell** NNeighbour;
+	AGridCell** SNeighbour;
+	AGridCell** ENeighbour;
+	AGridCell** WNeighbour;
+	bool isOccupied;
+
+	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Game/GameObjects/Materials/M_Invalid.M_Invalid"));
+	
+	EBuildingType BuildingType {EBuildingType::None};
+	AActor* OccupyingActor;
+
+	void SetOccupied(EBuildingType NewBuildingType, AActor* NewActor);
+
+	void DebugShowNeighbours();
+	void DebugSetMAT();
+	
 
 protected:
 	// Called when the game starts or when spawned
