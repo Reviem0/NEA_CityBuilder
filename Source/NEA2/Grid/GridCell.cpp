@@ -24,7 +24,7 @@ void AGridCell::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
+// Set Grid Cell as Occupied
 void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 {
 	isOccupied = true;
@@ -33,6 +33,7 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	DebugShowNeighbours();
 }
 
+// Show Neighbours for debugging
 void AGridCell::DebugShowNeighbours()
 {
 	if (NNeighbour){
@@ -49,6 +50,7 @@ void AGridCell::DebugShowNeighbours()
 	}
 }
 
+// Set current Grid Cell to debugMAT
 void AGridCell::DebugSetMAT()
 {
 	TArray<UStaticMeshComponent*> MeshComponents;
