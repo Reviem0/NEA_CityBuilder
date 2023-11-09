@@ -28,42 +28,50 @@ void AGridManager::Tick(float DeltaTime)
 }
 
 void AGridManager::PopulateGrid() {
-	FTransform Transform;
+	
+	// Empty Array
 	GridArray.Empty(); 
-	FVector GridPos = FVector::ZeroVector;
-
-	FVector GridScale = GetGridScale();
-	GridPos.Z = HeightOffset;
 	
-	
+	// Total Grid Size
 	int GridSize = GridSizeX * GridSizeY;
 	
 	// Calculate the center offset
 	float CenterOffsetX = ((GridSizeX-1) * WorldGridSize) / 2.0f; 
 	float CenterOffsetY = ((GridSizeY-1) * WorldGridSize) / 2.0f;
 
+	//Grid Spawn Parameters
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	FTransform Transform;
+	FVector GridPos = FVector::ZeroVector;
+	FVector GridScale = GetGridScale();
+	GridPos.Z = HeightOffset;
 
+	// Spawn Grid
 	for (int i = 0; i < GridSizeX; i++) {
 		for (int j = 0; j < GridSizeY; j++) {
+			// Calculate Spawn Point of Grid Cell
 			GridPos.X = (j * WorldGridSize) - CenterOffsetX; 
 			GridPos.Y = (i * WorldGridSize) - CenterOffsetY;
-			
 			Transform = UKismetMathLibrary::MakeTransform(GridPos, FRotator::ZeroRotator, GridScale);
+			
+			// Spawn Grid Cell
 			AGridCell* Grid = GetWorld()->SpawnActor<AGridCell>(GridCell, Transform, SpawnParams);
 			Grid->SetActorRelativeScale3D(GridScale);
+			
+			// Add to grid array
 			GridArray.Add(Grid);
 		}
 	}
 }
 
+// Get the position of the closest Grid from an input position
 FVector AGridManager::GetClosestGridPosition(FVector InPosition)
 {
-	FVector ClosestPosition;
-	ClosestPosition = GridArray[0]->GetActorLocation();
+	FVector ClosestPosition = GridArray[0]->GetActorLocation();
 	float ClosestDistance = FVector::Dist(InPosition, ClosestPosition);
 
+	// Search for closest Grid Cell to inPosition
 	for (int i = 0; i < GridArray.Num(); i++) {
 		AGridCell* Grid = GridArray[i];
 		if (FVector::Dist(InPosition, Grid->GetActorLocation()) < ClosestDistance) {
@@ -75,11 +83,12 @@ FVector AGridManager::GetClosestGridPosition(FVector InPosition)
     return ClosestPosition;
 }
 
+// Get the closest Grid from an input position
 AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
 {
 	int ClosestIndex = 0;
 	float ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
-
+	// Search for closest Grid Cell to inPosition
 	for (int i = 0; i < GridArray.Num(); i++) {
 		AGridCell* Grid = GridArray[i];
 		if (FVector::Dist(InPosition, Grid->GetActorLocation()) < ClosestDistance) {
@@ -91,11 +100,13 @@ AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
     return GridArray[ClosestIndex];
 }
 
+// Return Grid Scale
 FVector AGridManager::GetGridScale() 
 {
 	return FVector(WorldGridSize/100, WorldGridSize/100, WorldGridSize/100);
 }
 
+// Assign Grid Cells their Neighbours
 void AGridManager::PopulateGridNeighbours() 
 {
 	for (int i = 0; i < GridArray.Num(); i++) {
@@ -103,23 +114,23 @@ void AGridManager::PopulateGridNeighbours()
 
 		// Get North Neighbour
 		if (i + GridSizeX < GridArray.Num()) {
-			Grid->WNeighbour = &GridArray[i + GridSizeX];
+			Grid->NNeighbour = &GridArray[i + GridSizeX];
 		}
 
 		// Get South Neighbour
 		if (i - GridSizeX >= 0){
-			Grid->ENeighbour = &GridArray[i - GridSizeX];
+			Grid->SNeighbour = &GridArray[i - GridSizeX];
 		}
 
 		// Get West Neighbour
 		if ((i+1) % GridSizeX != 0 ) {
-			Grid->NNeighbour = &(GridArray[i + 1]);
+			Grid->WNeighbour = &(GridArray[i + 1]);
 		}
 
 		// Get East Neighbour
 		if (i % GridSizeX != 0 && i != 0) {
-			 Grid->SNeighbour = &(GridArray[i - 1]);
+			 Grid->ENeighbour = &(GridArray[i - 1]);
 		}
-
+		
 	}
 }
