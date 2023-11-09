@@ -45,8 +45,8 @@ void AGridManager::PopulateGrid() {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	for (int i = 0; i < GridSizeY; i++) {
-		for (int j = 0; j < GridSizeX; j++) {
+	for (int i = 0; i < GridSizeX; i++) {
+		for (int j = 0; j < GridSizeY; j++) {
 			GridPos.X = (j * WorldGridSize) - CenterOffsetX; 
 			GridPos.Y = (i * WorldGridSize) - CenterOffsetY;
 			
@@ -102,25 +102,24 @@ void AGridManager::PopulateGridNeighbours()
 		AGridCell* Grid = GridArray[i];
 
 		// Get North Neighbour
-		if ((i+1) % GridSizeX != 0 ) {
-			Grid->NNeighbour = &(GridArray[i + 1]);
-		}
-
-		// Get South Neighbour
-		if (i % GridSizeX != 0 && i != 0) {
-			 Grid->SNeighbour = &(GridArray[i - 1]);
-		}
-
-		// Get East Neighbour
 		if (i + GridSizeX < GridArray.Num()) {
 			Grid->WNeighbour = &GridArray[i + GridSizeX];
 		}
 
-		// Get West Neighbour
+		// Get South Neighbour
 		if (i - GridSizeX >= 0){
 			Grid->ENeighbour = &GridArray[i - GridSizeX];
 		}
 
+		// Get West Neighbour
+		if ((i+1) % GridSizeX != 0 ) {
+			Grid->NNeighbour = &(GridArray[i + 1]);
+		}
+
+		// Get East Neighbour
+		if (i % GridSizeX != 0 && i != 0) {
+			 Grid->SNeighbour = &(GridArray[i - 1]);
+		}
 
 	}
 }
