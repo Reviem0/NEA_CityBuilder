@@ -21,9 +21,9 @@ public:
 	AGridCell** SNeighbour;
 	AGridCell** ENeighbour;
 	AGridCell** WNeighbour;
-	bool isOccupied;
+	bool isOccupied = false;
 
-	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Game/GameObjects/Materials/M_Invalid.M_Invalid"));
+	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/DebugTile_Mat.DebugTile_Mat'"));
 	
 	EBuildingType BuildingType {EBuildingType::None};
 	AActor* OccupyingActor;

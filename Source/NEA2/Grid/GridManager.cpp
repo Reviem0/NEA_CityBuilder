@@ -77,6 +77,7 @@ FVector AGridManager::GetClosestGridPosition(FVector InPosition)
 
 AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
 {
+	if (GridArray.Num() == 0) {return 0;}
 	int ClosestIndex = 0;
 	float ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
 

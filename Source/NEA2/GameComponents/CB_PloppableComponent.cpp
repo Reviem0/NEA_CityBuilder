@@ -2,6 +2,9 @@
 
 
 #include "CB_PloppableComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "../Grid/GridManager.h"
+
 
 // Sets default values for this component's properties
 UCB_PloppableComponent::UCB_PloppableComponent()
@@ -21,8 +24,6 @@ void UCB_PloppableComponent::BeginPlay()
 	
 	GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UCB_PloppableComponent::OnOverlap);
 	GetOwner()->OnActorEndOverlap.AddDynamic(this, &UCB_PloppableComponent::OnOverlap);
-
-	UpdateState();
 }
 
 
@@ -30,15 +31,24 @@ void UCB_PloppableComponent::BeginPlay()
 void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	UpdateState();
 	// ...
 }
 
 void UCB_PloppableComponent::UpdateState()
 {
-	TArray<AActor*> OverlappingActors;
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+	if (GridManager->GridArray.Num() != 0) {
+		if (!(GridManager->GetClosestGridCell(GetOwner()->GetActorLocation())->isOccupied)) {
+			IsPlacementValid = true;
+		} else {
+			IsPlacementValid = false;
+		}
+	}
+
+/* 	TArray<AActor*> OverlappingActors;
 	GetOwner()->GetOverlappingActors(OverlappingActors, AActor::StaticClass());
-	IsPlacementValid = OverlappingActors.Num() == 0;
+	IsPlacementValid = OverlappingActors.Num() == 0; */
 	TArray<UStaticMeshComponent*> MeshComponents; 
 	GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
