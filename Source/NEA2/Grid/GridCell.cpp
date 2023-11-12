@@ -28,7 +28,7 @@ void AGridCell::Tick(float DeltaTime)
 void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 {
 	isOccupied = true;
-	BuildingType = NewBuildingType;
+	OccupyingType = NewBuildingType;
 	OccupyingActor = NewActor;
 	DebugShowNeighbours();
 }

@@ -25,7 +25,8 @@ public:
 
 	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/DebugTile_Mat.DebugTile_Mat'"));
 	
-	EBuildingType BuildingType {EBuildingType::None};
+	UPROPERTY(EditAnywhere)
+	EBuildingType OccupyingType {EBuildingType::None};
 	AActor* OccupyingActor;
 
 	void SetOccupied(EBuildingType NewBuildingType, AActor* NewActor);

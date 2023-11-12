@@ -3,7 +3,8 @@
 
 #include "CB_PloppableComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "../Grid/GridManager.h"
+#include "../GameObjects/CB_BuildingAsset.h"
+#include "../Enum/BuildingTypeEnum.h"
 
 
 // Sets default values for this component's properties
@@ -21,9 +22,6 @@ UCB_PloppableComponent::UCB_PloppableComponent()
 void UCB_PloppableComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	GetOwner()->OnActorBeginOverlap.AddDynamic(this, &UCB_PloppableComponent::OnOverlap);
-	GetOwner()->OnActorEndOverlap.AddDynamic(this, &UCB_PloppableComponent::OnOverlap);
 }
 
 
@@ -31,8 +29,13 @@ void UCB_PloppableComponent::BeginPlay()
 void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	UpdateState();
-	// ...
+	if (!LastGridRef){
+		LastGridRef = (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef;
+	}
+	if (LastGridRef != (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef){
+		UpdateState();
+	}
+
 }
 
 void UCB_PloppableComponent::UpdateState()
@@ -44,11 +47,13 @@ void UCB_PloppableComponent::UpdateState()
 		} else {
 			IsPlacementValid = false;
 		}
+		RoadPlaceableCheck();
 	}
 
 /* 	TArray<AActor*> OverlappingActors;
 	GetOwner()->GetOverlappingActors(OverlappingActors, AActor::StaticClass());
 	IsPlacementValid = OverlappingActors.Num() == 0; */
+
 	TArray<UStaticMeshComponent*> MeshComponents; 
 	GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
@@ -60,8 +65,96 @@ void UCB_PloppableComponent::UpdateState()
 	}
 }
 
-void UCB_PloppableComponent::OnOverlap(AActor* OverlappedActor, AActor* OtherActor)
+void UCB_PloppableComponent::RoadPlaceableCheck()
 {
-	UE_LOG(LogTemp, Display, TEXT("OVERLAP"));
-	UpdateState();
+	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
+	if (Owner == nullptr){
+		return;
+	}
+
+	if (!(Owner->BuildingType == EBuildingType::Road)){
+		return;
+	}
+	if (!(Owner->GridCellRef)) {
+		return;
+	}
+
+	/* if (!(Owner->GridCellRef->NNeighbour) || !(Owner->GridCellRef->SNeighbour) || !(Owner->GridCellRef->ENeighbour) || !(Owner->GridCellRef->WNeighbour)) {
+		UE_LOG(LogTemp, Display, TEXT("Your message"));
+		return;
+	} */
+
+	//N
+	if (Owner->GridCellRef->NNeighbour)
+	{
+		AGridCell* NorthCell = (*(Owner->GridCellRef->NNeighbour));
+		bool North = NorthCell->OccupyingType == EBuildingType::Road;
+		//NW
+		if (Owner->GridCellRef->WNeighbour){
+			AGridCell* WestCell = (*(Owner->GridCellRef->WNeighbour));
+			bool West = WestCell->OccupyingType == EBuildingType::Road;
+			if (North && West) {
+				if (!(NorthCell->WNeighbour)) {
+					return;
+				}
+				if ((*(NorthCell->WNeighbour))->OccupyingType == EBuildingType::Road) {
+					IsPlacementValid = false;
+					return;
+				}
+			}
+			
+		}
+
+		 //NE
+		if (Owner->GridCellRef->ENeighbour){
+			AGridCell* EastCell = (*(Owner->GridCellRef->ENeighbour));
+			bool East = EastCell->OccupyingType == EBuildingType::Road;
+			if (North && East) {
+				if (!(NorthCell->ENeighbour)) {
+					return;
+				}
+				if ((*(NorthCell->ENeighbour))->OccupyingType == EBuildingType::Road) {
+					IsPlacementValid = false;
+					return;
+				}
+			}
+		}
+	}
+
+ 	//S
+	if (Owner->GridCellRef->SNeighbour) 
+	{
+		AGridCell* SouthCell = (*(Owner->GridCellRef->SNeighbour));
+		bool South = SouthCell ->OccupyingType == EBuildingType::Road;
+		//SW
+		if (Owner->GridCellRef->WNeighbour){
+			AGridCell* WestCell = (*(Owner->GridCellRef->WNeighbour));
+			bool West = WestCell->OccupyingType == EBuildingType::Road;
+			if (South && West) {
+				if (!(SouthCell->WNeighbour)) {
+					return;
+				}
+				if ((*(SouthCell->WNeighbour))->OccupyingType == EBuildingType::Road) {
+					IsPlacementValid = false;
+					return;
+				}
+			}
+		}
+
+		//SE
+		if (Owner->GridCellRef->ENeighbour){
+			AGridCell* EastCell = (*(Owner->GridCellRef->ENeighbour));
+			bool East = EastCell->OccupyingType == EBuildingType::Road;
+			if (South && East) {
+				if (!(SouthCell->ENeighbour)) {
+					return;
+				}
+				if ((*(SouthCell->ENeighbour))->OccupyingType == EBuildingType::Road) {
+					IsPlacementValid = false;
+					return;
+				}
+			}
+		}
+	}
+	return;
 }

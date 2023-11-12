@@ -48,8 +48,8 @@ void AGridManager::PopulateGrid() {
 	GridPos.Z = HeightOffset;
 
 	// Spawn Grid
-	for (int i = 0; i < GridSizeX; i++) {
-		for (int j = 0; j < GridSizeY; j++) {
+	for (int i = 0; i < GridSizeY; i++) {
+		for (int j = 0; j < GridSizeX; j++) {
 			// Calculate Spawn Point of Grid Cell
 			GridPos.X = (j * WorldGridSize) - CenterOffsetX; 
 			GridPos.Y = (i * WorldGridSize) - CenterOffsetY;
@@ -114,23 +114,23 @@ void AGridManager::PopulateGridNeighbours()
 		AGridCell* Grid = GridArray[i];
 
 		// Get North Neighbour
-		if (i + GridSizeX < GridArray.Num()) {
-			Grid->NNeighbour = &GridArray[i + GridSizeX];
+		if ((i+1) % GridSizeX != 0 ) {
+			Grid->NNeighbour = &(GridArray[i + 1]);
 		}
 
 		// Get South Neighbour
-		if (i - GridSizeX >= 0){
-			Grid->SNeighbour = &GridArray[i - GridSizeX];
+		if (i % GridSizeX != 0 && i != 0) {
+			 Grid->SNeighbour = &(GridArray[i - 1]);
 		}
 
 		// Get West Neighbour
-		if ((i+1) % GridSizeX != 0 ) {
-			Grid->WNeighbour = &(GridArray[i + 1]);
+		if (i + GridSizeX < GridArray.Num()) {
+			Grid->WNeighbour = &GridArray[i + GridSizeX];
 		}
 
 		// Get East Neighbour
-		if (i % GridSizeX != 0 && i != 0) {
-			 Grid->ENeighbour = &(GridArray[i - 1]);
+		if (i - GridSizeX >= 0){
+			Grid->ENeighbour = &GridArray[i - GridSizeX];
 		}
 		
 	}

@@ -3,25 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "../Enum/BuildingTypeEnum.h"
-#include "../Grid/GridCell.h"
-#include "CB_BuildingAsset.generated.h"
+#include "CB_BuildingAsset.h"
+#include "CB_RoadTile.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class NEA2_API ACB_BuildingAsset : public AActor
+class NEA2_API ACB_RoadTile : public ACB_BuildingAsset
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// Sets default values for this actor's properties
-	ACB_BuildingAsset();
-
-	UPROPERTY()
-	EBuildingType BuildingType {EBuildingType::Placed};
-
-	UPROPERTY(EditAnywhere)
-	AGridCell* GridCellRef;
+	ACB_RoadTile();
 
 protected:
 	// Called when the game starts or when spawned
@@ -30,5 +25,5 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	
 };

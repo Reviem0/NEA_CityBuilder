@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../Grid/GridManager.h"
 #include "CB_PloppableComponent.generated.h"
 
 
@@ -22,9 +23,10 @@ public:
 
 	UFUNCTION()
 	void UpdateState();
-
-	void OnOverlap(AActor* OverlappedActor, AActor* OtherActor);
+	UFUNCTION()
+	void RoadPlaceableCheck();
 	
+	AGridCell* LastGridRef;
 
 protected:
 	// Called when the game starts

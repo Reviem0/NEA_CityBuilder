@@ -80,8 +80,10 @@ void ACB_PlayerController::UpdatePlacement() {
 
     if (HitResult){
         if (GridManager){
-            GridManager->GetClosestGridPosition(Hit.Location);
-            PlaceableActor->SetActorLocation(GridManager->GetClosestGridPosition(Hit.Location));
+            AGridCell* GridCell = GridManager->GetClosestGridCell(Hit.Location);
+            FVector Spawnpoint = GridCell->GetActorLocation();
+            PlaceableActor->SetActorLocation(Spawnpoint);
+            PlaceableActor->GridCellRef = GridCell;
         }
     }
 }
@@ -93,10 +95,10 @@ void ACB_PlayerController::SpawnBuilding() {
     if (PlopComp) {
         if (PlopComp->IsPlacementValid) {
             ACB_BuildingAsset* NewActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
-            if (GridManager) {
-                NewActor->SetActorScale3D(GridManager->GetGridScale());
-                GridManager->GetClosestGridCell(NewActor->GetActorLocation())->SetOccupied(EBuildingType::Placed, NewActor);
-            }
+            NewActor->GridCellRef = PlaceableActor->GridCellRef;
+            NewActor->SetActorScale3D(GridManager->GetGridScale());
+            NewActor->GridCellRef->SetOccupied(EBuildingType::Road, NewActor);
+            NewActor->GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
         }
     }
 }
