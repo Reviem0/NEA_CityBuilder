@@ -12,8 +12,7 @@ UCB_PloppableComponent::UCB_PloppableComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
-	
+	PrimaryComponentTick.bCanEverTick = true;	
 
 	// ...
 }
@@ -24,7 +23,6 @@ void UCB_PloppableComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-
 // Called every frame
 void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -32,6 +30,7 @@ void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	if (!LastGridRef){
 		LastGridRef = (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef;
 	}
+	// If GridRef Changes, UpdateState
 	if (LastGridRef != (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef){
 		UpdateState();
 	}
@@ -40,9 +39,10 @@ void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UCB_PloppableComponent::UpdateState()
 {
+	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
 	if (GridManager->GridArray.Num() != 0) {
-		if (!(GridManager->GetClosestGridCell(GetOwner()->GetActorLocation())->isOccupied)) {
+		if (!(Owner->GridCellRef->isOccupied)) {
 			IsPlacementValid = true;
 		} else {
 			IsPlacementValid = false;
@@ -68,51 +68,56 @@ void UCB_PloppableComponent::UpdateState()
 void UCB_PloppableComponent::RoadPlaceableCheck()
 {
 	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
-	if (Owner == nullptr){
+
+	// Validation Checks
+
+	// If Owner doesn't exist, return
+	if (!Owner){
 		return;
 	}
 
-	if (!(Owner->BuildingType == EBuildingType::Road)){
+	// If object is not a road, return
+	if (Owner->BuildingType != EBuildingType::Road){
 		return;
 	}
+	// If Owner doesnt have a GridRef, return
 	if (!(Owner->GridCellRef)) {
 		return;
 	}
 
-	/* if (!(Owner->GridCellRef->NNeighbour) || !(Owner->GridCellRef->SNeighbour) || !(Owner->GridCellRef->ENeighbour) || !(Owner->GridCellRef->WNeighbour)) {
-		UE_LOG(LogTemp, Display, TEXT("Your message"));
-		return;
-	} */
-
-	//N
+	//North
 	if (Owner->GridCellRef->NNeighbour)
 	{
+		// North
 		AGridCell* NorthCell = (*(Owner->GridCellRef->NNeighbour));
 		bool North = NorthCell->OccupyingType == EBuildingType::Road;
-		//NW
+		// North-West
 		if (Owner->GridCellRef->WNeighbour){
 			AGridCell* WestCell = (*(Owner->GridCellRef->WNeighbour));
 			bool West = WestCell->OccupyingType == EBuildingType::Road;
+	  		// If North is road and West is road:
 			if (North && West) {
 				if (!(NorthCell->WNeighbour)) {
 					return;
 				}
+				// Then if NorthWest is road, placement is invalid
 				if ((*(NorthCell->WNeighbour))->OccupyingType == EBuildingType::Road) {
 					IsPlacementValid = false;
 					return;
 				}
 			}
-			
 		}
 
-		 //NE
+		//North-East
 		if (Owner->GridCellRef->ENeighbour){
 			AGridCell* EastCell = (*(Owner->GridCellRef->ENeighbour));
 			bool East = EastCell->OccupyingType == EBuildingType::Road;
+			// If North is road and East is road:
 			if (North && East) {
 				if (!(NorthCell->ENeighbour)) {
 					return;
 				}
+				// Then if NorthEast is road, placement is invalid
 				if ((*(NorthCell->ENeighbour))->OccupyingType == EBuildingType::Road) {
 					IsPlacementValid = false;
 					return;
@@ -121,19 +126,21 @@ void UCB_PloppableComponent::RoadPlaceableCheck()
 		}
 	}
 
- 	//S
+ 	//South
 	if (Owner->GridCellRef->SNeighbour) 
 	{
 		AGridCell* SouthCell = (*(Owner->GridCellRef->SNeighbour));
 		bool South = SouthCell ->OccupyingType == EBuildingType::Road;
-		//SW
+		//South-West
 		if (Owner->GridCellRef->WNeighbour){
 			AGridCell* WestCell = (*(Owner->GridCellRef->WNeighbour));
 			bool West = WestCell->OccupyingType == EBuildingType::Road;
+			// If South is road and West is road:
 			if (South && West) {
 				if (!(SouthCell->WNeighbour)) {
 					return;
 				}
+				// Then if SouthWest is road, placement is invalid
 				if ((*(SouthCell->WNeighbour))->OccupyingType == EBuildingType::Road) {
 					IsPlacementValid = false;
 					return;
@@ -141,14 +148,16 @@ void UCB_PloppableComponent::RoadPlaceableCheck()
 			}
 		}
 
-		//SE
+		//South-East
 		if (Owner->GridCellRef->ENeighbour){
 			AGridCell* EastCell = (*(Owner->GridCellRef->ENeighbour));
 			bool East = EastCell->OccupyingType == EBuildingType::Road;
+			// If South is road and East is road:
 			if (South && East) {
 				if (!(SouthCell->ENeighbour)) {
 					return;
 				}
+				// Then if SouthEast is road, placement is invalid
 				if ((*(SouthCell->ENeighbour))->OccupyingType == EBuildingType::Road) {
 					IsPlacementValid = false;
 					return;
