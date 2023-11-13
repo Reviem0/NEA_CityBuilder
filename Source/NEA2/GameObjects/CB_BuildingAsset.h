@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Enum/BuildingTypeEnum.h"
+#include "../GameComponents/CB_PloppableComponent.h"
 #include "../Grid/GridCell.h"
 #include "CB_BuildingAsset.generated.h"
 

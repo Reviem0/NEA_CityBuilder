@@ -14,7 +14,7 @@ ACB_RoadTile::ACB_RoadTile()
 void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
-    BuildingType = EBuildingType::Road;
+    GridCellRef->SetOccupied(EBuildingType::Road, this)
 	
 }
 
