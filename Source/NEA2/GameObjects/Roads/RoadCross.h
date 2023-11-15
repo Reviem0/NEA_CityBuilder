@@ -4,28 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../Enum/BuildingTypeEnum.h"
-#include "../GameComponents/CB_PloppableComponent.h"
-#include "../Grid/GridCell.h"
-#include "CB_BuildingAsset.generated.h"
+#include "RoadCross.generated.h"
 
 UCLASS()
-class NEA2_API ACB_BuildingAsset : public AActor
+class NEA2_API ARoadCross : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ACB_BuildingAsset();
-
-	UPROPERTY(EditAnywhere)
-	bool isPlop = false;
-
-	UPROPERTY()
-	EBuildingType BuildingType {EBuildingType::Placed};
-
-	UPROPERTY(EditAnywhere)
-	AGridCell* GridCellRef;
+	ARoadCross();
 
 protected:
 	// Called when the game starts or when spawned

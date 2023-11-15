@@ -1,41 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CB_BuildingAsset.h"
-
+#include "RoadCorner.h"
 
 // Sets default values
-ACB_BuildingAsset::ACB_BuildingAsset()
+ARoadCorner::ARoadCorner()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
-	
 
 }
 
 // Called when the game starts or when spawned
-void ACB_BuildingAsset::BeginPlay()
+void ARoadCorner::BeginPlay()
 {
 	Super::BeginPlay();
-	// check if ploppable
-	
-
 	
 }
 
 // Called every frame
-void ACB_BuildingAsset::Tick(float DeltaTime)
+void ARoadCorner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	UCB_PloppableComponent* PlopComp = GetComponentByClass<UCB_PloppableComponent>();
-	if (PlopComp) {
-		isPlop = true;
-	} else
-	{
-		isPlop = false;
-	}
 
 }
 

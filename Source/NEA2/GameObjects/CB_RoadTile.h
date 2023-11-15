@@ -3,7 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "../GameObjects/Roads/RoadCross.h"
+#include "../GameObjects/Roads/RoadT.h"
+#include "../GameObjects/Roads/RoadStraight.h"
+#include "../GameObjects/Roads/RoadCorner.h"
+#include "../GameObjects/Roads/RoadEnd.h"
+#include "../GameObjects/Roads/RoadCircle.h"
+
 #include "CB_BuildingAsset.h"
+
+
+
 #include "CB_RoadTile.generated.h"
 
 /**
@@ -18,35 +28,35 @@ public:
 	// Sets default values for this actor's properties
 	ACB_RoadTile();
 
-	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCircle;
+	bool isOcc = false;
+
+	bool IsUpdatingMesh = false;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadVert;
+	TSubclassOf<ARoadCross> RoadCross;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadHoriz;
+	TSubclassOf<ARoadT> RoadT;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCorner1;
+	TSubclassOf<ARoadStraight> RoadStraight;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCorner2;
+	TSubclassOf<ARoadCorner> RoadCorner;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCorner3;
+	TSubclassOf<ARoadEnd> RoadEnd;
 
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCorner4;
+	TSubclassOf<ARoadCircle> RoadCircle;
 
-	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadT;
-
-	UPROPERTY(EditAnywhere)
-	UStaticMesh* RoadCross;
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateRoadMesh();
+	void UpdateRoadMesh(bool neighbourUpdate);
+
+	void UpdateNeighbours();
+
+	AGridCell* LastGridRef;
 
 
 protected:
