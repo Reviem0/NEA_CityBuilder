@@ -17,6 +17,9 @@ ACB_BuildingAsset::ACB_BuildingAsset()
 void ACB_BuildingAsset::BeginPlay()
 {
 	Super::BeginPlay();
+	if (GetComponentByClass<UCB_PloppableComponent>()){
+		GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
+	}
 	
 }
 

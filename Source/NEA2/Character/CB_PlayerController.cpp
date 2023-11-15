@@ -65,8 +65,6 @@ void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
                 PlaceableActor->AddInstanceComponent(NewComponent);
                 NewComponent->RegisterComponent();
             }
-
-
         }
     }
 }
@@ -97,7 +95,6 @@ void ACB_PlayerController::SpawnBuilding() {
             ACB_BuildingAsset* NewActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
             NewActor->GridCellRef = PlaceableActor->GridCellRef;
             NewActor->SetActorScale3D(GridManager->GetGridScale());
-            NewActor->GridCellRef->SetOccupied(EBuildingType::Road, NewActor);
             NewActor->GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
         }
     }
