@@ -7,6 +7,8 @@ ACB_RoadTile::ACB_RoadTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	
 
 }
 
@@ -15,6 +17,8 @@ void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
     BuildingType = EBuildingType::Road;
+
+	UpdateRoadMesh()
 	
 }
 
@@ -25,3 +29,21 @@ void ACB_RoadTile::Tick(float DeltaTime)
 
 }
 
+void ACB_RoadTile::UpdateRoadMesh()
+{
+	// Get the static mesh component
+	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
+	if (StaticMeshComponent)
+	{
+		// Check which neighbours are road tiles
+		NorthR = Cast<ACB_RoadTile>(North);
+		// If all neighbours are road tiles, use the cross mesh
+		// If 3 neighbours are road tiles, use the T mesh
+		// If 2 neighbours are road tiles, use the straight mesh
+		// If 1 neighbour is a road tile, use the corner mesh
+		// If 0 neighbours are road tiles, use the circle mesh
+
+
+		
+	}
+}
