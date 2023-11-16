@@ -18,7 +18,7 @@ void ACB_RoadTile::BeginPlay()
 	Super::BeginPlay();
     BuildingType = EBuildingType::Road;
 
-    if (GridCellRef) {
+    if (GridCellRef && !(GetClass()->IsChildOf(ACB_RoadTile::StaticClass()))) {
         GridCellRef->SetOccupied(EBuildingType::Road, this);
         isOcc = true;
         if (!isPlop)
@@ -26,7 +26,6 @@ void ACB_RoadTile::BeginPlay()
             UpdateRoadMesh(false);
         }
     }
-	
 }
 
 // Called every frame
