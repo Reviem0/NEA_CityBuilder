@@ -18,7 +18,7 @@ void ACB_RoadTile::BeginPlay()
 	Super::BeginPlay();
     BuildingType = EBuildingType::Road;
 
-    if (GridCellRef && !(GetClass()->IsChildOf(ACB_RoadTile::StaticClass()))) {
+    if (GridCellRef && !isPlop) {
         GridCellRef->SetOccupied(EBuildingType::Road, this);
         isOcc = true;
         if (!isPlop)
@@ -92,7 +92,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         // If 3 Neighbours are road tiles, use the T actor
         if (EastR && SouthR && WestR)
         {
-            FRotator NewRot = FRotator(0, 0, 0);
+            FRotator NewRot = FRotator(0, 90, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
             
@@ -110,7 +110,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (NorthR && SouthR && WestR)
         {
-            FRotator NewRot = FRotator(0, 90, 0);
+            FRotator NewRot = FRotator(0, 0, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -162,7 +162,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         // If 2 Neighbours are road tiles, use the straight actor
         if (NorthR && SouthR)
         {
-            FRotator NewRot = FRotator(0, 0, 0);
+            FRotator NewRot = FRotator(0, 90, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -179,7 +179,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (WestR && EastR)
         {
-            FRotator NewRot = FRotator(0, 90, 0);
+            FRotator NewRot = FRotator(0, 0, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -215,7 +215,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (SouthR && EastR)
         {
-            FRotator NewRot = FRotator(0, 90, 0);
+            FRotator NewRot = FRotator(0, 270, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -250,7 +250,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (NorthR && WestR)
         {
-            FRotator NewRot = FRotator(0, 270, 0);
+            FRotator NewRot = FRotator(0, 90, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -262,6 +262,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
             if (NewActor){
                 Destroy();
             }
+            return;
         }
 
         // If 1 Neighbour is a road tile, use the end actor
@@ -301,7 +302,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (EastR)
         {
-            FRotator NewRot = FRotator(0, 90, 0);
+            FRotator NewRot = FRotator(0, 270, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
@@ -318,7 +319,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (WestR)
         {
-            FRotator NewRot = FRotator(0, 270, 0);
+            FRotator NewRot = FRotator(0, 90, 0);
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            

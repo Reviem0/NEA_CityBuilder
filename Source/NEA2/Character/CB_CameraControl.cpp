@@ -70,12 +70,14 @@ void ACB_CameraControl::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 
 void ACB_CameraControl::MoveForward(float Axis)
 {
-	AddMovementInput(SpringArm->GetForwardVector()* Axis);
+  AddMovementInput(SpringArm->GetForwardVector()* Axis);
 }
 
 void ACB_CameraControl::MoveRight(float Axis)
 {
-	AddMovementInput(SpringArm->GetRightVector()* Axis);  
+  if (!TopDown){
+	  AddMovementInput(SpringArm->GetRightVector()* Axis);
+  }
 }
 
 void ACB_CameraControl::TurnRight() 

@@ -19,7 +19,7 @@ public:
 	ACB_BuildingAsset();
 
 	UPROPERTY(EditAnywhere)
-	bool isPlop = false;
+	bool isPlop = true;
 
 	UPROPERTY()
 	EBuildingType BuildingType {EBuildingType::Placed};

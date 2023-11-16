@@ -2,6 +2,8 @@
 
 
 #include "CB_BuildingAsset.h"
+#include "../Character/CB_PlayerController.h"
+#include "GameFramework/PlayerController.h"
 
 
 // Sets default values
@@ -18,18 +20,14 @@ ACB_BuildingAsset::ACB_BuildingAsset()
 void ACB_BuildingAsset::BeginPlay()
 {
 	Super::BeginPlay();
-	
 	// check if ploppable
-	// Get Player Controller
-	UPlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (PlayerController->PlaceableActor == this) {
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PlayerController->PlaceableActor == this || PlayerController->PlaceableActor == nullptr) {
 		isPlop = true;
 	} else
 	{
 		isPlop = false;
 	}
-	
-
 	
 }
 
@@ -37,6 +35,8 @@ void ACB_BuildingAsset::BeginPlay()
 void ACB_BuildingAsset::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+	
 
 }
 

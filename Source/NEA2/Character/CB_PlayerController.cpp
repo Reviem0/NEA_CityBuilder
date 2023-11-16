@@ -94,7 +94,8 @@ void ACB_PlayerController::SpawnBuilding() {
         if (PlopComp->IsPlacementValid) {
             ACB_BuildingAsset* NewActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
             NewActor->GridCellRef = PlaceableActor->GridCellRef;
-            NewActor->SetActorScale3D(GridManager->GetGridScale());
+            NewActor->SetActorScale3D((GridManager->GetGridScale()));
+            NewActor->SetActorLocation(PlaceableActor->GetActorLocation()+ FVector(0,0,10));
             NewActor->GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
         }
     }
