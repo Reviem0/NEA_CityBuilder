@@ -9,7 +9,7 @@ ACB_BuildingAsset::ACB_BuildingAsset()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+	//Set Collision preset to buildings
 	
 
 }
@@ -18,8 +18,8 @@ ACB_BuildingAsset::ACB_BuildingAsset()
 void ACB_BuildingAsset::BeginPlay()
 {
 	Super::BeginPlay();
-	// check if ploppable
-	
+
+	// add 2 +2 
 
 	
 }

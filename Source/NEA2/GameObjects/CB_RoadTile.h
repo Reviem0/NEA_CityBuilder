@@ -3,12 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../GameObjects/Roads/RoadCross.h"
-#include "../GameObjects/Roads/RoadT.h"
-#include "../GameObjects/Roads/RoadStraight.h"
-#include "../GameObjects/Roads/RoadCorner.h"
-#include "../GameObjects/Roads/RoadEnd.h"
-#include "../GameObjects/Roads/RoadCircle.h"
 
 #include "CB_BuildingAsset.h"
 
@@ -28,27 +22,28 @@ public:
 	// Sets default values for this actor's properties
 	ACB_RoadTile();
 
+	
 	bool isOcc = false;
 
 	bool IsUpdatingMesh = false;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadCross> RoadCross;
+	TSubclassOf<ACB_RoadTile> RoadCross;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadT> RoadT;
+	TSubclassOf<ACB_RoadTile> RoadT;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadStraight> RoadStraight;
+	TSubclassOf<ACB_RoadTile> RoadStraight;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadCorner> RoadCorner;
+	TSubclassOf<ACB_RoadTile> RoadCorner;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadEnd> RoadEnd;
+	TSubclassOf<ACB_RoadTile> RoadEnd;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<ARoadCircle> RoadCircle;
+	TSubclassOf<ACB_RoadTile> RoadCircle;
 
 
 	UFUNCTION(BlueprintCallable)
@@ -66,5 +61,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+
+    void NewSpawn(ACB_RoadTile* NewRoadTile);
+
 };

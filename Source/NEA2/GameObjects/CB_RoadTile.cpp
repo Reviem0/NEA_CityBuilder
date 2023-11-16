@@ -43,16 +43,33 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
     IsUpdatingMesh = true;
     if (GridCellRef)
     {
-        if (!(GridCellRef->NNeighbour) || !(GridCellRef->SNeighbour) || !(GridCellRef->ENeighbour) || !(GridCellRef->WNeighbour))
+        if (!(GridCellRef->NNeighbour) && !(GridCellRef->SNeighbour) && !(GridCellRef->ENeighbour) && !(GridCellRef->WNeighbour))
         {
             return;
         }
 
+        bool NorthR = false;
+        bool SouthR = false;
+        bool EastR = false;
+        bool WestR = false;
+
         // Check which neighbours are road tiles
-        bool NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
-        bool SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
-        bool EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
-        bool WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
+        if (GridCellRef->NNeighbour)
+        {
+            NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
+        }
+        if (GridCellRef->SNeighbour)
+        {
+            SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
+        }
+        if (GridCellRef->ENeighbour)
+        {
+            EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
+        }
+        if (GridCellRef->WNeighbour)
+        {
+            WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
+        }
 
         // Select Correct Actor and Rotation
         // If all neighbours are road tiles, use the cross actor
@@ -60,21 +77,25 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         if (NorthR && SouthR && EastR && WestR)
         {
             // Spawn New Actor
-            GetWorld()->SpawnActor<ARoadCross>(RoadCross, GetActorLocation(), GetActorRotation());
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCross, GetActorLocation(), GetActorRotation());
+            NewSpawn(NewActor);
             if (!neighbourUpdate)
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
             // Destroy Old Actor
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
         // If 3 Neighbours are road tiles, use the T actor
         if (EastR && SouthR && WestR)
         {
             FRotator NewRot = FRotator(0, 0, 0);
-            GetWorld()->SpawnActor<ARoadT>(RoadT, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
             
            
             if (!neighbourUpdate) 
@@ -82,49 +103,60 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (NorthR && SouthR && WestR)
         {
             FRotator NewRot = FRotator(0, 90, 0);
-            GetWorld()->SpawnActor<ARoadT>(RoadT, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (NorthR && SouthR && EastR)
         {
             FRotator NewRot = FRotator(0, 180, 0);
-            GetWorld()->SpawnActor<ARoadT>(RoadT, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (NorthR && WestR && EastR)
         {
             FRotator NewRot = FRotator(0, 270, 0);
-            GetWorld()->SpawnActor<ARoadT>(RoadT, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
@@ -132,85 +164,173 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         if (NorthR && SouthR)
         {
             FRotator NewRot = FRotator(0, 0, 0);
-            GetWorld()->SpawnActor<ARoadStraight>(RoadStraight, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (WestR && EastR)
         {
             FRotator NewRot = FRotator(0, 90, 0);
-            GetWorld()->SpawnActor<ARoadStraight>(RoadStraight, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
+        }
+
+        // If 2 Neighbours are road tiles, use the corner actor
+
+        if (NorthR && EastR)
+        {
+            FRotator NewRot = FRotator(0, 0, 0);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
+           
+            if (!neighbourUpdate) 
+            {
+                UpdateNeighbours();
+            }
+            IsUpdatingMesh = false;
+            if (NewActor){
+                Destroy();
+            }
+            return;
+        }
+
+        if (SouthR && EastR)
+        {
+            FRotator NewRot = FRotator(0, 90, 0);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
+           
+            if (!neighbourUpdate) 
+            {
+                UpdateNeighbours();
+            }
+            IsUpdatingMesh = false;
+            if (NewActor){
+                Destroy();
+            }
+            return;
+        }
+
+        if (SouthR && WestR)
+        {
+            FRotator NewRot = FRotator(0, 180, 0);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
+           
+            if (!neighbourUpdate) 
+            {
+                UpdateNeighbours();
+            }
+            IsUpdatingMesh = false;
+            if (NewActor){
+                Destroy();
+            }
+            return;
+
+        }
+
+        if (NorthR && WestR)
+        {
+            FRotator NewRot = FRotator(0, 270, 0);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
+           
+            if (!neighbourUpdate) 
+            {
+                UpdateNeighbours();
+            }
+            IsUpdatingMesh = false;
+            if (NewActor){
+                Destroy();
+            }
         }
 
         // If 1 Neighbour is a road tile, use the end actor
         if (NorthR)
         {
             FRotator NewRot = FRotator(0, 0, 0);
-            GetWorld()->SpawnActor<ARoadEnd>(RoadEnd, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (SouthR)
         {
             FRotator NewRot = FRotator(0, 180, 0);
-            GetWorld()->SpawnActor<ARoadEnd>(RoadEnd, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (EastR)
         {
             FRotator NewRot = FRotator(0, 90, 0);
-            GetWorld()->SpawnActor<ARoadEnd>(RoadEnd, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
         if (WestR)
         {
             FRotator NewRot = FRotator(0, 270, 0);
-            GetWorld()->SpawnActor<ARoadEnd>(RoadEnd, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
             return;
         }
 
@@ -218,14 +338,18 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         if (!NorthR && !SouthR && !EastR && !WestR)
         {
             FRotator NewRot = FRotator(0, 0, 0);
-            GetWorld()->SpawnActor<ARoadCircle>(RoadCircle, GetActorLocation(), NewRot);
+            ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCircle, GetActorLocation(), NewRot);
+            NewSpawn(NewActor);
            
             if (!neighbourUpdate) 
             {
                 UpdateNeighbours();
             }
             IsUpdatingMesh = false;
-            this->Destroy();
+            if (NewActor){
+                Destroy();
+            }
+            UE_LOG(LogTemp, Warning, TEXT("Destroy called on actor %s"), *GetName());
             return;
         }
     }
@@ -236,40 +360,71 @@ void ACB_RoadTile::UpdateNeighbours()
 {
     UE_LOG(LogTemp, Warning, TEXT("UpdateNeighbours called for tile at %s"), *GetActorLocation().ToString());
 
-    // Check which neighbours are road tiles
-    AGridCell* NNeighbour = *(GridCellRef->NNeighbour);
-    AGridCell* SNeighbour = *(GridCellRef->SNeighbour);
-    AGridCell* ENeighbour = *(GridCellRef->ENeighbour);
-    AGridCell* WNeighbour = *(GridCellRef->WNeighbour);
+    bool NorthR = false;
+    bool SouthR = false;
+    bool EastR = false;
+    bool WestR = false;
 
-    bool NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
-    bool SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
-    bool EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
-    bool WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
-
-    if (NorthR && !Cast<ACB_RoadTile>(NNeighbour->OccupyingActor)->IsUpdatingMesh)
+    if (GridCellRef->NNeighbour)
     {
-        // Get the actor and cast to road tile
-        (Cast<ACB_RoadTile>(NNeighbour->OccupyingActor))->UpdateRoadMesh(true);
+        NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
+        AGridCell* NNeighbour = *(GridCellRef->NNeighbour);
+
+        if (NorthR && !Cast<ACB_RoadTile>(NNeighbour->OccupyingActor)->IsUpdatingMesh)
+        {
+            // Get the actor and cast to road tile
+            (Cast<ACB_RoadTile>(NNeighbour->OccupyingActor))->UpdateRoadMesh(true);
+        }
+    }
+    if (GridCellRef->SNeighbour)
+    {
+        SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
+        AGridCell* SNeighbour = *(GridCellRef->SNeighbour);
+        if (SouthR && !Cast<ACB_RoadTile>(SNeighbour->OccupyingActor)->IsUpdatingMesh)
+        {
+            // Get the actor and cast to road tile
+            (Cast<ACB_RoadTile>(SNeighbour->OccupyingActor))->UpdateRoadMesh(true);
+        }
+    }
+    if (GridCellRef->ENeighbour)
+    {
+        EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
+        AGridCell* ENeighbour = *(GridCellRef->ENeighbour);
+        if (EastR && !Cast<ACB_RoadTile>(ENeighbour->OccupyingActor)->IsUpdatingMesh)
+        {
+            // Get the actor and cast to road tile
+            (Cast<ACB_RoadTile>(ENeighbour->OccupyingActor))->UpdateRoadMesh(true);
+        }
+    }
+    if (GridCellRef->WNeighbour)
+    {
+        WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
+        AGridCell* WNeighbour = *(GridCellRef->WNeighbour);
+        if (WestR && !Cast<ACB_RoadTile>(WNeighbour->OccupyingActor)->IsUpdatingMesh)
+        {
+            // Get the actor and cast to road tile
+            (Cast<ACB_RoadTile>(WNeighbour->OccupyingActor))->UpdateRoadMesh(true);
+        }
     }
 
-    if (SouthR && !Cast<ACB_RoadTile>(SNeighbour->OccupyingActor)->IsUpdatingMesh)
-    {
-        // Get the actor and cast to road tile
-        (Cast<ACB_RoadTile>(SNeighbour->OccupyingActor))->UpdateRoadMesh(true);
-    }
-
-    if (EastR && !Cast<ACB_RoadTile>(ENeighbour->OccupyingActor)->IsUpdatingMesh)
-    {
-        // Get the actor and cast to road tile
-        (Cast<ACB_RoadTile>(ENeighbour->OccupyingActor))->UpdateRoadMesh(true);
-    }
-
-    if (WestR && !Cast<ACB_RoadTile>(WNeighbour->OccupyingActor)->IsUpdatingMesh)
-    {
-        // Get the actor and cast to road tile
-        (Cast<ACB_RoadTile>(WNeighbour->OccupyingActor))->UpdateRoadMesh(true);
-    }
     UE_LOG(LogTemp, Warning, TEXT("UpdateNeighbours finished for tile at %s"), *GetActorLocation().ToString());
     return;
+}
+
+void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
+{
+    if (NewRoadTile){
+        NewRoadTile->GridCellRef = GridCellRef;
+        NewRoadTile->isOcc = true;
+        NewRoadTile->LastGridRef = GridCellRef;
+        GridCellRef->SetOccupied(EBuildingType::Road, NewRoadTile);
+
+        NewRoadTile->RoadCross = RoadCross;
+        NewRoadTile->RoadT = RoadT;
+        NewRoadTile->RoadStraight = RoadStraight;
+        NewRoadTile->RoadCorner = RoadCorner;
+        NewRoadTile->RoadEnd = RoadEnd;
+        NewRoadTile->RoadCircle = RoadCircle;
+        
+    }
 }

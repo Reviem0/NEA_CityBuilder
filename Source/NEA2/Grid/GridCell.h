@@ -27,6 +27,7 @@ public:
 	
 	UPROPERTY(EditAnywhere)
 	EBuildingType OccupyingType {EBuildingType::None};
+	UPROPERTY(EditAnywhere)
 	AActor* OccupyingActor;
 
 	void SetOccupied(EBuildingType NewBuildingType, AActor* NewActor);

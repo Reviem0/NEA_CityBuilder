@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../CB_RoadTile.h"
 #include "RoadCorner.generated.h"
 
 UCLASS()
-class NEA2_API ARoadCorner : public AActor
+class NEA2_API ARoadCorner : public ACB_RoadTile
 {
 	GENERATED_BODY()
 	
