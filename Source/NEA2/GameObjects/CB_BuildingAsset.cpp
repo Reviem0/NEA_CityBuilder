@@ -18,8 +18,17 @@ ACB_BuildingAsset::ACB_BuildingAsset()
 void ACB_BuildingAsset::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// add 2 +2 
+	
+	// check if ploppable
+	// Get Player Controller
+	UPlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (PlayerController->PlaceableActor == this) {
+		isPlop = true;
+	} else
+	{
+		isPlop = false;
+	}
+	
 
 	
 }
@@ -28,14 +37,6 @@ void ACB_BuildingAsset::BeginPlay()
 void ACB_BuildingAsset::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	UCB_PloppableComponent* PlopComp = GetComponentByClass<UCB_PloppableComponent>();
-	if (PlopComp) {
-		isPlop = true;
-	} else
-	{
-		isPlop = false;
-	}
 
 }
 
