@@ -19,6 +19,9 @@ void ACB_PlayerController::SetupInputComponent()
 	Super::SetupInputComponent();
 
 	InputComponent->BindAction("Place", IE_Pressed, this, &ACB_PlayerController::SpawnBuilding);
+    InputComponent->BindAction("Remove", IE_Pressed, this, &ACB_PlayerController::StartDeletingBuilding);
+    InputComponent->BindAction("Remove", IE_Released, this, &ACB_PlayerController::StopDeletingBuilding);
+
 }
 
 void ACB_PlayerController::Tick(float DeltaTime)
@@ -98,5 +101,36 @@ void ACB_PlayerController::SpawnBuilding() {
             NewActor->SetActorLocation(PlaceableActor->GetActorLocation()+ FVector(0,0,10));
             NewActor->GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
         }
+    }
+}
+
+void ACB_PlayerController::DeleteBuilding() {
+    if (PlaceableActor) {
+        if (GridManager){
+            AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
+            if (Grid->OccupyingActor){
+                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor)){
+                    Cast<ACB_RoadTile>(Grid->OccupyingActor)->DestroyRoad();
+                }
+            }
+        }
+    }
+}
+
+void ACB_PlayerController::StartDeletingBuilding()
+{
+    if (!bDeletingBuilding)
+    {
+        bDeletingBuilding = true;
+        GetWorldTimerManager().SetTimer(DeleteBuildingTimerHandle, this, &ACB_PlayerController::DeleteBuilding, DeleteBuildingInterval, true);
+    }
+}
+
+void ACB_PlayerController::StopDeletingBuilding()
+{
+    if (bDeletingBuilding)
+    {
+        bDeletingBuilding = false;
+        GetWorldTimerManager().ClearTimer(DeleteBuildingTimerHandle);
     }
 }

@@ -33,6 +33,13 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	DebugShowNeighbours();
 }
 
+void AGridCell::SetUnoccupied()
+{
+	isOccupied = false;
+	OccupyingType = EBuildingType::None;
+	OccupyingActor = nullptr;
+}
+
 // Show Neighbours for debugging
 void AGridCell::DebugShowNeighbours()
 {

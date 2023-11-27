@@ -53,6 +53,7 @@ public:
 
 	AGridCell* LastGridRef;
 
+	void DestroyRoad();
 
 protected:
 	// Called when the game starts or when spawned

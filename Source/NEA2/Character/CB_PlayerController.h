@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "../Grid/GridManager.h"
-#include "../GameObjects/CB_BuildingAsset.h"
+#include "../GameObjects/CB_RoadTile.h"
 #include "../GameComponents/CB_ClickComponent.h"
 #include "../GameComponents/CB_PloppableComponent.h"
 
@@ -31,11 +31,21 @@ public:
 	FTransform PlacementTransform;
 	bool PlacementModeEnabled = false;
 
+
+	bool bDeletingBuilding;
+    FTimerHandle DeleteBuildingTimerHandle;
+    float DeleteBuildingInterval = 0.08f;
+
 	UFUNCTION()
 	void SetPlacementModeEnabled(bool Enabled);
 	void PlacementCheck();
 	void UpdatePlacement();
 	void SpawnBuilding();
+	void DeleteBuilding();
+
+    void StartDeletingBuilding();
+
+    void StopDeletingBuilding();
 
 
 protected:

@@ -428,3 +428,12 @@ void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
         
     }
 }
+
+void ACB_RoadTile::DestroyRoad() {
+    if (GridCellRef) {
+        GridCellRef->SetUnoccupied();
+        isOcc = false;
+        UpdateNeighbours();
+        Destroy();
+    }
+}

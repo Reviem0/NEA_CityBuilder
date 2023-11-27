@@ -31,8 +31,9 @@ public:
 	AActor* OccupyingActor;
 
 	void SetOccupied(EBuildingType NewBuildingType, AActor* NewActor);
+    void SetUnoccupied();
 
-	void DebugShowNeighbours();
+    void DebugShowNeighbours();
 	void DebugSetMAT();
 	
 
