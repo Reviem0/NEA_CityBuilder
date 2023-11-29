@@ -116,6 +116,7 @@ void ACB_PlayerController::DeleteBuilding() {
 
 void ACB_PlayerController::StartDeletingBuilding()
 {
+    DeleteBuilding();
     if (!bDeletingBuilding)
     {
         bDeletingBuilding = true;

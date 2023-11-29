@@ -33,6 +33,7 @@ void UCB_PloppableComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// If GridRef Changes, UpdateState
 	if (LastGridRef != (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef){
 		UpdateState();
+		LastGridRef = (Cast<ACB_BuildingAsset>(GetOwner()))->GridCellRef;
 	}
 
 }

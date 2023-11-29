@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GridCell.h"
+#include "../GameManager.h"
 
 #include "GridManager.generated.h"
 
@@ -29,6 +30,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AGridCell> GridCell;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AGameManager> GameManagerClass;
+
+
 
 	TArray<AGridCell*> GridArray;
 
@@ -37,6 +42,9 @@ public:
 
 	// Populate Neighbours
 	void PopulateNeighbours();
+
+	// Init Game Manager
+	void InitGameManager();
 
 	FVector GetClosestGridPosition(FVector InPosition);
 	AGridCell* GetClosestGridCell(FVector InPosition);

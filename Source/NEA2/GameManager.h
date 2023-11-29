@@ -4,27 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../Enum/BuildingTypeEnum.h"
-#include "../Grid/GridCell.h"
-#include "CB_BuildingAsset.generated.h"
+#include "GameObjects/House/CB_House.h"
+
+#include "GameManager.generated.h"
 
 UCLASS()
-class NEA2_API ACB_BuildingAsset : public AActor
+class NEA2_API AGameManager : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ACB_BuildingAsset();
+	AGameManager();
 
-	UPROPERTY(EditAnywhere)
-	bool isPlop = true;
-
-	UPROPERTY()
-	EBuildingType BuildingType {EBuildingType::Placed};
-
-	UPROPERTY(EditAnywhere)
-	AGridCell* GridCellRef;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ACB_House> HouseClass;
+	void SpawnHouse(AGridCell* GridCell);
 
 protected:
 	// Called when the game starts or when spawned
