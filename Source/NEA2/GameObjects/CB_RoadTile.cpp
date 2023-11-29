@@ -7,8 +7,6 @@ ACB_RoadTile::ACB_RoadTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
-	
 
 }
 
@@ -40,6 +38,7 @@ void ACB_RoadTile::Tick(float DeltaTime)
 void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 {
     IsUpdatingMesh = true;
+
     if (GridCellRef)
     {
         if (!(GridCellRef->NNeighbour) && !(GridCellRef->SNeighbour) && !(GridCellRef->ENeighbour) && !(GridCellRef->WNeighbour))
@@ -57,19 +56,22 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         {
             NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
         }
+        
         if (GridCellRef->SNeighbour)
         {
             SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
         }
+
         if (GridCellRef->ENeighbour)
         {
             EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
         }
+
         if (GridCellRef->WNeighbour)
         {
             WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
         }
-
+        
         // Select Correct Actor and Rotation
         // If all neighbours are road tiles, use the cross actor
         
@@ -414,6 +416,7 @@ void ACB_RoadTile::UpdateNeighbours()
 void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
 {
     if (NewRoadTile){
+        
         NewRoadTile->GridCellRef = GridCellRef;
         NewRoadTile->isOcc = true;
         NewRoadTile->LastGridRef = GridCellRef;

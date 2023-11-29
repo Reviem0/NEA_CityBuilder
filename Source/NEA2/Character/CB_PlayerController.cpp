@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "CB_PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,7 +20,6 @@ void ACB_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Place", IE_Pressed, this, &ACB_PlayerController::SpawnBuilding);
     InputComponent->BindAction("Remove", IE_Pressed, this, &ACB_PlayerController::StartDeletingBuilding);
     InputComponent->BindAction("Remove", IE_Released, this, &ACB_PlayerController::StopDeletingBuilding);
-
 }
 
 void ACB_PlayerController::Tick(float DeltaTime)
@@ -40,7 +38,6 @@ void ACB_PlayerController::PlacementCheck()
         PlacementCheck();
     }
 }
-
 
 void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
     if (PlacementModeEnabled == bEnabled) {
