@@ -63,6 +63,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+    void SpawnNewActor(UClass *ActorClass, FRotator Rotation, bool neighbourUpdate);
+
     void NewSpawn(ACB_RoadTile* NewRoadTile);
 
 };
