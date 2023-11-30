@@ -30,7 +30,7 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	isOccupied = true;
 	OccupyingType = NewBuildingType;
 	OccupyingActor = NewActor;
-	DebugShowNeighbours();
+	//DebugShowNeighbours();
 }
 
 void AGridCell::SetUnoccupied()

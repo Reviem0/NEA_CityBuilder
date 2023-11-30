@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CB_RoadTile.h"
+#include "../Grid/GridManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/ChildActorComponent.h"
 
 ACB_RoadTile::ACB_RoadTile()
@@ -15,6 +17,10 @@ void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
     BuildingType = EBuildingType::Road;
+    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
+    if (GridManager) {
+        GridCellRef = GridManager->GetClosestGridCell(GetActorLocation());
+    }
 
     if (GridCellRef && !isPlop) {
         GridCellRef->SetOccupied(EBuildingType::Road, this);
@@ -30,9 +36,7 @@ void ACB_RoadTile::BeginPlay()
 void ACB_RoadTile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-    if (!isOcc) {
-        BeginPlay();
-    }
+
 }
 
 void ACB_RoadTile::SpawnNewActor(UClass* ActorClass, FRotator Rotation, bool neighbourUpdate)

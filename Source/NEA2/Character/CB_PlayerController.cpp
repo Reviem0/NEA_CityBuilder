@@ -106,7 +106,8 @@ void ACB_PlayerController::DeleteBuilding() {
         if (GridManager){
             AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
             if (Grid->OccupyingActor){
-                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor)){
+                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road
+                ){
                     Cast<ACB_RoadTile>(Grid->OccupyingActor)->DestroyRoad();
                 }
             }
