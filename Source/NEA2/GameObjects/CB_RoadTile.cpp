@@ -54,22 +54,22 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         // Check which neighbours are road tiles
         if (GridCellRef->NNeighbour)
         {
-            NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
+            NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House;
         }
         
         if (GridCellRef->SNeighbour)
         {
-            SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
+            SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House;
         }
 
         if (GridCellRef->ENeighbour)
         {
-            EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
+            EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House;
         }
 
         if (GridCellRef->WNeighbour)
         {
-            WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
+            WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House;
         }
         
         // Select Correct Actor and Rotation
