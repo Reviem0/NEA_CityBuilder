@@ -90,14 +90,10 @@ void ACB_PlayerController::SpawnBuilding() {
     UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-    if (PlopComp) {
-        if (PlopComp->IsPlacementValid) {
-            ACB_BuildingAsset* NewActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
-            NewActor->GridCellRef = PlaceableActor->GridCellRef;
-            NewActor->SetActorScale3D((GridManager->GetGridScale()));
-            NewActor->SetActorLocation(PlaceableActor->GetActorLocation()+ FVector(0,0,10));
-            NewActor->GetComponentByClass<UCB_PloppableComponent>()->DestroyComponent();
-        }
+
+    if (PlopComp->IsPlacementValid) {
+        AActor* NewActor = GetWorld()->SpawnActor<AActor>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
+        PlopComp->UpdateState();
     }
 }
 

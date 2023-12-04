@@ -25,6 +25,11 @@ public:
 	
 	bool isOcc = false;
 
+	bool OldNorthR;
+	bool OldSouthR;
+	bool OldEastR;
+	bool OldWestR;
+
 	bool IsUpdatingMesh = false;
 
 	UPROPERTY(EditAnywhere)

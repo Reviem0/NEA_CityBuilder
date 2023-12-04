@@ -48,7 +48,7 @@ void UCB_PloppableComponent::UpdateState()
 		} else {
 			IsPlacementValid = false;
 		}
-		RoadPlaceableCheck();
+		//RoadPlaceableCheck();
 	}
 
 /* 	TArray<AActor*> OverlappingActors;

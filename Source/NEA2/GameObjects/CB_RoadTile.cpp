@@ -30,6 +30,15 @@ void ACB_RoadTile::BeginPlay()
             UpdateRoadMesh(false);
         }
     }
+
+     if (GridCellRef)
+    {
+        OldNorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House);
+        OldSouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House);
+        OldEastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House);
+        OldWestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House);
+    }
+
 }
 
 // Called every frame
@@ -66,6 +75,11 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 
+        if (NorthR == OldNorthR && SouthR == OldSouthR && EastR == OldEastR && WestR == OldWestR && (NorthR || SouthR || EastR || WestR))
+        {
+            return;
+        }
+
         switch (roadCount)
         {
             case 4:
@@ -81,7 +95,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
             }
             case 2:
             {
-                if (NorthR && SouthR || WestR && EastR)
+                if ((NorthR && SouthR || WestR && EastR) != (OldNorthR && OldSouthR || OldWestR && OldEastR))
                 {
                     FRotator Straight_Rot = NorthR && SouthR ? FRotator(0, 90, 0) : FRotator(0, 0, 0);
                     SpawnNewActor(RoadStraight, Straight_Rot, neighbourUpdate);
@@ -111,57 +125,41 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
 void ACB_RoadTile::UpdateNeighbours()
 {
-    UE_LOG(LogTemp, Warning, TEXT("UpdateNeighbours called for tile at %s"), *GetActorLocation().ToString());
-
-    bool NorthR = false;
-    bool SouthR = false;
-    bool EastR = false;
-    bool WestR = false;
-
-    if (GridCellRef->NNeighbour)
+    if (GridCellRef)
     {
-        NorthR = (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road;
-        AGridCell* NNeighbour = *(GridCellRef->NNeighbour);
-
-        if (NorthR && !Cast<ACB_RoadTile>(NNeighbour->OccupyingActor)->IsUpdatingMesh)
+        if (GridCellRef->NNeighbour)
         {
-            // Get the actor and cast to road tile
-            (Cast<ACB_RoadTile>(NNeighbour->OccupyingActor))->UpdateRoadMesh(true);
+            ACB_RoadTile* NorthNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->NNeighbour))->OccupyingActor);
+            if (NorthNeighbour)
+            {
+                NorthNeighbour->UpdateRoadMesh(true);
+            }
+        }
+        if (GridCellRef->SNeighbour)
+        {
+            ACB_RoadTile* SouthNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->SNeighbour))->OccupyingActor);
+            if (SouthNeighbour)
+            {
+                SouthNeighbour->UpdateRoadMesh(true);
+            }
+        }
+        if (GridCellRef->ENeighbour)
+        {
+            ACB_RoadTile* EastNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->ENeighbour))->OccupyingActor);
+            if (EastNeighbour)
+            {
+                EastNeighbour->UpdateRoadMesh(true);
+            }
+        }
+        if (GridCellRef->WNeighbour)
+        {
+            ACB_RoadTile* WestNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->WNeighbour))->OccupyingActor);
+            if (WestNeighbour)
+            {
+                WestNeighbour->UpdateRoadMesh(true);
+            }
         }
     }
-    if (GridCellRef->SNeighbour)
-    {
-        SouthR = (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road;
-        AGridCell* SNeighbour = *(GridCellRef->SNeighbour);
-        if (SouthR && !Cast<ACB_RoadTile>(SNeighbour->OccupyingActor)->IsUpdatingMesh)
-        {
-            // Get the actor and cast to road tile
-            (Cast<ACB_RoadTile>(SNeighbour->OccupyingActor))->UpdateRoadMesh(true);
-        }
-    }
-    if (GridCellRef->ENeighbour)
-    {
-        EastR = (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road;
-        AGridCell* ENeighbour = *(GridCellRef->ENeighbour);
-        if (EastR && !Cast<ACB_RoadTile>(ENeighbour->OccupyingActor)->IsUpdatingMesh)
-        {
-            // Get the actor and cast to road tile
-            (Cast<ACB_RoadTile>(ENeighbour->OccupyingActor))->UpdateRoadMesh(true);
-        }
-    }
-    if (GridCellRef->WNeighbour)
-    {
-        WestR = (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road;
-        AGridCell* WNeighbour = *(GridCellRef->WNeighbour);
-        if (WestR && !Cast<ACB_RoadTile>(WNeighbour->OccupyingActor)->IsUpdatingMesh)
-        {
-            // Get the actor and cast to road tile
-            (Cast<ACB_RoadTile>(WNeighbour->OccupyingActor))->UpdateRoadMesh(true);
-        }
-    }
-
-    UE_LOG(LogTemp, Warning, TEXT("UpdateNeighbours finished for tile at %s"), *GetActorLocation().ToString());
-    return;
 }
 
 void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
