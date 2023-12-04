@@ -27,6 +27,12 @@ void AGameManager::Tick(float DeltaTime)
 }
 
 
+void AGameManager::Init()
+{
+	int RandomNumber = FMath::RandRange(0, GridArray.Num()-1);
+	SpawnHouse(GridArray[RandomNumber]);
+}
+
 void AGameManager::SpawnHouse(AGridCell* GridCell) 
 {
 	if (HouseClass == nullptr) return;

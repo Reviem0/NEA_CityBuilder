@@ -27,7 +27,7 @@ void ACB_RoadTile::BeginPlay()
         isOcc = true;
         if (!isPlop)
         {
-            UpdateRoadMesh(false);
+            UpdateRoadMesh();
         }
     }
 
@@ -48,21 +48,18 @@ void ACB_RoadTile::Tick(float DeltaTime)
 
 }
 
-void ACB_RoadTile::SpawnNewActor(UClass* ActorClass, FRotator Rotation, bool neighbourUpdate)
+void ACB_RoadTile::SpawnNewActor(UClass* ActorClass, FRotator Rotation)
 {
     ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(ActorClass, GetActorLocation(), Rotation);
     NewSpawn(NewActor);
-    if (!neighbourUpdate) 
-    {
-        UpdateNeighbours();
-    }
+    UpdateNeighbours();
     IsUpdatingMesh = false;
     if (NewActor){
         Destroy();
     }
 }
 
-void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
+void ACB_RoadTile::UpdateRoadMesh()
 {
     IsUpdatingMesh = true;
 
@@ -77,6 +74,7 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
         if (NorthR == OldNorthR && SouthR == OldSouthR && EastR == OldEastR && WestR == OldWestR && (NorthR || SouthR || EastR || WestR))
         {
+            IsUpdatingMesh = false;
             return;
         }
 
@@ -84,38 +82,38 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
         {
             case 4:
             {
-                SpawnNewActor(RoadCross, GetActorRotation(), neighbourUpdate);
+                SpawnNewActor(RoadCross, GetActorRotation());
                 break;
             }
             case 3:
             {
                 FRotator T_Rot = EastR && SouthR && WestR ? FRotator(0, 90, 0) : NorthR && SouthR && WestR ? FRotator(0, 0, 0) : NorthR && SouthR && EastR ? FRotator(0, 180, 0) : FRotator(0, 270, 0);
-                SpawnNewActor(RoadT, T_Rot, neighbourUpdate);
+                SpawnNewActor(RoadT, T_Rot);
                 break;
             }
             case 2:
             {
-                if ((NorthR && SouthR || WestR && EastR) != (OldNorthR && OldSouthR || OldWestR && OldEastR))
+                if ((NorthR && SouthR || WestR && EastR))
                 {
                     FRotator Straight_Rot = NorthR && SouthR ? FRotator(0, 90, 0) : FRotator(0, 0, 0);
-                    SpawnNewActor(RoadStraight, Straight_Rot, neighbourUpdate);
+                    SpawnNewActor(RoadStraight, Straight_Rot);
                 }
                 else
                 {
                     FRotator Corner_Rot = NorthR && EastR ? FRotator(0, 0, 0) : SouthR && EastR ? FRotator(0, 270, 0) : SouthR && WestR ? FRotator(0, 180, 0) : FRotator(0, 90, 0);
-                    SpawnNewActor(RoadCorner, Corner_Rot, neighbourUpdate);
+                    SpawnNewActor(RoadCorner, Corner_Rot);
                 }
                 break;
             }
             case 1:
             {
                 FRotator End_Rot = NorthR ? FRotator(0, 0, 0) : SouthR ? FRotator(0, 180, 0) : EastR ? FRotator(0, 270, 0) : FRotator(0, 90, 0);
-                SpawnNewActor(RoadEnd, End_Rot, neighbourUpdate);
+                SpawnNewActor(RoadEnd, End_Rot);
                 break;
             }
             case 0:
             {
-                SpawnNewActor(RoadCircle, FRotator(0, 0, 0), neighbourUpdate);
+                SpawnNewActor(RoadCircle, FRotator(0, 0, 0));
                 break;
             }
         }
@@ -125,38 +123,38 @@ void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
 
 void ACB_RoadTile::UpdateNeighbours()
 {
-    if (GridCellRef)
+    if (GridCellRef )
     {
         if (GridCellRef->NNeighbour)
         {
             ACB_RoadTile* NorthNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->NNeighbour))->OccupyingActor);
-            if (NorthNeighbour)
+            if (NorthNeighbour && !NorthNeighbour->IsUpdatingMesh)
             {
-                NorthNeighbour->UpdateRoadMesh(true);
+                NorthNeighbour->UpdateRoadMesh();
             }
         }
         if (GridCellRef->SNeighbour)
         {
             ACB_RoadTile* SouthNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->SNeighbour))->OccupyingActor);
-            if (SouthNeighbour)
+            if (SouthNeighbour && !SouthNeighbour->IsUpdatingMesh)
             {
-                SouthNeighbour->UpdateRoadMesh(true);
+                SouthNeighbour->UpdateRoadMesh();
             }
         }
         if (GridCellRef->ENeighbour)
         {
             ACB_RoadTile* EastNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->ENeighbour))->OccupyingActor);
-            if (EastNeighbour)
+            if (EastNeighbour && !EastNeighbour->IsUpdatingMesh)
             {
-                EastNeighbour->UpdateRoadMesh(true);
+                EastNeighbour->UpdateRoadMesh();
             }
         }
         if (GridCellRef->WNeighbour)
         {
             ACB_RoadTile* WestNeighbour = Cast<ACB_RoadTile>((*(GridCellRef->WNeighbour))->OccupyingActor);
-            if (WestNeighbour)
+            if (WestNeighbour && !WestNeighbour->IsUpdatingMesh)
             {
-                WestNeighbour->UpdateRoadMesh(true);
+                WestNeighbour->UpdateRoadMesh();
             }
         }
     }
@@ -190,7 +188,7 @@ void ACB_RoadTile::DestroyRoad() {
     }
 }
 
-/* void ACB_RoadTile::UpdateRoadMesh(bool neighbourUpdate)
+/* void ACB_RoadTile::UpdateRoadMesh(boo)
 {
     IsUpdatingMesh = true;
 
@@ -235,7 +233,7 @@ void ACB_RoadTile::DestroyRoad() {
             // Spawn New Actor
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCross, GetActorLocation(), GetActorRotation());
             NewSpawn(NewActor);
-            if (!neighbourUpdate)
+            if )
             {
                 UpdateNeighbours();
             }
@@ -254,7 +252,7 @@ void ACB_RoadTile::DestroyRoad() {
             NewSpawn(NewActor);
             
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -271,7 +269,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -288,7 +286,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -305,7 +303,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadT, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -323,7 +321,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -340,7 +338,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadStraight, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -359,7 +357,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -376,7 +374,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -393,7 +391,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -411,7 +409,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCorner, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -429,7 +427,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -446,7 +444,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -463,7 +461,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -480,7 +478,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadEnd, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }
@@ -498,7 +496,7 @@ void ACB_RoadTile::DestroyRoad() {
             ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(RoadCircle, GetActorLocation(), NewRot);
             NewSpawn(NewActor);
            
-            if (!neighbourUpdate) 
+            if ) 
             {
                 UpdateNeighbours();
             }

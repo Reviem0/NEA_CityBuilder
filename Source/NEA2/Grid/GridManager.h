@@ -18,6 +18,7 @@ public:
 	// Sets default values for this actor's properties
 	AGridManager();
 
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int GridSizeX = 5;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

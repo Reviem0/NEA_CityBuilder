@@ -25,11 +25,16 @@ public:
 	
 	bool isOcc = false;
 
+	UPROPERTY(VisibleAnywhere, Category = "Road")
 	bool OldNorthR;
+	UPROPERTY(VisibleAnywhere, Category = "Road")
 	bool OldSouthR;
+	UPROPERTY(VisibleAnywhere, Category = "Road")
 	bool OldEastR;
+	UPROPERTY(VisibleAnywhere, Category = "Road")
 	bool OldWestR;
 
+	UPROPERTY(VisibleAnywhere)
 	bool IsUpdatingMesh = false;
 
 	UPROPERTY(EditAnywhere)
@@ -52,7 +57,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateRoadMesh(bool neighbourUpdate);
+	void UpdateRoadMesh();
 
 	void UpdateNeighbours();
 
@@ -68,7 +73,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-    void SpawnNewActor(UClass *ActorClass, FRotator Rotation, bool neighbourUpdate);
+    void SpawnNewActor(UClass *ActorClass, FRotator Rotation);
 
     void NewSpawn(ACB_RoadTile* NewRoadTile);
 

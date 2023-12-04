@@ -100,11 +100,13 @@ void ACB_PlayerController::SpawnBuilding() {
 void ACB_PlayerController::DeleteBuilding() {
     if (PlaceableActor) {
         if (GridManager){
+            UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
             AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
             if (Grid->OccupyingActor){
                 if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road
                 ){
                     Cast<ACB_RoadTile>(Grid->OccupyingActor)->DestroyRoad();
+                    PlopComp->UpdateState();
                 }
             }
         }

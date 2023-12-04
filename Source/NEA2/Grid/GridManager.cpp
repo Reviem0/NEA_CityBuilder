@@ -141,6 +141,7 @@ void AGridManager::InitGameManager()
 {
 	AGameManager* GameManager = GetWorld()->SpawnActor<AGameManager>(GameManagerClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	// Choose random grid cell to spawn house
-	int RandomNumber = FMath::RandRange(0, GridArray.Num()-1);
-	GameManager->SpawnHouse(GridArray[RandomNumber]);
+	
+	GameManager->GridArray = GridArray;
+	GameManager->Init();
 }

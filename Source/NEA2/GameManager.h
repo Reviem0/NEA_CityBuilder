@@ -17,9 +17,13 @@ public:
 	// Sets default values for this actor's properties
 	AGameManager();
 
+	TArray<AGridCell*> GridArray;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACB_House> HouseClass;
 	void SpawnHouse(AGridCell* GridCell);
+
+	void Init();
 
 protected:
 	// Called when the game starts or when spawned
