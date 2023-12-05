@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameObjects/CB_Workplace.h"
 #include "GameObjects/House/CB_House.h"
 
 #include "GameManager.generated.h"
@@ -21,7 +22,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACB_House> HouseClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<ACB_Workplace> WorkplaceClass;
 	void SpawnHouse(AGridCell* GridCell);
+	void SpawnWorkplace(AGridCell* GridCell);
 
 	void Init();
 

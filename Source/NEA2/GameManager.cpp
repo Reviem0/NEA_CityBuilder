@@ -29,8 +29,11 @@ void AGameManager::Tick(float DeltaTime)
 
 void AGameManager::Init()
 {
-	int RandomNumber = FMath::RandRange(0, GridArray.Num()-1);
-	SpawnHouse(GridArray[RandomNumber]);
+	int RandomNumber1 = FMath::RandRange(0, GridArray.Num()-1);
+	int RandomNumber2 = FMath::RandRange(0, GridArray.Num()-1);
+	SpawnHouse(GridArray[RandomNumber1]);
+	SpawnWorkplace(GridArray[RandomNumber2]);
+	
 }
 
 void AGameManager::SpawnHouse(AGridCell* GridCell) 
@@ -38,7 +41,13 @@ void AGameManager::SpawnHouse(AGridCell* GridCell)
 	if (HouseClass == nullptr) return;
 
 	ACB_House* House = GetWorld()->SpawnActor<ACB_House>(HouseClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
-	House->GridCellRef = GridCell;
-	GridCell->SetOccupied(EBuildingType::House, House);
 	
+}
+
+void AGameManager::SpawnWorkplace(AGridCell* GridCell)
+{
+	if (WorkplaceClass == nullptr) return;
+
+	ACB_Workplace* Workplace = GetWorld()->SpawnActor<ACB_Workplace>(WorkplaceClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
+
 }

@@ -6,6 +6,7 @@
 AWorkBottomLeft::AWorkBottomLeft()
 {
     PrimaryActorTick.bCanEverTick = true;
+    BuildingType = EBuildingType::Workplace;
 }
 
 void AWorkBottomLeft::BeginPlay()

@@ -9,10 +9,11 @@
 UENUM(BlueprintType)
 enum class EBuildingType :uint8
 {
-	None   = 0 UMETA(DisplayName = "None"),
-	Placed = 1 UMETA(DisplayName = "Placed"),
-	Road   = 2 UMETA(DisplayName = "Road"),
-	House  = 3 UMETA(DisplayName = "House")
+	None      = 0 UMETA(DisplayName = "None"),
+	Placed    = 1 UMETA(DisplayName = "Placed"),
+	Road      = 2 UMETA(DisplayName = "Road"),
+	House  	  = 3 UMETA(DisplayName = "House"),
+	Workplace = 4 UMETA(DisplayName = "Workplace")
 };
 
 UCLASS()

@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../CB_BuildingAsset.h"
+#include "CB_WorkplaceAsset.h"
 #include "WorkTopLeft.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class NEA2_API AWorkTopLeft : public ACB_BuildingAsset
+class NEA2_API AWorkTopLeft : public ACB_WorkplaceAsset
 {
 	GENERATED_BODY()
 	
