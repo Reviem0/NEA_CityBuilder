@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameObjects/CB_BuildingAsset.h"
+#include "../CB_BuildingAsset.h"
 #include "WorkBottomMid.generated.h"
 
 /**
@@ -14,4 +14,12 @@ class NEA2_API AWorkBottomMid : public ACB_BuildingAsset
 {
 	GENERATED_BODY()
 	
+public:
+	AWorkBottomMid();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
 };

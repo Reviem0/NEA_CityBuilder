@@ -1,14 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CB_RoadTile.h"
-#include "../Grid/GridManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "Components/ChildActorComponent.h"
 
 ACB_RoadTile::ACB_RoadTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+    BuildingType = EBuildingType::Road;
 
 }
 
@@ -16,19 +15,10 @@ ACB_RoadTile::ACB_RoadTile()
 void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
-    BuildingType = EBuildingType::Road;
-    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
-    if (GridManager) {
-        GridCellRef = GridManager->GetClosestGridCell(GetActorLocation());
-    }
 
-    if (GridCellRef && !isPlop) {
-        GridCellRef->SetOccupied(EBuildingType::Road, this);
-        isOcc = true;
-        if (!isPlop)
-        {
-            UpdateRoadMesh();
-        }
+    if (!isPlop)
+    {
+        UpdateRoadMesh();
     }
 
      if (GridCellRef)
@@ -165,7 +155,6 @@ void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
     if (NewRoadTile){
         
         NewRoadTile->GridCellRef = GridCellRef;
-        NewRoadTile->isOcc = true;
         NewRoadTile->LastGridRef = GridCellRef;
         GridCellRef->SetOccupied(EBuildingType::Road, NewRoadTile);
 
@@ -182,7 +171,6 @@ void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
 void ACB_RoadTile::DestroyRoad() {
     if (GridCellRef) {
         GridCellRef->SetUnoccupied();
-        isOcc = false;
         UpdateNeighbours();
         Destroy();
     }

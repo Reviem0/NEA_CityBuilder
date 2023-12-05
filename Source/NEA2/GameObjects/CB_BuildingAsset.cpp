@@ -3,6 +3,8 @@
 
 #include "CB_BuildingAsset.h"
 #include "../Character/CB_PlayerController.h"
+#include "../Grid/GridManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 
 
@@ -21,6 +23,10 @@ void ACB_BuildingAsset::BeginPlay()
 {
 	Super::BeginPlay();
 	// check if ploppable
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
+    if (GridManager) {
+        GridCellRef = GridManager->GetClosestGridCell(GetActorLocation());
+    }
 	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(GetWorld()->GetFirstPlayerController());
 	if (PlayerController->PlaceableActor == this || PlayerController->PlaceableActor == nullptr) {
 		isPlop = true;
@@ -28,6 +34,10 @@ void ACB_BuildingAsset::BeginPlay()
 	{
 		isPlop = false;
 	}
+
+	if (GridCellRef && !isPlop) {
+        GridCellRef->SetOccupied(BuildingType, this);
+    }
 	
 }
 

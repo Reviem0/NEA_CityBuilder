@@ -1,19 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "WorkTopRight.h"
+#include "WorkBottomRight.h"
 
-AWorkTopRight::AWorkTopRight()
+AWorkBottomRight::AWorkBottomRight()
 {
     PrimaryActorTick.bCanEverTick = true;
 }
 
-void AWorkTopRight::BeginPlay()
+void AWorkBottomRight::BeginPlay()
 {
     Super::BeginPlay();
 }
 
-void AWorkTopRight::Tick(float DeltaTime)
+void AWorkBottomRight::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }

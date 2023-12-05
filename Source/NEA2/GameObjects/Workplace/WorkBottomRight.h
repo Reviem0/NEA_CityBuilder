@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameObjects/CB_BuildingAsset.h"
+#include "../CB_BuildingAsset.h"
 #include "WorkBottomRight.generated.h"
 
 /**
@@ -13,5 +13,14 @@ UCLASS()
 class NEA2_API AWorkBottomRight : public ACB_BuildingAsset
 {
 	GENERATED_BODY()
+
+public:
+	AWorkBottomRight();
+
+protected:
+	virtual void BeginPlay() override;
+
+public:
+	virtual void Tick(float DeltaTime) override;
 	
 };
