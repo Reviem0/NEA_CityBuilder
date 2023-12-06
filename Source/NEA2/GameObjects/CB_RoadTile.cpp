@@ -18,16 +18,11 @@ void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
 
-    if (!isPlop)
-    {
-        UpdateRoadMesh();
-    }
-
     if (Ownership == EOwnership::Workplace && !OwningAsset) {
         ACB_Workplace* Workplace = Cast<ACB_Workplace>(GridCellRef->Manager);
         if (Workplace)
         {
-            OwningAsset = Workplace->BottomLeftActor ? Workplace->BottomLeftAsset : nullptr;
+            OwningAsset = Workplace->BottomLeftAsset ? Workplace->BottomLeftAsset : nullptr;
         }
     }
 
@@ -37,6 +32,11 @@ void ACB_RoadTile::BeginPlay()
         OldSouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road);
         OldEastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road);
         OldWestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road);
+    }
+
+    if (!isPlop)
+    {
+        UpdateRoadMesh();
     }
 
 }
