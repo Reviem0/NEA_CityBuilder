@@ -66,9 +66,9 @@ void ACB_RoadTile::UpdateRoadMesh()
     if (GridCellRef)
     {
         bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->NNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->NNeighbour))->OccupyingActor != nullptr));
-        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->NNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->NNeighbour))->OccupyingActor != nullptr));
-        bool EastR = GridCellRef->ENeighbour  && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->NNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->NNeighbour))->OccupyingActor != nullptr));
-        bool WestR = GridCellRef->WNeighbour  && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->NNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->NNeighbour))->OccupyingActor != nullptr));
+        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->SNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->SNeighbour))->OccupyingActor != nullptr));
+        bool EastR  = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->ENeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->ENeighbour))->OccupyingActor != nullptr));
+        bool WestR  = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->WNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->WNeighbour))->OccupyingActor != nullptr));
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 
