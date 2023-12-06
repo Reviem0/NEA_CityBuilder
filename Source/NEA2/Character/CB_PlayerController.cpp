@@ -103,8 +103,8 @@ void ACB_PlayerController::DeleteBuilding() {
             UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
             AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
             if (Grid->OccupyingActor){
-                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road
-                ){
+                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road && (Cast<ACB_BuildingAsset>(Grid->OccupyingActor)->Ownership == EOwnership::Player))
+                {
                     Cast<ACB_RoadTile>(Grid->OccupyingActor)->DestroyRoad();
                     PlopComp->UpdateState();
                 }

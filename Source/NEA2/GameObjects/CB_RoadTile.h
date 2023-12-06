@@ -22,6 +22,9 @@ public:
 	// Sets default values for this actor's properties
 	ACB_RoadTile();
 
+	UPROPERTY(VisibleAnywhere, Category = "Owner")
+	ACB_BuildingAsset* OwningAsset = nullptr;
+
 	UPROPERTY(VisibleAnywhere, Category = "Road")
 	bool OldNorthR;
 	UPROPERTY(VisibleAnywhere, Category = "Road")

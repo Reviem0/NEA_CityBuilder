@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Enum/BuildingTypeEnum.h"
+#include "../Enum/OwnershipEnum.h"
 #include "../Grid/GridCell.h"
 #include "CB_BuildingAsset.generated.h"
 
@@ -22,6 +23,9 @@ public:
 
 	UPROPERTY()
 	EBuildingType BuildingType {EBuildingType::Placed};
+
+	UPROPERTY(VisibleAnywhere)
+	EOwnership Ownership {EOwnership::None};
 
 	UPROPERTY(EditAnywhere)
 	AGridCell* GridCellRef;

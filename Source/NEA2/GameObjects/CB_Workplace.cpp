@@ -24,8 +24,10 @@ void ACB_Workplace::BeginPlay()
     AGridCell* BottomRight = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
     AGridCell* TopLeft = GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
     AGridCell* TopRight = BottomRight && BottomRight->ENeighbour ? *(BottomRight->ENeighbour) : nullptr;
+    
+    AGridCell* RoadPlacement = BottomLeft->SNeighbour ? *(BottomLeft->SNeighbour) : nullptr;
 
-    if (!BottomLeft || !TopRight || !TopLeft || !BottomRight)
+    if (!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement)
     {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: NOT ENOUGH CELLS"));
         Destroy();
@@ -39,6 +41,7 @@ void ACB_Workplace::BeginPlay()
     {
         BottomLeftAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(BottomLeftActor, BottomLeft->GetActorLocation(), BottomLeft->GetActorRotation(), SpawnInfo);
         if (BottomLeftAsset) {
+            BottomLeft->Manager = this;
             BottomLeftAsset->WorkplaceRef = this;
         }
     }
@@ -47,6 +50,7 @@ void ACB_Workplace::BeginPlay()
     {
         TopRightAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(TopRightActor, TopRight->GetActorLocation(), TopRight->GetActorRotation(), SpawnInfo);
         if (TopRightAsset) {
+            TopRight->Manager = this;
             TopRightAsset->WorkplaceRef = this;
         }
     }
@@ -55,6 +59,7 @@ void ACB_Workplace::BeginPlay()
     {
         TopLeftAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(TopLeftActor, TopLeft->GetActorLocation(), TopLeft->GetActorRotation(), SpawnInfo);
         if (TopLeftAsset) {
+            TopLeft->Manager = this;
             TopLeftAsset->WorkplaceRef = this;
         }
     }
@@ -63,7 +68,17 @@ void ACB_Workplace::BeginPlay()
     {
         BottomRightAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(BottomRightActor, BottomRight->GetActorLocation(), BottomRight->GetActorRotation(), SpawnInfo);
         if (BottomRightAsset) {
+            BottomRight->Manager = this;
             BottomRightAsset->WorkplaceRef = this;
+        }
+    }
+    if (RoadTileActor)
+    {   
+        RoadPlacement->Manager = this;
+        RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadTile>(RoadTileActor, RoadPlacement->GetActorLocation(), RoadPlacement->GetActorRotation(), SpawnInfo);
+        if (RoadTileAsset) {
+            
+            RoadTileAsset->Owner = BottomLeftAsset;
         }
     }
 }

@@ -17,6 +17,9 @@ public:
 	// Sets default values for this actor's properties
 	AGridCell();
 
+	UPROPERTY(VisibleAnywhere)
+	AActor* Manager = nullptr;
+	
 	AGridCell** NNeighbour;
 	AGridCell** SNeighbour;
 	AGridCell** ENeighbour;

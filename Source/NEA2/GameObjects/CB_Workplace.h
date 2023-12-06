@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CB_BuildingAsset.h"
 #include "Workplace/CB_WorkplaceAsset.h"
+#include "CB_OwnedRoadTile.h"
 #include "CB_Workplace.generated.h"
 
 /**
@@ -27,6 +28,8 @@ public:
 	TSubclassOf<ACB_WorkplaceAsset> BottomRightActor;
 	UPROPERTY(EditAnywhere, Category = "Actors")
 	TSubclassOf<ACB_WorkplaceAsset> BottomLeftActor;
+	UPROPERTY(EditAnywhere, Category = "Actors")
+	TSubclassOf<ACB_OwnedRoadTile> RoadTileActor;
 
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ACB_WorkplaceAsset* TopRightAsset;
@@ -36,6 +39,8 @@ public:
 	ACB_WorkplaceAsset* BottomRightAsset;
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ACB_WorkplaceAsset* BottomLeftAsset;
+	UPROPERTY(VisibleAnywhere, Category = "References")
+	ACB_OwnedRoadTile* RoadTileAsset;
 
 	
 
