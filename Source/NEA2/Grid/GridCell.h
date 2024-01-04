@@ -20,6 +20,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	AActor* Manager = nullptr;
 	
+	
 	AGridCell** NNeighbour;
 	AGridCell** SNeighbour;
 	AGridCell** ENeighbour;
@@ -38,7 +39,21 @@ public:
 
     void DebugShowNeighbours();
 	void DebugSetMAT();
+
+	//Neighbours
+	TArray<AGridCell*> Neighbours;
+	void SetNeighbours();
+
+	//A* Pathfinding
+    int FCost() const;
+	int GCost = 0;
+	int HCost = 0;
+	UPROPERTY(EditAnywhere)
+	bool bWalkable = true;
+	AGridCell* Parent = nullptr;
+	void ResetPathfinding();
 	
+
 
 protected:
 	// Called when the game starts or when spawned

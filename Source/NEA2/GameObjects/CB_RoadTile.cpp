@@ -1,15 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CB_RoadTile.h"
-#include "CB_Workplace.h"
+#include "../Grid/GridManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/ChildActorComponent.h"
 
 ACB_RoadTile::ACB_RoadTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-    BuildingType = EBuildingType::Road;
-    Ownership = EOwnership::Player;
 
 }
 
@@ -17,26 +16,23 @@ ACB_RoadTile::ACB_RoadTile()
 void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
+    BuildingType = EBuildingType::Road;
 
-    if (Ownership == EOwnership::Workplace && !OwningAsset) {
-        ACB_Workplace* Workplace = Cast<ACB_Workplace>(GridCellRef->Manager);
-        if (Workplace)
+    if (GridCellRef && !isPlop) {
+        GridCellRef->SetOccupied(EBuildingType::Road, this);
+        isOcc = true;
+        if (!isPlop)
         {
-            OwningAsset = Workplace->BottomLeftAsset ? Workplace->BottomLeftAsset : nullptr;
+            UpdateRoadMesh();
         }
     }
 
      if (GridCellRef)
     {
-        OldNorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road);
-        OldSouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road);
-        OldEastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road);
-        OldWestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road);
-    }
-
-    if (!isPlop)
-    {
-        UpdateRoadMesh();
+        OldNorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House);
+        OldSouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House);
+        OldEastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House);
+        OldWestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House);
     }
 
 }
@@ -65,10 +61,10 @@ void ACB_RoadTile::UpdateRoadMesh()
 
     if (GridCellRef)
     {
-        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->NNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->NNeighbour))->OccupyingActor != nullptr));
-        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->SNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->SNeighbour))->OccupyingActor != nullptr));
-        bool EastR  = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->ENeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->ENeighbour))->OccupyingActor != nullptr));
-        bool WestR  = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || ((*(GridCellRef->WNeighbour))->OccupyingActor == OwningAsset && (*(GridCellRef->WNeighbour))->OccupyingActor != nullptr));
+        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House);
+        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House);
+        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House);
+        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House);
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 
@@ -87,7 +83,7 @@ void ACB_RoadTile::UpdateRoadMesh()
             }
             case 3:
             {
-                FRotator T_Rot = EastR && SouthR && WestR ? FRotator(0, 90, 0) : NorthR && SouthR && WestR ? FRotator(0, 0, 0) : NorthR && SouthR && EastR ? FRotator(0, 180, 0) : FRotator(0, 270, 0);
+                FRotator T_Rot = EastR && SouthR && WestR ? FRotator(0, 90, 0) : NorthR && SouthR && WestR ? FRotator(0, 180, 0) : NorthR && SouthR && EastR ? FRotator(0, 0, 0) : FRotator(0, 270, 0);
                 SpawnNewActor(RoadT, T_Rot);
                 break;
             }
@@ -100,14 +96,14 @@ void ACB_RoadTile::UpdateRoadMesh()
                 }
                 else
                 {
-                    FRotator Corner_Rot = NorthR && EastR ? FRotator(0, 0, 0) : SouthR && EastR ? FRotator(0, 270, 0) : SouthR && WestR ? FRotator(0, 180, 0) : FRotator(0, 90, 0);
+                    FRotator Corner_Rot = NorthR && EastR ? FRotator(0, 90, 0) : NorthR && WestR ? FRotator(0,0,0) : SouthR && EastR ? FRotator(0, 180, 0) : SouthR && WestR ? FRotator(0, 270, 0) : FRotator(0, 0, 0);
                     SpawnNewActor(RoadCorner, Corner_Rot);
                 }
                 break;
             }
             case 1:
             {
-                FRotator End_Rot = NorthR ? FRotator(0, 0, 0) : SouthR ? FRotator(0, 180, 0) : EastR ? FRotator(0, 270, 0) : FRotator(0, 90, 0);
+                FRotator End_Rot = NorthR ? FRotator(0, 0, 0) : SouthR ? FRotator(0, 180, 0) : EastR ? FRotator(0, 90, 0) : FRotator(0, 270, 0);
                 SpawnNewActor(RoadEnd, End_Rot);
                 break;
             }
@@ -123,7 +119,7 @@ void ACB_RoadTile::UpdateRoadMesh()
 
 void ACB_RoadTile::UpdateNeighbours()
 {
-    if (GridCellRef)
+    if (GridCellRef )
     {
         if (GridCellRef->NNeighbour)
         {
@@ -165,14 +161,9 @@ void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
     if (NewRoadTile){
         
         NewRoadTile->GridCellRef = GridCellRef;
+        NewRoadTile->isOcc = true;
         NewRoadTile->LastGridRef = GridCellRef;
         GridCellRef->SetOccupied(EBuildingType::Road, NewRoadTile);
-        NewRoadTile->Ownership = Ownership;
-        if (Ownership == EOwnership::Workplace && !Owner)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Ownership is workplace but owner is null"));
-        }
-        NewRoadTile->OwningAsset = OwningAsset;
 
         NewRoadTile->RoadCross = RoadCross;
         NewRoadTile->RoadT = RoadT;
@@ -187,6 +178,7 @@ void ACB_RoadTile::NewSpawn(ACB_RoadTile *NewRoadTile)
 void ACB_RoadTile::DestroyRoad() {
     if (GridCellRef) {
         GridCellRef->SetUnoccupied();
+        isOcc = false;
         UpdateNeighbours();
         Destroy();
     }

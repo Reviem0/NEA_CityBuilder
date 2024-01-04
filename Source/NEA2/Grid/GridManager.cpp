@@ -18,7 +18,7 @@ void AGridManager::BeginPlay()
 	Super::BeginPlay();
 	PopulateGrid();
 	PopulateGridNeighbours();
-	InitGameManager();
+	//InitGameManager();
 }
 
 // Called every frame
@@ -37,8 +37,8 @@ void AGridManager::PopulateGrid() {
 	int GridSize = GridSizeX * GridSizeY;
 	
 	// Calculate the center offset
-	float CenterOffsetX = ((GridSizeX-1) * WorldGridSize) / 2.0f; 
-	float CenterOffsetY = ((GridSizeY-1) * WorldGridSize) / 2.0f;
+	float CenterOffsetY = ((GridSizeX-1) * WorldGridSize) / 2.0f; 
+	float CenterOffsetX = ((GridSizeY-1) * WorldGridSize) / 2.0f;
 
 	//Grid Spawn Parameters
 	FActorSpawnParameters SpawnParams;
@@ -52,8 +52,8 @@ void AGridManager::PopulateGrid() {
 	for (int i = 0; i < GridSizeY; i++) {
 		for (int j = 0; j < GridSizeX; j++) {
 			// Calculate Spawn Point of Grid Cell
-			GridPos.X = (j * WorldGridSize) - CenterOffsetX; 
-			GridPos.Y = (i * WorldGridSize) - CenterOffsetY;
+			GridPos.X = (i * WorldGridSize) - CenterOffsetX; 
+			GridPos.Y = (j * WorldGridSize) - CenterOffsetY;
 			Transform = UKismetMathLibrary::MakeTransform(GridPos, FRotator::ZeroRotator, GridScale);
 			
 			// Spawn Grid Cell
@@ -114,24 +114,24 @@ void AGridManager::PopulateGridNeighbours()
 	for (int i = 0; i < GridArray.Num(); i++) {
 		AGridCell* Grid = GridArray[i];
 
-		// Get North Neighbour
+		// Get East Neighbour
 		if ((i+1) % GridSizeX != 0 ) {
-			Grid->NNeighbour = &(GridArray[i + 1]);
-		}
-
-		// Get South Neighbour
-		if (i % GridSizeX != 0 && i != 0) {
-			 Grid->SNeighbour = &(GridArray[i - 1]);
+			Grid->ENeighbour = &(GridArray[i + 1]);
 		}
 
 		// Get West Neighbour
-		if (i + GridSizeX < GridArray.Num()) {
-			Grid->WNeighbour = &GridArray[i + GridSizeX];
+		if (i % GridSizeX != 0 && i != 0) {
+			 Grid->WNeighbour = &(GridArray[i - 1]);
 		}
 
-		// Get East Neighbour
+		// Get North Neighbour
+		if (i + GridSizeX < GridArray.Num()) {
+			Grid->NNeighbour = &GridArray[i + GridSizeX];
+		}
+
+		// Get South Neighbour
 		if (i - GridSizeX >= 0){
-			Grid->ENeighbour = &GridArray[i - GridSizeX];
+			Grid->SNeighbour = &GridArray[i - GridSizeX];
 		}
 		
 	}
@@ -144,4 +144,91 @@ void AGridManager::InitGameManager()
 	
 	GameManager->GridArray = GridArray;
 	GameManager->Init();
+}
+
+// A* Pathfinding
+
+TArray<AGridCell *> AGridManager::FindPath(AGridCell *Start, AGridCell *End)
+{
+	// Create Open and Closed Lists
+	TArray<AGridCell*> OpenList;
+	TArray<AGridCell*> ClosedList;
+
+	// Add Start to Open List
+	OpenList.Add(Start);
+
+	// While Open List is not empty
+	while (OpenList.Num() > 0) {
+		// Get the lowest F Cost Cell
+		AGridCell* CurrentCell = OpenList[0];
+		for (int i = 0; i < OpenList.Num(); i++) {
+			if (OpenList[i]->FCost() < CurrentCell->FCost() || OpenList[i]->FCost() == CurrentCell->FCost() && OpenList[i]->HCost < CurrentCell->HCost) {
+				CurrentCell = OpenList[i];
+			}
+		}
+
+		// Remove Current Cell from Open List and add to Closed List
+		OpenList.Remove(CurrentCell);
+		ClosedList.Add(CurrentCell);
+
+		// If Current Cell is the End Cell
+		if (CurrentCell == End) {
+			return RetracePath(Start, End);
+		}
+
+		// Loop through Current Cell's Neighbours
+		for (int i = 0; i < CurrentCell->Neighbours.Num(); i++) {
+			AGridCell* Neighbour = CurrentCell->Neighbours[i];
+
+			// If Neighbour is not walkable or is in Closed List
+			if (!Neighbour->bWalkable || ClosedList.Contains(Neighbour)) {
+				continue;
+			}
+
+			// Calculate new movement cost to Neighbour
+			int NewMovementCostToNeighbour = CurrentCell->GCost + GetDistance(CurrentCell, Neighbour);
+
+			// If new movement cost is lower than Neighbour's G Cost or Neighbour is not in Open List
+			if (NewMovementCostToNeighbour < Neighbour->GCost || !OpenList.Contains(Neighbour)) {
+				// Set Neighbour's G Cost to new movement cost
+				Neighbour->GCost = NewMovementCostToNeighbour;
+				// Set Neighbour's H Cost to distance from Neighbour to End
+				Neighbour->HCost = GetDistance(Neighbour, End);
+				// Set Neighbour's Parent to Current Cell
+				Neighbour->Parent = CurrentCell;
+
+				// If Neighbour is not in Open List
+				if (!OpenList.Contains(Neighbour)) {
+					// Add Neighbour to Open List
+					OpenList.Add(Neighbour);
+				}
+			}
+		}
+	}
+	// If no path is found, return an empty array
+	if (OpenList.Num() == 0) {
+    	return TArray<AGridCell*>();
+	}
+	return TArray<AGridCell*>(); // Should never be reached
+}
+
+int AGridManager::GetDistance(AGridCell* cellA, AGridCell* cellB) {
+	// Manhattan Distance
+	int dstX = FMath::Abs(cellA->GetActorLocation().X - cellB->GetActorLocation().X);
+	int dstY = FMath::Abs(cellA->GetActorLocation().Y - cellB->GetActorLocation().Y);
+
+	return 10 * (dstX + dstY);
+}
+
+TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* endCell) {
+    TArray<AGridCell*> path;
+    AGridCell* currentCell = endCell;
+
+    while (currentCell != startCell) {
+        path.Add(currentCell);
+        currentCell = currentCell->Parent;
+    }
+
+    Algo::Reverse(path);
+    return path;
 }

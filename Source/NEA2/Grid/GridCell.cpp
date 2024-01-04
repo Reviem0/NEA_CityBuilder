@@ -30,7 +30,7 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	isOccupied = true;
 	OccupyingType = NewBuildingType;
 	OccupyingActor = NewActor;
-	//DebugShowNeighbours();
+	DebugShowNeighbours();
 }
 
 void AGridCell::SetUnoccupied()
@@ -65,4 +65,25 @@ void AGridCell::DebugSetMAT()
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
 		MeshComponent->SetMaterial(0, DebugMAT);
 	}
+}
+
+void AGridCell::SetNeighbours()
+{
+	//Add neighbours to NEighbout array
+	Neighbours.Add(*NNeighbour);
+	Neighbours.Add(*SNeighbour);
+	Neighbours.Add(*ENeighbour);
+	Neighbours.Add(*WNeighbour);
+}
+
+int AGridCell::FCost() const
+{
+    return GCost + HCost;
+}
+
+void AGridCell::ResetPathfinding()
+{
+	GCost = 0;
+	HCost = 0;
+	Parent = nullptr;
 }

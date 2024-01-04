@@ -42,7 +42,12 @@ public:
 	void PopulateGrid();
 
 	// Populate Neighbours
-	void PopulateNeighbours();
+	void PopulateGridNeighbours();
+
+	//A* Pathfinding
+	TArray<AGridCell*> FindPath(AGridCell* Start, AGridCell* End);
+	int GetDistance(AGridCell* cellA, AGridCell* cellB);
+	TArray<AGridCell*> RetracePath(AGridCell *startCell, AGridCell *endCell);
 
 	// Init Game Manager
 	void InitGameManager();
@@ -52,7 +57,7 @@ public:
 
 	FVector GetGridScale();
 
-	void PopulateGridNeighbours();
+
 
 
 protected:
@@ -64,3 +69,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 };
+
+
