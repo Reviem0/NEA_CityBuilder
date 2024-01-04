@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "../Grid/GridManager.h"
-#include "../GameObjects/CB_RoadTile.h"
+#include "../GameObjects/CB_RoadCell.h"
 #include "../GameComponents/CB_ClickComponent.h"
 #include "../GameComponents/CB_PloppableComponent.h"
 

@@ -46,10 +46,13 @@ public:
 
 	//A* Pathfinding
     int FCost() const;
+	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	int GCost = 0;
+	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	int HCost = 0;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	bool bWalkable = true;
+	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	AGridCell* Parent = nullptr;
 	void ResetPathfinding();
 	

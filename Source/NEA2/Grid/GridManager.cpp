@@ -18,7 +18,9 @@ void AGridManager::BeginPlay()
 	Super::BeginPlay();
 	PopulateGrid();
 	PopulateGridNeighbours();
-	//InitGameManager();
+	SetNeighbourArray();
+	PathTest(PathStart, PathEnd);
+
 }
 
 // Called every frame
@@ -102,6 +104,8 @@ AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
     return GridArray[ClosestIndex];
 }
 
+
+
 // Return Grid Scale
 FVector AGridManager::GetGridScale() 
 {
@@ -134,6 +138,13 @@ void AGridManager::PopulateGridNeighbours()
 			Grid->SNeighbour = &GridArray[i - GridSizeX];
 		}
 		
+	}
+}
+
+void AGridManager::SetNeighbourArray() {
+	for (int i = 0; i < GridArray.Num(); i++) {
+		AGridCell* Grid = GridArray[i];
+		Grid->SetNeighbours();
 	}
 }
 
@@ -231,4 +242,13 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
 
     Algo::Reverse(path);
     return path;
+}
+
+void AGridManager::PathTest(int Start, int End) {
+	UE_LOG(LogTemp, Display, TEXT("START"));
+	// log path from first tile to last tile
+	TArray<AGridCell*> Path = FindPath(GridArray[Start], GridArray[End]);
+	for (int i = 0; i < Path.Num(); i++) {
+		Path[i]->DebugSetMAT();
+	}
 }

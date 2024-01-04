@@ -30,7 +30,7 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	isOccupied = true;
 	OccupyingType = NewBuildingType;
 	OccupyingActor = NewActor;
-	DebugShowNeighbours();
+	//DebugShowNeighbours();
 }
 
 void AGridCell::SetUnoccupied()
@@ -70,16 +70,21 @@ void AGridCell::DebugSetMAT()
 void AGridCell::SetNeighbours()
 {
 	//Add neighbours to NEighbout array
-	Neighbours.Add(*NNeighbour);
-	Neighbours.Add(*SNeighbour);
-	Neighbours.Add(*ENeighbour);
-	Neighbours.Add(*WNeighbour);
+	if (NNeighbour) {
+		Neighbours.Add(*NNeighbour);
+	}
+	if (SNeighbour) {
+		Neighbours.Add(*SNeighbour);
+	}
+	if (ENeighbour) {
+		Neighbours.Add(*ENeighbour);
+	}
+	if (WNeighbour) {
+		Neighbours.Add(*WNeighbour);
+	}
 }
 
-int AGridCell::FCost() const
-{
-    return GCost + HCost;
-}
+int AGridCell::FCost() const { return GCost + HCost; }
 
 void AGridCell::ResetPathfinding()
 {
