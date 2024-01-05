@@ -28,6 +28,7 @@ public:
 	bool isOccupied = false;
 
 	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/DebugTile_Mat.DebugTile_Mat'"));
+	UMaterialInterface* DefaultMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/Tile_Mat.Tile_Mat'"));
 	
 	UPROPERTY(EditAnywhere)
 	EBuildingType OccupyingType {EBuildingType::None};
@@ -40,6 +41,8 @@ public:
     void DebugShowNeighbours();
 	void DebugSetMAT();
 
+	void ResetMAT();
+
 	//Neighbours
 	TArray<AGridCell*> Neighbours;
 	void SetNeighbours();
@@ -51,7 +54,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	int HCost = 0;
 	UPROPERTY(EditAnywhere, Category = "Pathfinding")
-	bool bWalkable = true;
+	bool bWalkable = false;
 	UPROPERTY(EditAnywhere, Category = "Pathfinding")
 	AGridCell* Parent = nullptr;
 	void ResetPathfinding();

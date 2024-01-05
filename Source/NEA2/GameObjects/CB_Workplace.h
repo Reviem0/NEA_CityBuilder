@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "CB_BuildingAsset.h"
 #include "Workplace/CB_WorkplaceAsset.h"
-#include "CB_OwnedRoadTile.h"
+#include "../Enum/BuildingClassEnum.h"
+#include "CB_OwnedRoadCell.h"
 #include "CB_Workplace.generated.h"
 
 /**
@@ -20,6 +21,8 @@ public:
 	// Sets default values for this actor's properties
 	ACB_Workplace();
 
+	EBuildingClass BuildingClass;
+
 	UPROPERTY(EditAnywhere, Category = "Actors")
 	TSubclassOf<ACB_WorkplaceAsset> TopRightActor;
 	UPROPERTY(EditAnywhere, Category = "Actors")
@@ -29,7 +32,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Actors")
 	TSubclassOf<ACB_WorkplaceAsset> BottomLeftActor;
 	UPROPERTY(EditAnywhere, Category = "Actors")
-	TSubclassOf<ACB_OwnedRoadTile> RoadTileActor;
+	TSubclassOf<ACB_OwnedRoadCell> RoadTileActor;
 
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ACB_WorkplaceAsset* TopRightAsset;
@@ -40,7 +43,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ACB_WorkplaceAsset* BottomLeftAsset;
 	UPROPERTY(VisibleAnywhere, Category = "References")
-	ACB_OwnedRoadTile* RoadTileAsset;
+	ACB_OwnedRoadCell* RoadTileAsset;
 
 	
 

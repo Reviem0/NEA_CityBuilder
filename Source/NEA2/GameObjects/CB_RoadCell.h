@@ -52,7 +52,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateRoadMesh();
+	virtual void UpdateRoadMesh();
 
 	void UpdateNeighbours();
 

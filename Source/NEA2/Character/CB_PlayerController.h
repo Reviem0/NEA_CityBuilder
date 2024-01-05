@@ -21,6 +21,8 @@ class NEA2_API ACB_PlayerController : public APlayerController
 public:
 	ACB_PlayerController();
 
+	UCB_PloppableComponent* NewComponent;
+
 	AGridManager* GridManager;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Placement")
@@ -36,6 +38,8 @@ public:
     FTimerHandle DeleteBuildingTimerHandle;
     float DeleteBuildingInterval = 0.08f;
 
+	AGridCell* LastPlaced;
+
 	UFUNCTION()
 	void SetPlacementModeEnabled(bool Enabled);
 	void PlacementCheck();
@@ -46,6 +50,7 @@ public:
     void StartDeletingBuilding();
 
     void StopDeletingBuilding();
+	void PathTEST();
 
 
 protected:

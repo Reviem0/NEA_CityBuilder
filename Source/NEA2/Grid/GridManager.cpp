@@ -19,7 +19,7 @@ void AGridManager::BeginPlay()
 	PopulateGrid();
 	PopulateGridNeighbours();
 	SetNeighbourArray();
-	PathTest(PathStart, PathEnd);
+	InitGameManager();
 
 }
 
@@ -90,18 +90,32 @@ FVector AGridManager::GetClosestGridPosition(FVector InPosition)
 AGridCell* AGridManager::GetClosestGridCell(FVector InPosition)
 {
 	if (GridArray.Num() == 0) {return 0;}
-	int ClosestIndex = 0;
-	float ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
+	int ClosestIndexY = 0;
+	int ClosestIndexX = 0;
+	float ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndexY]->GetActorLocation());
 	// Search for closest Grid Cell to inPosition
-	for (int i = 0; i < GridArray.Num(); i++) {
+	for (int i = 0; i < GridArray.Num(); i = i + GridSizeX) {
 		AGridCell* Grid = GridArray[i];
-		if (FVector::Dist(InPosition, Grid->GetActorLocation()) < ClosestDistance) {
-			ClosestIndex = i;
-			ClosestDistance = FVector::Dist(InPosition, GridArray[ClosestIndex]->GetActorLocation());
+		float CurrentDistance = FVector::Dist(InPosition, Grid->GetActorLocation());
+		if (CurrentDistance <= ClosestDistance) {
+			ClosestIndexY = i;
+			ClosestDistance = CurrentDistance;
+		} else {
+			break;
+		}
+	}
+	for (int j = 0; j < GridSizeX; j++) {
+		AGridCell* Grid = GridArray[ClosestIndexY + j];
+		float CurrentDistance = FVector::Dist(InPosition, Grid->GetActorLocation());
+		if (CurrentDistance <= ClosestDistance) {
+			ClosestIndexX = ClosestIndexY + j;
+			ClosestDistance = CurrentDistance;
+		} else {
+			break;
 		}
 	}
 
-    return GridArray[ClosestIndex];
+	return GridArray[ClosestIndexX];
 }
 
 
@@ -150,8 +164,7 @@ void AGridManager::SetNeighbourArray() {
 
 void AGridManager::InitGameManager() 
 {
-	AGameManager* GameManager = GetWorld()->SpawnActor<AGameManager>(GameManagerClass, FVector::ZeroVector, FRotator::ZeroRotator);
-	// Choose random grid cell to spawn house
+	GameManager = GetWorld()->SpawnActor<AGameManager>(GameManagerClass, FVector::ZeroVector, FRotator::ZeroRotator);
 	
 	GameManager->GridArray = GridArray;
 	GameManager->Init();
@@ -241,14 +254,10 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
     }
 
     Algo::Reverse(path);
-    return path;
-}
-
-void AGridManager::PathTest(int Start, int End) {
-	UE_LOG(LogTemp, Display, TEXT("START"));
-	// log path from first tile to last tile
-	TArray<AGridCell*> Path = FindPath(GridArray[Start], GridArray[End]);
-	for (int i = 0; i < Path.Num(); i++) {
-		Path[i]->DebugSetMAT();
+	
+	// Reset Pathfinding
+	for (int i = 0; i < GridArray.Num(); i++) {
+		GridArray[i]->ResetPathfinding();
 	}
+    return path;
 }

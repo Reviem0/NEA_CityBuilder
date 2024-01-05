@@ -50,14 +50,11 @@ public:
 	int GetDistance(AGridCell* cellA, AGridCell* cellB);
 	TArray<AGridCell*> RetracePath(AGridCell *startCell, AGridCell *endCell);
 	void PathTest(int Start, int End);
-	UPROPERTY(EditAnywhere, Category = "Pathfinding")
-	int PathStart = 0;
-	UPROPERTY(EditAnywhere, Category = "Pathfinding")
-	int PathEnd = 0;
 
 
 	// Init Game Manager
 	void InitGameManager();
+	AGameManager* GameManager;
 
 	FVector GetClosestGridPosition(FVector InPosition);
 	AGridCell* GetClosestGridCell(FVector InPosition);

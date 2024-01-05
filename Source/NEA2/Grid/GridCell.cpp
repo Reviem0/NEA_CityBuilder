@@ -30,6 +30,10 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	isOccupied = true;
 	OccupyingType = NewBuildingType;
 	OccupyingActor = NewActor;
+
+	if (NewBuildingType == EBuildingType::Road) {
+		bWalkable = true;
+	}
 	//DebugShowNeighbours();
 }
 
@@ -38,6 +42,8 @@ void AGridCell::SetUnoccupied()
 	isOccupied = false;
 	OccupyingType = EBuildingType::None;
 	OccupyingActor = nullptr;
+
+	bWalkable = false;
 }
 
 // Show Neighbours for debugging
@@ -64,6 +70,14 @@ void AGridCell::DebugSetMAT()
 	GetComponents<UStaticMeshComponent>(MeshComponents);
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
 		MeshComponent->SetMaterial(0, DebugMAT);
+	}
+}
+
+void AGridCell::ResetMAT() {
+	TArray<UStaticMeshComponent*> MeshComponents;
+	GetComponents<UStaticMeshComponent>(MeshComponents);
+	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
+		MeshComponent->SetMaterial(0, DefaultMAT);
 	}
 }
 

@@ -3,19 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CB_RoadTile.h"
-#include "CB_OwnedRoadTile.generated.h"
+#include "CB_RoadCell.h"
+#include "CB_OwnedRoadCell.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class NEA2_API ACB_OwnedRoadTile : public ACB_RoadTile
+class NEA2_API ACB_OwnedRoadCell : public ACB_RoadCell
 {
 	GENERATED_BODY()
 
 public:
-	ACB_OwnedRoadTile();
+	ACB_OwnedRoadCell();
+	AGridCell* OwningCell;
+
+	void UpdateRoadMesh() override;
 
 protected:
 	virtual void BeginPlay() override;

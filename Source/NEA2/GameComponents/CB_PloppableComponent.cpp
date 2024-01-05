@@ -21,6 +21,7 @@ UCB_PloppableComponent::UCB_PloppableComponent()
 void UCB_PloppableComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	UpdateState();
 }
 
 // Called every frame

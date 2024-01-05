@@ -9,16 +9,12 @@ ACB_RoadCell::ACB_RoadCell() {
     PrimaryActorTick.bCanEverTick = true;
 
     BuildingType = EBuildingType::Road;
+    Ownership = EOwnership::Player;
+
 }
 
 void ACB_RoadCell::BeginPlay() {
     Super::BeginPlay();
-
-    UStaticMeshComponent* MeshComponent = FindComponentByClass<UStaticMeshComponent>();
-    if (MeshComponent)
-    {
-        MeshComponent->SetVisibility(false);
-    }
 
     if (GridCellRef)
     {
@@ -30,7 +26,7 @@ void ACB_RoadCell::BeginPlay() {
 
     if (GridCellRef && !isPlop) {
         // make actor invisible
-
+        SetActorHiddenInGame(true);
         GridCellRef->SetOccupied(BuildingType, this);
         if (!isPlop)
         {
@@ -66,10 +62,10 @@ void ACB_RoadCell::UpdateRoadMesh()
 
     if (GridCellRef)
     {
-        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House);
-        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House);
-        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House);
-        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House);
+        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road);
+        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road);
+        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road);
+        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road);
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 

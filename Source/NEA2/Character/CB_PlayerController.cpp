@@ -20,6 +20,8 @@ void ACB_PlayerController::SetupInputComponent()
 	InputComponent->BindAction("Place", IE_Pressed, this, &ACB_PlayerController::SpawnBuilding);
     InputComponent->BindAction("Remove", IE_Pressed, this, &ACB_PlayerController::StartDeletingBuilding);
     InputComponent->BindAction("Remove", IE_Released, this, &ACB_PlayerController::StopDeletingBuilding);
+    InputComponent->BindAction("PathTEST", IE_Pressed, this, &ACB_PlayerController::PathTEST);
+
 }
 
 void ACB_PlayerController::Tick(float DeltaTime)
@@ -60,11 +62,11 @@ void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
         if (PlaceableActor->GetComponentByClass<UCB_ClickComponent>()){
             PlaceableActor->GetComponentByClass<UCB_ClickComponent>()->inPlacementMode();
             FName CompName = "Ploppable";
-            UCB_PloppableComponent* NewComponent = NewObject<UCB_PloppableComponent>(PlaceableActor);
-            if (NewComponent){
-                PlaceableActor->AddInstanceComponent(NewComponent);
-                NewComponent->RegisterComponent();
-            }
+        }
+        NewComponent = NewObject<UCB_PloppableComponent>(PlaceableActor);
+        if (NewComponent){
+            NewComponent->RegisterComponent();
+            PlaceableActor->AddInstanceComponent(NewComponent);
         }
     }
 }
@@ -94,6 +96,11 @@ void ACB_PlayerController::SpawnBuilding() {
     if (PlopComp->IsPlacementValid) {
         AActor* NewActor = GetWorld()->SpawnActor<AActor>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
         PlopComp->UpdateState();
+        LastPlaced = PlaceableActor->GridCellRef;
+
+        for (int i = 0; i < GridManager->GameManager->HouseArray.Num(); i++) {
+            GridManager->GameManager->HouseArray[i]->CreatePath();
+        }
     }
 }
 
@@ -103,10 +110,13 @@ void ACB_PlayerController::DeleteBuilding() {
             UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
             AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
             if (Grid->OccupyingActor){
-                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road)
+                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road && Cast<ACB_BuildingAsset>(Grid->OccupyingActor)->Ownership == EOwnership::Player)
                 {
                     Cast<ACB_RoadCell>(Grid->OccupyingActor)->DestroyRoad();
                     PlopComp->UpdateState();
+                    for (int i = 0; i < GridManager->GameManager->HouseArray.Num(); i++) {
+                        GridManager->GameManager->HouseArray[i]->CreatePath();
+                    }
                 }
             }
         }
@@ -129,5 +139,19 @@ void ACB_PlayerController::StopDeletingBuilding()
     {
         bDeletingBuilding = false;
         GetWorldTimerManager().ClearTimer(DeleteBuildingTimerHandle);
+    }
+}
+
+void ACB_PlayerController::PathTEST() {
+    if (GridManager){
+        for (int i = 0; i < GridManager->GridArray.Num(); i++) {
+            GridManager->GridArray[i]->ResetMAT();
+        }
+        AGridCell* StartCell = LastPlaced;
+        AGridCell* EndCell = GridManager->GridArray[0];
+        TArray<AGridCell*> Path = GridManager->FindPath(StartCell, EndCell);
+        for (int i = 0; i < Path.Num(); i++) {
+		    Path[i]->DebugSetMAT();
+	    }
     }
 }

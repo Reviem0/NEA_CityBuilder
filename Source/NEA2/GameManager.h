@@ -27,6 +27,9 @@ public:
 	void SpawnHouse(AGridCell* GridCell);
 	void SpawnWorkplace(AGridCell* GridCell);
 
+	TArray<ACB_House*> HouseArray;
+	TArray<ACB_Workplace*> WorkplaceArray;
+
 	void Init();
 
 protected:

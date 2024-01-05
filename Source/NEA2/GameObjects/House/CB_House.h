@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "../CB_BuildingAsset.h"
+#include "../CB_OwnedRoadCell.h"
 #include "../../Enum/BuildingClassEnum.h"
+#include "Components/SplineComponent.h"
+#include "../CB_Workplace.h"
+#include "../CarAI/CB_CarAI.h"
 
 #include "CB_House.generated.h"
 
@@ -19,6 +23,28 @@ public:
 	ACB_House();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building")
 	EBuildingClass BuildingClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")
+	TSubclassOf<ACB_CarAI> CarAI;
+
+	UPROPERTY(EditAnywhere, Category = "Actors")
+	TSubclassOf<ACB_OwnedRoadCell> RoadTileActor;
+
+	UPROPERTY(VisibleAnywhere, Category = "References")
+	ACB_OwnedRoadCell* RoadTileAsset;
+
+	void CreatePath();
+
+	void PathCheck();
+
+	UPROPERTY(VisibleAnywhere, Category = "Workplaces")
+	TArray<ACB_Workplace*> TargetWorkplaces;
+
+	void CreateSpline(TArray<AGridCell*> Path);
+
+	UPROPERTY(VisibleAnywhere)
+	USplineComponent* Spline;
+
 protected:
 	virtual void BeginPlay() override;
 
