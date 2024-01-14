@@ -16,7 +16,11 @@ class NEA2_API ACB_OwnedRoadCell : public ACB_RoadCell
 
 public:
 	ACB_OwnedRoadCell();
-	AGridCell* OwningCell;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ownership")
+	TArray<AGridCell*> OwningCells;
+
+	bool IsCellOwned(AGridCell* Cell);
 
 	void UpdateRoadMesh() override;
 

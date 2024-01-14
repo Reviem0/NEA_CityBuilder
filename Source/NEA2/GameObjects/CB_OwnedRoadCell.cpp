@@ -31,10 +31,10 @@ void ACB_OwnedRoadCell::UpdateRoadMesh()
 
     if (GridCellRef)
     {
-        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Workplace || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::House);
-        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Workplace || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::House);
-        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Workplace || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::House);
-        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Workplace || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::House);
+        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->NNeighbour)));
+        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->SNeighbour)));
+        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->ENeighbour)));
+        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->WNeighbour)));
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 
@@ -91,4 +91,19 @@ void ACB_OwnedRoadCell::UpdateRoadMesh()
         }
     }
     IsUpdatingMesh = false;
+}
+
+bool ACB_OwnedRoadCell::IsCellOwned(AGridCell *Cell)
+{
+    if (Cell)
+    {
+        for (auto& OwningCell : OwningCells)
+        {
+            if (OwningCell == Cell)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }

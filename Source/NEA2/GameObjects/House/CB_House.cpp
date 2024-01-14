@@ -4,6 +4,7 @@
 #include "CB_House.h"
 #include "../../Grid/GridManager.h"
 #include "DrawDebugHelpers.h"
+#include "../CB_OwnedRoadCell.h"
 
 #include "Kismet/GameplayStatics.h"
 
@@ -38,56 +39,105 @@ void ACB_House::BeginPlay()
     bool West = GridCellRef->WNeighbour != nullptr;  // 4
 
     // Create a list to store the available rotations
-    TArray<FRotator> AvailableRotations;
+    TArray<int> AvailableRotations;
 
     // Check each direction. If a neighbour exists in that direction, add the corresponding rotation to the list
-    if (North) AvailableRotations.Add(FRotator(0, 270, 0));
-    if (East) AvailableRotations.Add(FRotator(0, 0, 0));
-    if (South) AvailableRotations.Add(FRotator(0, 90, 0));
-    if (West) AvailableRotations.Add(FRotator(0, 180, 0));
+    if (North) AvailableRotations.Add(270);
+    if (East) AvailableRotations.Add(0);
+    if (South) AvailableRotations.Add(90);
+    if (West) AvailableRotations.Add(180);
 
-    // Generate a random index within the range of the list's size
-    int32 RandomIndex = FMath::RandRange(0, AvailableRotations.Num() - 1);
-
-    // Use the random index to select a rotation from the list
-    SetActorRotation(AvailableRotations[RandomIndex]);
+    // print all available rotations
+    for (int i = 0; i < AvailableRotations.Num(); i++)
+    {
+        UE_LOG(LogTemp, Display, TEXT("Available Rotation: %d"), AvailableRotations[i]);
+    }
     AGridCell* RoadPlacement = nullptr;
 
-    switch (static_cast<int>(GetActorRotation().Yaw))
+    // Loop until a valid road placement is found
+    while (RoadPlacement == nullptr && AvailableRotations.Num() > 0)
     {
-        case 0:
+        // Generate a random index within the range of the list's size
+        int RandomIndex = FMath::RandRange(0, AvailableRotations.Num() - 1);
+
+        // Use the random index to select a rotation from the list
+        int yaw = AvailableRotations[RandomIndex];
+        SetActorRotation(FRotator(0, yaw, 0));
+
+        switch (static_cast<int>(GetActorRotation().Yaw))
         {
-            RoadPlacement = GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None ? *(GridCellRef->ENeighbour) : nullptr;
-            break;
-        }
-        case 90:
-        {
-            RoadPlacement = GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None ? *(GridCellRef->SNeighbour) : nullptr;
-            break;
-        }
-        case 180:
-        {
-            RoadPlacement = GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None ? *(GridCellRef->WNeighbour) : nullptr;
-            break;
-        }
-        case 270:
-        {
-            RoadPlacement = GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None ? *(GridCellRef->NNeighbour) : nullptr;
-            break;
+            case 0:
+            {
+                if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None)
+                    RoadPlacement = *(GridCellRef->ENeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
+            }
+            case 90:
+            {
+                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None)
+                    RoadPlacement = *(GridCellRef->SNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
+            }
+            case 180:
+            {
+                if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None)
+                    RoadPlacement = *(GridCellRef->WNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
+            }
+            case 270:
+            {
+                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None)
+                    RoadPlacement = *(GridCellRef->NNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
+            }
         }
     }
 
     FActorSpawnParameters SpawnInfo;
     SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-    if (RoadTileActor)
-    {   
-        RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), FRotator(0,0,0), SpawnInfo);
-        if (RoadTileAsset) {
-            RoadTileAsset->OwningCell = GridCellRef;
+    if (RoadPlacement->OccupyingActor->StaticClass() == ACB_OwnedRoadCell::StaticClass()) {
+        Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
+    } else {
+        if (RoadTileActor && RoadPlacement)
+        {   
+            RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), FRotator(0,0,0), SpawnInfo);
+            if (RoadTileAsset) {
+                RoadTileAsset->OwningCells.Add(GridCellRef);
+            }
         }
     }
 
+    // Set Material
+    TArray<UStaticMeshComponent*> MeshComponents;
+
+    GetComponents<UStaticMeshComponent>(MeshComponents);
+
+    for (UStaticMeshComponent* MeshComponent : MeshComponents) {
+
+        
+        switch (BuildingClass)
+        {
+            case EBuildingClass::Red:
+                MeshComponent->SetMaterial(1, RedMAT);
+                break;
+            case EBuildingClass::Blue:
+                MeshComponent->SetMaterial(1, BlueMAT);
+                break;
+            case EBuildingClass::Green:
+                   MeshComponent->SetMaterial(1, GreenMAT);
+                break;
+        }
+    }
+    
     FTimerHandle MemberTimerHandle;
 
     GetWorldTimerManager().SetTimer(MemberTimerHandle, this, &ACB_House::PathCheck, 10.0f, true, 2.0f);
@@ -112,11 +162,10 @@ void ACB_House::CreatePath()
         if (TargetCell){
             TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
             if (Path.Num() != 0){
-                if (!Spline){
-                    CreateSpline(Path);
-                }
+                CreateSpline(Path);
             } else {
                 if (Spline) {
+                    Spline->RemoveFromRoot();
                     Spline->DestroyComponent();
                     Spline = nullptr;
                 }
@@ -130,6 +179,11 @@ void ACB_House::CreatePath()
 
 void ACB_House::CreateSpline(TArray<AGridCell*> Path) 
 {
+    if (Spline) {
+        Spline->RemoveFromRoot();
+        Spline->DestroyComponent();
+        Spline = nullptr;
+    }
     if (Path.Num() == 0) return;
     Spline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
     Spline->RegisterComponent();
@@ -157,6 +211,7 @@ void ACB_House::PathCheck()
         ACB_CarAI* Car = GetWorld()->SpawnActor<ACB_CarAI>(CarAI, RoadTileAsset->GetActorLocation(), FRotator(0,0,0));
         if (Car){
             Car->FollowSpline(Spline);
+            Car->DestinationWorkplace = TargetWorkplaces[0];
         }
     }
 }

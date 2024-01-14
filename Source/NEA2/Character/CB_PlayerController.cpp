@@ -98,9 +98,7 @@ void ACB_PlayerController::SpawnBuilding() {
         PlopComp->UpdateState();
         LastPlaced = PlaceableActor->GridCellRef;
 
-        for (int i = 0; i < GridManager->GameManager->HouseArray.Num(); i++) {
-            GridManager->GameManager->HouseArray[i]->CreatePath();
-        }
+        GridManager->GameManager->UpdatePath();
     }
 }
 
@@ -114,9 +112,7 @@ void ACB_PlayerController::DeleteBuilding() {
                 {
                     Cast<ACB_RoadCell>(Grid->OccupyingActor)->DestroyRoad();
                     PlopComp->UpdateState();
-                    for (int i = 0; i < GridManager->GameManager->HouseArray.Num(); i++) {
-                        GridManager->GameManager->HouseArray[i]->CreatePath();
-                    }
+                    GridManager->GameManager->UpdatePath();
                 }
             }
         }

@@ -19,13 +19,19 @@ public:
 	AGameManager();
 
 	TArray<AGridCell*> GridArray;
+	int GridSizeX = 0;
+	int GridSizeY = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACB_House> HouseClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACB_Workplace> WorkplaceClass;
 	void SpawnHouse(AGridCell* GridCell);
-	void SpawnWorkplace(AGridCell* GridCell);
+	void SpawnHouseAtRandomLocation();
+	bool SpawnWorkplace(AGridCell* GridCell);
+	void SpawnWorkplaceAtRandomLocation();
+
+	void UpdatePath();
 
 	TArray<ACB_House*> HouseArray;
 	TArray<ACB_Workplace*> WorkplaceArray;

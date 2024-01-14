@@ -45,7 +45,11 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ACB_OwnedRoadCell* RoadTileAsset;
 
+	UFUNCTION(BlueprintCallable)
+	void CarArrived(AActor* Car);
 	
+	UPROPERTY(VisibleAnywhere, Category = "Stats")
+	int Points = 0;
 
 	
 

@@ -8,6 +8,8 @@
 #include "Components/SplineComponent.h"
 #include "Components/TimelineComponent.h"
 
+#include "../CB_Workplace.h"
+
 #include "CB_CarAI.generated.h"
 
 UCLASS()
@@ -27,11 +29,29 @@ public:
     UFUNCTION()
     void TimelineFloatReturn(float value);
 
+	UFUNCTION()
+    void OnTimelineFinished();
+
     UPROPERTY()
     USplineComponent* SplineToFollow;
 
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CurveFloat;
+
+
+	UPROPERTY(VisibleAnywhere, Category = "Properties")
+	AActor* OriginHouse;
+
+	UPROPERTY(VisibleAnywhere, Category = "Properties")
+	ACB_Workplace* DestinationWorkplace;
+
+	UPROPERTY(VisibleAnywhere, Category = "Properties")
+	EBuildingClass CarClass;
+	
+	UMaterialInterface* RedMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/GameObjects/Assets/House/Asset/HouseColour_Red.HouseColour_Red'"));
+	UMaterialInterface* BlueMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/GameObjects/Assets/House/Asset/HouseColour_Blue.HouseColour_Blue'"));
+	UMaterialInterface* GreenMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/GameObjects/Assets/House/Asset/HouseColour_Green.HouseColour_Green'"));
+
 
 protected:
 	// Called when the game starts or when spawned

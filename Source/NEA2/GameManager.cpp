@@ -2,6 +2,8 @@
 
 
 #include "GameManager.h"
+#include "Grid/GridManager.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AGameManager::AGameManager()
@@ -15,7 +17,16 @@ AGameManager::AGameManager()
 void AGameManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
+	if (GridManager) {
+		GridArray = GridManager->GridArray;
+		GridSizeX = GridManager->GridSizeX;
+		GridSizeY = GridManager->GridSizeY;
+
+		Init();
+	}
+
+
 	
 }
 
@@ -30,10 +41,9 @@ void AGameManager::Tick(float DeltaTime)
 void AGameManager::Init()
 {
 	int RandomNumber1 = FMath::RandRange(0, GridArray.Num()-1);
-	int RandomNumber2 = FMath::RandRange(0, GridArray.Num()-1);
-
-	SpawnHouse(GridArray[RandomNumber1]);
-	SpawnWorkplace(GridArray[RandomNumber2]);
+	SpawnHouseAtRandomLocation();
+	SpawnWorkplaceAtRandomLocation();
+	
 	
 }
 
@@ -47,16 +57,60 @@ void AGameManager::SpawnHouse(AGridCell* GridCell)
 	
 }
 
-void AGameManager::SpawnWorkplace(AGridCell* GridCell)
+void AGameManager::SpawnHouseAtRandomLocation() 
 {
-	if (WorkplaceClass == nullptr) return;
+	// Ensure House is not spawned on another object
+	AGridCell* SpawnCell = nullptr;
+	while (!SpawnCell) {
+		int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
+		if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
+			SpawnCell = GridArray[RandomIndex];
+		}
+	}
+	SpawnHouse(SpawnCell);
+}
+
+bool AGameManager::SpawnWorkplace(AGridCell* GridCell)
+{
+	if (WorkplaceClass == nullptr) return false;
 
 	ACB_Workplace* Workplace = GetWorld()->SpawnActor<ACB_Workplace>(WorkplaceClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
-	WorkplaceArray.Add(Workplace);
-	for (int i = 0; i < HouseArray.Num(); i++)
-	{
-		HouseArray[i]->TargetWorkplaces.Add(Workplace);
-		
+	if (Workplace) {
+		WorkplaceArray.Add(Workplace);
+		for (int i = 0; i < HouseArray.Num(); i++)
+		{
+			HouseArray[i]->TargetWorkplaces.Add(Workplace);
+		}
+	} else {
+		return false;
 	}
+	return true;
+}
 
+void AGameManager::SpawnWorkplaceAtRandomLocation() 
+{
+	if (WorkplaceClass == nullptr) return;
+	bool SpawnSuccess = false;
+	// Attempt to spawn until successful
+	while (!SpawnSuccess) 
+	{
+		// Ensure that the workplace is not spawned on the edge of the grid
+		// Workplace is 2x2 so it needs to be 2 away from the edge
+		int RandomNumberX = FMath::RandRange(0, GridSizeX - 2);
+		int RandomNumberY = FMath::RandRange(0, GridSizeY - 2);
+		int index = RandomNumberY * GridSizeX + RandomNumberX;
+
+		UE_LOG(LogTemp, Display, TEXT("WORKPLACE: index: %d"), index);
+		SpawnSuccess = SpawnWorkplace(GridArray[index]);
+	}
+	
+    
+}
+
+void AGameManager::UpdatePath() 
+{
+	for (int i = 0; i < HouseArray.Num(); i++) {
+		HouseArray[i]->CreatePath();
+		UE_LOG(LogTemp, Display, TEXT("UPDATING PATH FOR HOUSE: %s"), *HouseArray[i]->GetName());
+	}
 }

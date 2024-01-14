@@ -1,2 +1,67 @@
-Game Manager
-    Spawns Houses
+PLAN:
+
+STEP1:
+Next thing i need to do is allow multiple house and workspace colours to exist simulatenously.
+
+Allow the existance of 1 house and multiple workspaces.
+
+Demand and supply algorithm to select what workspace a house should send a car to
+
+The Demand and supply algorithm should consist of a workspace demanding a certain amount of cars to be sent to it.
+When a car goes to spawn a vehicle, it will first ask the gamemanager which workspace the car should go to.
+The GameManager will rank all workspaces of the same colour based on proximity and demand (amount of pending request and time from last car arrival).
+The car  will go to the workspace of highest rank.
+
+
+
+
+
+
+
+
+
+
+
+
+STEP 2:
+The game should ensure the total demand for each colour matches the total supply available from houses
+
+1. Initialize Game State
+
+2. Set Initial Conditions:
+
+Spawn a small number of houses and workspaces.
+Set initial supply for each house and initial demand for each workspace.
+
+
+3. Update Demand Over Time:
+
+Incrementally increase the demand of each workspace as time progresses, simulating growing need.
+
+
+
+4. Calculate Total Supply and Demand:
+
+Periodically calculate the total supply available from all houses.
+Calculate the total demand required by all workspaces.
+
+
+
+5. Spawning Logic:
+
+If Total Demand ≥ Total Supply:
+Prioritize spawning more houses to increase the total supply.
+Control the increase in workspace demand or temporarily halt spawning new workspaces.
+If Total Demand < Total Supply:
+Allow spawning of new workspaces to match the available supply.
+Balance the spawning of houses to maintain a slight surplus in supply.
+
+
+
+6. Adaptive Spawning Rate:
+
+Adjust the rate of spawning based on the difference between total demand and supply. The larger the gap, the faster the adjustment.
+Implement a buffer or threshold to prevent abrupt changes and ensure stability.
+
+Expected result:
+More houses should spawn near end game, as more workspaces mean demand grows at a faster rate.

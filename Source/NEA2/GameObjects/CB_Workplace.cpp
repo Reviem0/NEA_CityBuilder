@@ -135,12 +135,17 @@ void ACB_Workplace::BeginPlay()
             BottomRightAsset->WorkplaceRef = this;
         }
     }
+
+    if (RoadPlacement->OccupyingActor->StaticClass() == ACB_OwnedRoadCell::StaticClass()) {
+        Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
+    } else {
     if (RoadTileActor)
-    {   
-        RoadPlacement->Manager = this;
-        RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), Rot, SpawnInfo);
-        if (RoadTileAsset) {
-            RoadTileAsset->OwningCell = BottomLeft;
+        {   
+            RoadPlacement->Manager = this;
+            RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), Rot, SpawnInfo);
+            if (RoadTileAsset) {
+                RoadTileAsset->OwningCells.Add(BottomLeft);
+            }
         }
     }
 }
@@ -149,4 +154,9 @@ void ACB_Workplace::BeginPlay()
 void ACB_Workplace::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
+}
+
+void ACB_Workplace::CarArrived(AActor * Car)
+{
+    Points++;
 }

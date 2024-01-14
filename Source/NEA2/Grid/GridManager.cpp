@@ -165,9 +165,6 @@ void AGridManager::SetNeighbourArray() {
 void AGridManager::InitGameManager() 
 {
 	GameManager = GetWorld()->SpawnActor<AGameManager>(GameManagerClass, FVector::ZeroVector, FRotator::ZeroRotator);
-	
-	GameManager->GridArray = GridArray;
-	GameManager->Init();
 }
 
 // A* Pathfinding

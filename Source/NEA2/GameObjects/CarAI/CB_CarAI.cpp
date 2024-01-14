@@ -2,6 +2,8 @@
 
 
 #include "CB_CarAI.h"
+#include "../House/CB_House.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 ACB_CarAI::ACB_CarAI()
@@ -21,6 +23,10 @@ void ACB_CarAI::BeginPlay()
 		FOnTimelineFloat TimelineProgress;
 		TimelineProgress.BindUFunction(this, FName("TimelineFloatReturn"));
 		MovementTimeline.AddInterpFloat(CurveFloat, TimelineProgress);
+
+		FOnTimelineEvent TimelineFinished;
+        TimelineFinished.BindUFunction(this, FName("OnTimelineFinished"));
+        MovementTimeline.SetTimelineFinishedFunc(TimelineFinished);
 	}
 	
 }
@@ -35,8 +41,28 @@ void ACB_CarAI::Tick(float DeltaTime)
 
 void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 {
-	SplineToFollow = Spline;
-	float Playrate = 1 / SplineToFollow->GetSplineLength();
+	OriginHouse = Spline->GetOwner();
+	CarClass = Cast<ACB_House>(OriginHouse)->BuildingClass;
+	// Set Material based on class
+	TArray<UStaticMeshComponent*> MeshComponents;
+	GetComponents<UStaticMeshComponent>(MeshComponents);
+	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
+		switch (CarClass)
+		{
+			case EBuildingClass::Red:
+				MeshComponent->SetMaterial(0, RedMAT);
+				break;
+			case EBuildingClass::Blue:
+				MeshComponent->SetMaterial(0, BlueMAT);
+				break;
+			case EBuildingClass::Green:
+				MeshComponent->SetMaterial(0, GreenMAT);
+				break;
+		}
+	}
+
+		SplineToFollow = Spline;
+	float Playrate = (1/ SplineToFollow->GetSplineLength()) * 200;
 	MovementTimeline.SetPlayRate(Playrate);
     MovementTimeline.PlayFromStart();
 }
@@ -50,5 +76,11 @@ void ACB_CarAI::TimelineFloatReturn(float value)
     }
 }
 
+void ACB_CarAI::OnTimelineFinished()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnTimelineFinished called for %s"), *GetName());
+	DestinationWorkplace->CarArrived(this);
+	Destroy();
+}
 
 
