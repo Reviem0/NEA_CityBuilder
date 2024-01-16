@@ -25,29 +25,30 @@ ACB_House::ACB_House()
 void ACB_House::BeginPlay()
 {
     Super::BeginPlay();
-    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    if (GridManager){
-        GridCellRef = GridManager->GetClosestGridCell(GetActorLocation());
-        if (GridCellRef){
-            GridCellRef->SetOccupied(BuildingType, this);
-        }
-    }
 
-    bool North = GridCellRef->NNeighbour != nullptr; // 1
-    bool South = GridCellRef->SNeighbour != nullptr; // 2
-    bool East = GridCellRef->ENeighbour != nullptr;  // 3
-    bool West = GridCellRef->WNeighbour != nullptr;  // 4
+    // Check if available rotations are valid
+    bool North = GridCellRef->NNeighbour != nullptr && GridCellRef->NNeighbour->OccupyingType == EBuildingType::None; // 1
+    bool South = GridCellRef->SNeighbour != nullptr && GridCellRef->SNeighbour->OccupyingType == EBuildingType::None; // 2
+    bool East  = GridCellRef->ENeighbour != nullptr && GridCellRef->ENeighbour->OccupyingType == EBuildingType::None; // 3
+    bool West  = GridCellRef->WNeighbour != nullptr && GridCellRef->WNeighbour->OccupyingType == EBuildingType::None; // 4
+
+  // Destroy if no avaliable rotations
+    if (!North && !South && !East && !West) {
+        Destroy();
+        return;
+    }
 
     // Create a list to store the available rotations
     TArray<int> AvailableRotations;
 
+  
     // Check each direction. If a neighbour exists in that direction, add the corresponding rotation to the list
     if (North) AvailableRotations.Add(270);
     if (East) AvailableRotations.Add(0);
     if (South) AvailableRotations.Add(90);
     if (West) AvailableRotations.Add(180);
 
-    // print all available rotations
+    // print all available rotations for debugging purposes 
     for (int i = 0; i < AvailableRotations.Num(); i++)
     {
         UE_LOG(LogTemp, Display, TEXT("Available Rotation: %d"), AvailableRotations[i]);
@@ -70,36 +71,25 @@ void ACB_House::BeginPlay()
             {
                 if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->ENeighbour);
-                else
-                    AvailableRotations.RemoveAt(RandomIndex);
-                break;
             }
             case 90:
             {
                 if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->SNeighbour);
-                else
-                    AvailableRotations.RemoveAt(RandomIndex);
-                break;
             }
             case 180:
             {
                 if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->WNeighbour);
-                else
-                    AvailableRotations.RemoveAt(RandomIndex);
-                break;
             }
             case 270:
             {
                 if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->NNeighbour);
-                else
-                    AvailableRotations.RemoveAt(RandomIndex);
-                break;
             }
         }
     }
+    
 
     FActorSpawnParameters SpawnInfo;
     SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -115,6 +105,7 @@ void ACB_House::BeginPlay()
             }
         }
     }
+}
 
     // Set Material
     TArray<UStaticMeshComponent*> MeshComponents;
