@@ -7,6 +7,10 @@
 #include "CarAI/CB_CarAI.h"
 #include "../Grid/GridManager.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "CarAI/CB_CarAI.h"
+#include "../Grid/GridManager.h"
+
 ACB_Workplace::ACB_Workplace() 
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -35,6 +39,8 @@ void ACB_Workplace::BeginPlay()
     AGridCell* RoadPlacement = BottomLeft->SNeighbour ? *(BottomLeft->SNeighbour) : nullptr;
     FRotator* Rotation = new FRotator(0,0,0);
 
+    // Random rotation
+    Orientation = FMath::RandRange(0, 3);
     // Random rotation
     Orientation = FMath::RandRange(0, 3);
 
@@ -144,14 +150,14 @@ void ACB_Workplace::BeginPlay()
     if (RoadPlacement->OccupyingActor->StaticClass() == ACB_OwnedRoadCell::StaticClass()) {
         Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
     } else {
-        if (RoadTileActor)
-            {   
-                RoadPlacement->Manager = this;
-                RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), Rot, SpawnInfo);
-                if (RoadTileAsset) {
-                    RoadTileAsset->OwningCells.Add(BottomLeft);
+            if (RoadTileActor)
+                {   
+                    RoadPlacement->Manager = this;
+                    RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), Rot, SpawnInfo);
+                    if (RoadTileAsset) {
+                        RoadTileAsset->OwningCells.Add(BottomLeft);
+                    }
                 }
-            }
     }
 }
 
