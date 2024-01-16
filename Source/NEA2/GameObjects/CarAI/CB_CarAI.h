@@ -26,6 +26,9 @@ public:
 	UPROPERTY()
     FTimeline MovementTimeline;
 
+	UPROPERTY()
+	bool Returning = false;
+
     UFUNCTION()
     void TimelineFloatReturn(float value);
 

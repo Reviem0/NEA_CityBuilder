@@ -40,20 +40,23 @@ void AGameManager::Tick(float DeltaTime)
 
 void AGameManager::Init()
 {
-	int RandomNumber1 = FMath::RandRange(0, GridArray.Num()-1);
 	SpawnHouseAtRandomLocation();
 	SpawnWorkplaceAtRandomLocation();
-	
-	
 }
 
-void AGameManager::SpawnHouse(AGridCell* GridCell) 
+bool AGameManager::SpawnHouse(AGridCell* GridCell) 
 {
-	if (HouseClass == nullptr) return;
+	if (HouseClass == nullptr) return false;
 
 	ACB_House* House = GetWorld()->SpawnActor<ACB_House>(HouseClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
-	HouseArray.Add(House);
-	
+	if (House) {
+		HouseArray.Add(House);
+	} else {
+		// Failed to spawn
+		return false;
+	}
+	// Spawn successful
+	return true;
 	
 }
 
@@ -61,13 +64,23 @@ void AGameManager::SpawnHouseAtRandomLocation()
 {
 	// Ensure House is not spawned on another object
 	AGridCell* SpawnCell = nullptr;
-	while (!SpawnCell) {
-		int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
-		if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
-			SpawnCell = GridArray[RandomIndex];
+	int SpawnAttemptCount = 0;
+	bool SpawnSuccess = false;
+	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) {
+		while (!SpawnCell) {
+			int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
+			if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
+				SpawnCell = GridArray[RandomIndex];
+			}
 		}
+		SpawnAttemptCount++;
+		SpawnSuccess = SpawnHouse(SpawnCell);
 	}
-	SpawnHouse(SpawnCell);
+	if (SpawnSuccess) {
+		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN SUCCESSFUL"));
+	} else {
+		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN FAILED"));
+	}
 }
 
 bool AGameManager::SpawnWorkplace(AGridCell* GridCell)
@@ -82,8 +95,10 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell)
 			HouseArray[i]->TargetWorkplaces.Add(Workplace);
 		}
 	} else {
+		// Failed to spawn
 		return false;
 	}
+	// Spawn successful
 	return true;
 }
 
@@ -91,8 +106,9 @@ void AGameManager::SpawnWorkplaceAtRandomLocation()
 {
 	if (WorkplaceClass == nullptr) return;
 	bool SpawnSuccess = false;
+	int SpawnAttemptCount = 0;
 	// Attempt to spawn until successful
-	while (!SpawnSuccess) 
+	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) 
 	{
 		// Ensure that the workplace is not spawned on the edge of the grid
 		// Workplace is 2x2 so it needs to be 2 away from the edge
@@ -101,9 +117,14 @@ void AGameManager::SpawnWorkplaceAtRandomLocation()
 		int index = RandomNumberY * GridSizeX + RandomNumberX;
 
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE: index: %d"), index);
+		SpawnAttemptCount++;
 		SpawnSuccess = SpawnWorkplace(GridArray[index]);
 	}
-	
+	if (SpawnSuccess) {
+		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
+	} else {
+		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN FAILED"));
+	}
     
 }
 
