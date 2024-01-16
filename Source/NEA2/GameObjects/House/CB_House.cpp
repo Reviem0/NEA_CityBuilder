@@ -105,7 +105,6 @@ void ACB_House::BeginPlay()
             }
         }
     }
-}
 
     // Set Material
     TArray<UStaticMeshComponent*> MeshComponents;
