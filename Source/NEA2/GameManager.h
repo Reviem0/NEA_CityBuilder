@@ -26,10 +26,12 @@ public:
 	TSubclassOf<ACB_House> HouseClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACB_Workplace> WorkplaceClass;
-	void SpawnHouse(AGridCell* GridCell);
+	bool SpawnHouse(AGridCell* GridCell);
 	void SpawnHouseAtRandomLocation();
 	bool SpawnWorkplace(AGridCell* GridCell);
 	void SpawnWorkplaceAtRandomLocation();
+
+	int SpawnAttemptLimit = 10;
 
 	void UpdatePath();
 

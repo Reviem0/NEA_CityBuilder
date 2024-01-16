@@ -41,7 +41,6 @@ void ACB_CarAI::Tick(float DeltaTime)
 
 void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 {
-	OriginHouse = Spline->GetOwner();
 	CarClass = Cast<ACB_House>(OriginHouse)->BuildingClass;
 	// Set Material based on class
 	TArray<UStaticMeshComponent*> MeshComponents;
@@ -61,7 +60,7 @@ void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 		}
 	}
 
-		SplineToFollow = Spline;
+	SplineToFollow = Spline;
 	float Playrate = (1/ SplineToFollow->GetSplineLength()) * 200;
 	MovementTimeline.SetPlayRate(Playrate);
     MovementTimeline.PlayFromStart();
@@ -79,7 +78,12 @@ void ACB_CarAI::TimelineFloatReturn(float value)
 void ACB_CarAI::OnTimelineFinished()
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnTimelineFinished called for %s"), *GetName());
-	DestinationWorkplace->CarArrived(this);
+	if (!Returning){
+		DestinationWorkplace->CarArrived(this);
+	} else {
+		Cast<ACB_House>(OriginHouse)->CarArrived(this);
+	}
+	
 	Destroy();
 }
 
