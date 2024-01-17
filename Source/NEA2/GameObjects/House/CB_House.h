@@ -45,6 +45,11 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;
 
+	void CarArrived(ACB_CarAI* Car);
+	
+	UPROPERTY(VisibleAnywhere, Category = "Stats")
+	int CarAvailability = 2;
+
 protected:
 	virtual void BeginPlay() override;
 

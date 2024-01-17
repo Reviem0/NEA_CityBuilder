@@ -19,18 +19,16 @@ ACB_House::ACB_House()
     BuildingClass = EBuildingClass::Red;
 }
 
-
-
 // Called when the game starts or when spawned
 void ACB_House::BeginPlay()
 {
     Super::BeginPlay();
 
     // Check if available rotations are valid
-    bool North = GridCellRef->NNeighbour != nullptr && GridCellRef->NNeighbour->OccupyingType == EBuildingType::None; // 1
-    bool South = GridCellRef->SNeighbour != nullptr && GridCellRef->SNeighbour->OccupyingType == EBuildingType::None; // 2
-    bool East  = GridCellRef->ENeighbour != nullptr && GridCellRef->ENeighbour->OccupyingType == EBuildingType::None; // 3
-    bool West  = GridCellRef->WNeighbour != nullptr && GridCellRef->WNeighbour->OccupyingType == EBuildingType::None; // 4
+    bool North = GridCellRef->NNeighbour != nullptr && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None; // 1
+    bool South = GridCellRef->SNeighbour != nullptr && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None; // 2
+    bool East  = GridCellRef->ENeighbour != nullptr && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None; // 3
+    bool West  = GridCellRef->WNeighbour != nullptr && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None; // 4
 
   // Destroy if no avaliable rotations
     if (!North && !South && !East && !West) {
@@ -71,21 +69,33 @@ void ACB_House::BeginPlay()
             {
                 if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->ENeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
             }
             case 90:
             {
                 if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->SNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
             }
             case 180:
             {
                 if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->WNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
             }
             case 270:
             {
                 if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None)
                     RoadPlacement = *(GridCellRef->NNeighbour);
+                else
+                    AvailableRotations.RemoveAt(RandomIndex);
+                break;
             }
         }
     }
@@ -175,19 +185,55 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path)
         Spline->DestroyComponent();
         Spline = nullptr;
     }
+    
     if (Path.Num() == 0) return;
+
     Spline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
     Spline->RegisterComponent();
     Spline->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
     Spline->SetWorldLocation(RoadTileAsset->GetActorLocation()); // Set the spline's location to the house's location
-    Spline->SetLocationAtSplinePoint(1, RoadTileAsset->GetActorLocation(), ESplineCoordinateSpace::World); // Set the first point of the spline to the house's location
+    Spline->SetLocationAtSplinePoint(1, GetActorLocation(), ESplineCoordinateSpace::World); // Set the first point of the spline to the house's location
     // Remove first point from spline
     Spline->RemoveSplinePoint(0);
+
+    // Add the origin road tile to the start of the path
+    Path.Insert(RoadTileAsset->GridCellRef, 0); 
+    // Add The target workplace to the end of the path
+    Path.Add(TargetWorkplaces[0]->BottomLeftAsset->GridCellRef);
 
     // Make spline follow path
     for (int i = 0; i < Path.Num(); i++)
     {
         Spline->AddSplinePoint(Path[i]->GetActorLocation(), ESplineCoordinateSpace::World);
+        Spline->SetSplinePointType(i, ESplinePointType::Linear, true);
+
+        FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World); // Get the right vector at the point
+        FVector PreviousRightVector = FVector(0,0,0);
+        bool turning = false;
+        // check if the vector of the previous point is the same as the current point
+        if (i > 0) {
+            PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
+            if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
+                turning = true;
+                UE_LOG(LogTemp, Display, TEXT("Turning"));
+            } else {
+                PreviousRightVector = FVector(0,0,0);
+            }
+        }
+
+        int multiplier = 10;
+        if (turning) {
+            multiplier = 20;
+        }
+
+        // log the right vector with spline point for debugging purposes
+        UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
+
+        // draw debug line for right vector
+        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        
+        Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
+        Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
     }
 
     // Log the number of spline points
@@ -198,11 +244,18 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path)
 
 void ACB_House::PathCheck()
 {
-    if(Spline) {
+    if(Spline && CarAvailability > 0) {
         ACB_CarAI* Car = GetWorld()->SpawnActor<ACB_CarAI>(CarAI, RoadTileAsset->GetActorLocation(), FRotator(0,0,0));
         if (Car){
-            Car->FollowSpline(Spline);
+            Car->OriginHouse = this;
             Car->DestinationWorkplace = TargetWorkplaces[0];
+            Car->FollowSpline(Spline);
+            CarAvailability--;
         }
     }
+}
+
+void ACB_House::CarArrived(ACB_CarAI *Car)
+{
+    CarAvailability++;
 }

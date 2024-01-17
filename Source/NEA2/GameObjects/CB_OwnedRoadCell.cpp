@@ -14,8 +14,7 @@ ACB_OwnedRoadCell::ACB_OwnedRoadCell()
 // Sets default values
 void ACB_OwnedRoadCell::BeginPlay(){
     Super::BeginPlay();
-
-
+    
 
 }
 

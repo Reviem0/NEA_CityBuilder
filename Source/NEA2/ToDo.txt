@@ -17,12 +17,6 @@ The car  will go to the workspace of highest rank.
 
 
 
-
-
-
-
-
-
 STEP 2:
 The game should ensure the total demand for each colour matches the total supply available from houses
 
@@ -64,4 +58,4 @@ Adjust the rate of spawning based on the difference between total demand and sup
 Implement a buffer or threshold to prevent abrupt changes and ensure stability.
 
 Expected result:
-More houses should spawn near end game, as more workspaces mean demand grows at a faster rate.
+More houses should spawn near end game, as more workspaces mean demand grows at a faster rate. This helps make the game difficulty progress over time.

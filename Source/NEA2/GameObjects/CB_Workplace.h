@@ -7,6 +7,8 @@
 #include "Workplace/CB_WorkplaceAsset.h"
 #include "../Enum/BuildingClassEnum.h"
 #include "CB_OwnedRoadCell.h"
+#include "Components/SplineComponent.h"
+
 #include "CB_Workplace.generated.h"
 
 /**
@@ -50,10 +52,23 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category = "Stats")
 	int Points = 0;
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float cooldown = 15.0f;
 
+	TArray<AActor*> HouseQueue;
+
+	void OnWaitFinished();
+
+	void CreatePath(AActor* House);
 	
+	UPROPERTY(VisibleAnywhere)
+	USplineComponent* Spline;
 
+	void CreateSpline(TArray<AGridCell*> Path, AActor* House);
 
+	void SendCar(AActor* House);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")
+	TSubclassOf<AActor> CarToSpawn;
 
 protected:
 	// Called when the game starts or when spawned
