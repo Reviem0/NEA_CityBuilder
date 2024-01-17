@@ -10,9 +10,8 @@ UENUM(BlueprintType)
 enum class EOwnership :uint8
 {
 	None      = 0 UMETA(DisplayName = "None"),
-	Player    = 1 UMETA(DisplayName = "Placed"),
-	Workplace = 2 UMETA(DisplayName = "Workplace"),
-	House     = 3 UMETA(DisplayName = "House"),
+	Player    = 1 UMETA(DisplayName = "Player"),
+	Game 	  = 2 UMETA(DisplayName = "Game"),
 
 };
 

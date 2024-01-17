@@ -101,6 +101,7 @@ void ACB_House::BeginPlay()
         {   
             RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), FRotator(0,0,0), SpawnInfo);
             if (RoadTileAsset) {
+                // Add the current cell to the road's list of owning cells
                 RoadTileAsset->OwningCells.Add(GridCellRef);
             }
         }

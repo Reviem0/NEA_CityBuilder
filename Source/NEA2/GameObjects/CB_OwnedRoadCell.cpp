@@ -7,7 +7,7 @@ ACB_OwnedRoadCell::ACB_OwnedRoadCell()
 {
     PrimaryActorTick.bCanEverTick = true;
     BuildingType = EBuildingType::Road;
-    Ownership = EOwnership::Workplace;
+    Ownership = EOwnership::Game;
     
 }
 
@@ -31,10 +31,10 @@ void ACB_OwnedRoadCell::UpdateRoadMesh()
 
     if (GridCellRef)
     {
-        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->NNeighbour)));
-        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->SNeighbour)));
-        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->ENeighbour)));
-        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwned(*(GridCellRef->WNeighbour)));
+        bool NorthR = GridCellRef->NNeighbour && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwner(*(GridCellRef->NNeighbour)));
+        bool SouthR = GridCellRef->SNeighbour && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwner(*(GridCellRef->SNeighbour)));
+        bool EastR = GridCellRef->ENeighbour && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || IsCellOwner(*(GridCellRef->ENeighbour)));
+        bool WestR = GridCellRef->WNeighbour && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || IsCellOwner(*(GridCellRef->WNeighbour)));
 
         int roadCount = NorthR + SouthR + EastR + WestR;
 
@@ -93,10 +93,11 @@ void ACB_OwnedRoadCell::UpdateRoadMesh()
     IsUpdatingMesh = false;
 }
 
-bool ACB_OwnedRoadCell::IsCellOwned(AGridCell *Cell)
+bool ACB_OwnedRoadCell::IsCellOwner(AGridCell *Cell)
 {
     if (Cell)
     {
+         
         for (auto& OwningCell : OwningCells)
         {
             if (OwningCell == Cell)
