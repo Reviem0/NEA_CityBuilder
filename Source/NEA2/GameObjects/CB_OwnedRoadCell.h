@@ -20,7 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ownership")
 	TArray<AGridCell*> OwningCells;
 
-	bool IsCellOwned(AGridCell* Cell);
+	bool IsCellOwner(AGridCell* Cell);
 
 	void UpdateRoadMesh() override;
 
