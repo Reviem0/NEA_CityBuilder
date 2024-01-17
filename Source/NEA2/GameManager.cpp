@@ -10,6 +10,7 @@ AGameManager::AGameManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	TotalScore = 0;
 
 }
 
@@ -40,13 +41,25 @@ void AGameManager::Tick(float DeltaTime)
 
 void AGameManager::Init()
 {
-	SpawnHouseAtRandomLocation();
-	SpawnWorkplaceAtRandomLocation();
+	AvailableColours.Add(EBuildingClass::Red);
+	SpawnColourSet();
 }
 
-bool AGameManager::SpawnHouse(AGridCell* GridCell) 
+bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass) 
 {
-	if (HouseClass == nullptr) return false;
+	TSubclassOf<ACB_House> HouseClass = nullptr;
+	if (BuildingClass == EBuildingClass::None) return false;
+	if (BuildingClass == EBuildingClass::Red) {
+		HouseClass = HouseRedClass;
+	} else if (BuildingClass == EBuildingClass::Blue) {
+		HouseClass = HouseBlueClass;
+	} else if (BuildingClass == EBuildingClass::Green) {
+		HouseClass = HouseGreenClass;
+	} else if (BuildingClass == EBuildingClass::Yellow) {
+		HouseClass = HouseYellowClass;
+	} else {
+		return false;
+	}
 
 	ACB_House* House = GetWorld()->SpawnActor<ACB_House>(HouseClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
 	if (House) {
@@ -60,32 +73,23 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell)
 	
 }
 
-void AGameManager::SpawnHouseAtRandomLocation() 
+bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass) // Default parameter value
 {
-	// Ensure House is not spawned on another object
-	AGridCell* SpawnCell = nullptr;
-	int SpawnAttemptCount = 0;
-	bool SpawnSuccess = false;
-	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) {
-		while (!SpawnCell) {
-			int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
-			if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
-				SpawnCell = GridArray[RandomIndex];
-			}
-		}
-		SpawnAttemptCount++;
-		SpawnSuccess = SpawnHouse(SpawnCell);
-	}
-	if (SpawnSuccess) {
-		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN SUCCESSFUL"));
-	} else {
-		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN FAILED"));
-	}
-}
+	if (WorkplaceRedClass == nullptr) return false;
 
-bool AGameManager::SpawnWorkplace(AGridCell* GridCell)
-{
-	if (WorkplaceClass == nullptr) return false;
+	TSubclassOf<ACB_Workplace> WorkplaceClass = nullptr;
+	if (BuildingClass == EBuildingClass::None) return false;
+	if (BuildingClass == EBuildingClass::Red) {
+		WorkplaceClass = WorkplaceRedClass;
+	} else if (BuildingClass == EBuildingClass::Blue) {
+		WorkplaceClass = WorkplaceBlueClass;
+	} else if (BuildingClass == EBuildingClass::Green) {
+		WorkplaceClass = WorkplaceGreenClass;
+	} else if (BuildingClass == EBuildingClass::Yellow) {
+		WorkplaceClass = WorkplaceYellowClass;
+	} else {
+		return false;
+	}
 
 	ACB_Workplace* Workplace = GetWorld()->SpawnActor<ACB_Workplace>(WorkplaceClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
 	if (Workplace) {
@@ -102,9 +106,44 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell)
 	return true;
 }
 
-void AGameManager::SpawnWorkplaceAtRandomLocation() 
+void AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass) 
 {
-	if (WorkplaceClass == nullptr) return;
+	// Ensure House is not spawned on another object
+	AGridCell* SpawnCell = nullptr;
+
+	// If no colour is specified, spawn a random colour
+	if (BuildingClass == EBuildingClass::None) {
+		BuildingClass = AvailableColours[FMath::RandRange(0, AvailableColours.Num() - 1)];
+	}
+
+	int SpawnAttemptCount = 0;
+	bool SpawnSuccess = false;
+	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) {
+		while (!SpawnCell) {
+			int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
+			if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
+				SpawnCell = GridArray[RandomIndex];
+			}
+		}
+		SpawnAttemptCount++;
+		SpawnSuccess = SpawnHouse(SpawnCell, BuildingClass);
+	}
+	if (SpawnSuccess) {
+		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN SUCCESSFUL"));
+	} else {
+		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN FAILED"));
+	}
+}
+
+void AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
+{
+	if (WorkplaceRedClass == nullptr) return;
+
+	// If no colour is specified, spawn a random colour
+	if (BuildingClass == EBuildingClass::None) {
+		BuildingClass = AvailableColours[FMath::RandRange(0, AvailableColours.Num() - 1)];
+	}
+
 	bool SpawnSuccess = false;
 	int SpawnAttemptCount = 0;
 	// Attempt to spawn until successful
@@ -118,7 +157,7 @@ void AGameManager::SpawnWorkplaceAtRandomLocation()
 
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE: index: %d"), index);
 		SpawnAttemptCount++;
-		SpawnSuccess = SpawnWorkplace(GridArray[index]);
+		SpawnSuccess = SpawnWorkplace(GridArray[index], BuildingClass);
 	}
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
@@ -135,3 +174,39 @@ void AGameManager::UpdatePath()
 		UE_LOG(LogTemp, Display, TEXT("UPDATING PATH FOR HOUSE: %s"), *HouseArray[i]->GetName());
 	}
 }
+
+void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
+
+	// If no colour is specified, spawn a random colour
+	if (BuildingClass == EBuildingClass::None) {
+		BuildingClass = AvailableColours[FMath::RandRange(0, AvailableColours.Num() - 1)];
+	}
+	// Spawn a random colour set from the available colours
+	SpawnHouseAtRandomLocation(BuildingClass);
+	SpawnWorkplaceAtRandomLocation(BuildingClass);
+	
+
+}
+
+void AGameManager::AddScore(int Score) 
+{
+	TotalScore += Score;
+	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
+
+	if (TotalScore == 5) {
+		AvailableColours.Add(EBuildingClass::Blue);
+		SpawnColourSet(EBuildingClass::Blue);
+	}
+}
+
+/* 
+Calculating the total score inside the GameManager.cpp: 
+This approach is more straightforward and easier to implement. You would simply iterate over all the workplaces and sum their scores. 
+However, this could be inefficient if there are a large number of workplaces and the score needs to be updated frequently, as you would be recalculating the 
+entire sum every time.
+
+Having the workplaces update the GameManager's total score: This approach is more efficient, as it only requires a single addition operation 
+whenever a workplace's score increases. However, it's more complex to implement, as you need to ensure that every workplace has a reference to 
+the GameManager and calls the appropriate method whenever its score changes. It also introduces tighter coupling between the workplaces and the
+ GameManager, which could make the code harder to maintain and reason about.
+  */

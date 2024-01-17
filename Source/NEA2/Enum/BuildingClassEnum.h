@@ -10,10 +10,11 @@
 UENUM(BlueprintType)
 enum class EBuildingClass :uint8
 {
-	Red   = 0 UMETA(DisplayName = "Red"),
-	Green = 1 UMETA(DisplayName = "Green"),
-	Blue   = 2 UMETA(DisplayName = "Blue"),
-	Yellow  = 3 UMETA(DisplayName = "Yellow")
+	None   = 0 UMETA(DisplayName = "None"),
+	Red   = 1 UMETA(DisplayName = "Red"),
+	Green = 2 UMETA(DisplayName = "Green"),
+	Blue   = 3 UMETA(DisplayName = "Blue"),
+	Yellow  = 4 UMETA(DisplayName = "Yellow")
 };
 UCLASS()
 class NEA2_API UBuildingClassEnum : public UUserDefinedEnum

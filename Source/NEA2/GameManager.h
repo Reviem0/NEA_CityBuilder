@@ -22,14 +22,32 @@ public:
 	int GridSizeX = 0;
 	int GridSizeY = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACB_House> HouseClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<ACB_Workplace> WorkplaceClass;
-	bool SpawnHouse(AGridCell* GridCell);
-	void SpawnHouseAtRandomLocation();
-	bool SpawnWorkplace(AGridCell* GridCell);
-	void SpawnWorkplaceAtRandomLocation();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HouseClasses")
+	TSubclassOf<ACB_House> HouseRedClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HouseClasses")
+	TSubclassOf<ACB_House> HouseBlueClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HouseClasses")
+	TSubclassOf<ACB_House> HouseGreenClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "HouseClasses")
+	TSubclassOf<ACB_House> HouseYellowClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WorkplaceClasses")
+	TSubclassOf<ACB_Workplace> WorkplaceRedClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WorkplaceClasses")
+	TSubclassOf<ACB_Workplace> WorkplaceBlueClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WorkplaceClasses")
+	TSubclassOf<ACB_Workplace> WorkplaceGreenClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "WorkplaceClasses")
+	TSubclassOf<ACB_Workplace> WorkplaceYellowClass;
+
+	TArray<EBuildingClass> AvailableColours;
+
+	bool SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass);
+	void SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+	bool SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass);
+	void SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+
+	void SpawnColourSet(EBuildingClass BuildingClass = EBuildingClass::None);
 
 	int SpawnAttemptLimit = 10;
 
@@ -40,6 +58,9 @@ public:
 
 	void Init();
 
+	UFUNCTION(BlueprintCallable)
+	void AddScore(int Score);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -47,5 +68,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Score")
+	int TotalScore;
 
 };

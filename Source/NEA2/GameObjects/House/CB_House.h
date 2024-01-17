@@ -21,7 +21,8 @@ class NEA2_API ACB_House : public ACB_BuildingAsset
 	GENERATED_BODY()
 public:
 	ACB_House();
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Building")
+
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Properties")
 	EBuildingClass BuildingClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")

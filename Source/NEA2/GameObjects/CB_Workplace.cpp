@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "CarAI/CB_CarAI.h"
 #include "../Grid/GridManager.h"
+#include "../GameManager.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "CarAI/CB_CarAI.h"
@@ -169,31 +170,42 @@ void ACB_Workplace::Tick(float DeltaTime)
 
 void ACB_Workplace::CarArrived(AActor * Car)
 {
-    Points++;
+    AddScore();
     ACB_CarAI* CarAI = Cast<ACB_CarAI>(Car);
     // Add HouseOrigin to the queue
     if (Cast<AActor>(CarAI->OriginHouse)) {
-        HouseQueue.Add(Cast<AActor>(CarAI->OriginHouse));
+        AddToHouseQueue(Cast<AActor>(CarAI->OriginHouse));
     }
     UE_LOG(LogTemp, Display, TEXT("Car arrived at workplace"));
-    FTimerHandle TimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACB_Workplace::OnWaitFinished, cooldown, false);
     
 
 
 }
+void ACB_Workplace::AddToHouseQueue(AActor *House)
+{
+    HouseQueue.Add(House);
+    FTimerHandle TimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACB_Workplace::OnWaitFinished, cooldown, false);
+
+}
+
 void ACB_Workplace::OnWaitFinished() {
     UE_LOG(LogTemp, Display, TEXT("RAN"));
     // Remove the first item from the queue
     if (HouseQueue.Num() > 0) {
-        CreatePath(HouseQueue[0]);
+        bool Success = CreatePath(HouseQueue[0]);
+
+        // If Path was unsuccessful, add the house to the back of the queue
+        if (!Success){
+            AddToHouseQueue(HouseQueue[0]);
+        }
         HouseQueue.RemoveAt(0);
     }
 
     // Do something when the wait is finished
 }
 
-void ACB_Workplace::CreatePath(AActor* House) {
+bool ACB_Workplace::CreatePath(AActor* House) {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     if (GridManager && House){
         ACB_House* HouseCell = Cast<ACB_House>(House);
@@ -206,10 +218,12 @@ void ACB_Workplace::CreatePath(AActor* House) {
                     Spline->RemoveFromRoot();
                     Spline->DestroyComponent();
                     Spline = nullptr;
+                    return false;
                 }
             }
         }
     }
+    return true;
 }
 
 void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
@@ -245,7 +259,6 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
             PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
             if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
                 turning = true;
-                UE_LOG(LogTemp, Display, TEXT("Turning"));
             } else {
                 PreviousRightVector = FVector(0,0,0);
             }
@@ -257,10 +270,10 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
         }
 
         // log the right vector with spline point for debugging purposes
-        UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
+        // UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());36
 
         // draw debug line for right vector
-        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Blue, true, 10.0f, -1, 1.0f);
         
         Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
         Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
@@ -286,5 +299,16 @@ void ACB_Workplace::SendCar(AActor* House) {
             Car->Returning = true;
             Car->FollowSpline(Spline);
         }
+    }
+}
+
+void ACB_Workplace::AddScore() {
+    Points++;
+    AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+    if (GameManager) {
+        UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Score: %d"), Points);
+        GameManager->AddScore(1);
+    } else {
+        UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GameManager is null"));
     }
 }

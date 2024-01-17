@@ -23,6 +23,7 @@ public:
 	// Sets default values for this actor's properties
 	ACB_Workplace();
 
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Properties")
 	EBuildingClass BuildingClass;
 
 	UPROPERTY(EditAnywhere, Category = "Actors")
@@ -49,6 +50,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void CarArrived(AActor* Car);
+	void AddToHouseQueue(AActor* House);
+
+	void AddScore();
+
 	
 	UPROPERTY(VisibleAnywhere, Category = "Stats")
 	int Points = 0;
@@ -59,7 +64,7 @@ public:
 
 	void OnWaitFinished();
 
-	void CreatePath(AActor* House);
+	bool CreatePath(AActor* House);
 	
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;
