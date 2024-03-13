@@ -25,6 +25,8 @@ public:
 	AGridCell** SNeighbour;
 	AGridCell** ENeighbour;
 	AGridCell** WNeighbour;
+
+	UPROPERTY(VisibleAnywhere)
 	bool isOccupied = false;
 
 	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/DebugTile_Mat.DebugTile_Mat'"));

@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CB_RoadTile.h"
+#include "CB_RoadCell.h"
 #include "../Grid/GridManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/ChildActorComponent.h"
@@ -9,6 +10,8 @@ ACB_RoadTile::ACB_RoadTile()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	BuildingType = EBuildingType::Road;
+    Ownership = EOwnership::Player;
 
 }
 
@@ -16,6 +19,7 @@ ACB_RoadTile::ACB_RoadTile()
 void ACB_RoadTile::BeginPlay()
 {
 	Super::BeginPlay();
+
 
 }
 

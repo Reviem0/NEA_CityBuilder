@@ -20,6 +20,9 @@ public:
 	// Sets default values for this actor's properties
 	ACB_RoadTile();
 
+	UPROPERTY(VisibleAnywhere, Category = "RoadOwner")
+	AActor* RoadCellOwner;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -27,7 +27,7 @@ void AGameManager::BeginPlay()
 		Init();
 	}
 
-
+	RemainingColours = {EBuildingClass::Red, EBuildingClass::Blue, EBuildingClass::Green, EBuildingClass::Yellow};
 	
 }
 
@@ -47,6 +47,7 @@ void AGameManager::Init()
 
 bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass) 
 {
+	if (GridCell->OccupyingType != EBuildingType::None) return false;
 	TSubclassOf<ACB_House> HouseClass = nullptr;
 	if (BuildingClass == EBuildingClass::None) return false;
 	if (BuildingClass == EBuildingClass::Red) {
@@ -64,6 +65,13 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass)
 	ACB_House* House = GetWorld()->SpawnActor<ACB_House>(HouseClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
 	if (House) {
 		HouseArray.Add(House);
+		for (auto& Workplace : WorkplaceArray)
+		{
+			if (Workplace->BuildingClass == House->BuildingClass) {
+				House->TargetWorkplaces.Add(Workplace);
+				UpdatePath();
+			}
+		}
 	} else {
 		// Failed to spawn
 		return false;
@@ -74,8 +82,12 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass)
 }
 
 bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass) // Default parameter value
-{
+{	
+	if (GridCell->OccupyingType != EBuildingType::None) return false;
 	if (WorkplaceRedClass == nullptr) return false;
+	if (WorkplaceBlueClass == nullptr) return false;
+	if (WorkplaceGreenClass == nullptr) return false;
+	if (WorkplaceYellowClass == nullptr) return false;
 
 	TSubclassOf<ACB_Workplace> WorkplaceClass = nullptr;
 	if (BuildingClass == EBuildingClass::None) return false;
@@ -97,6 +109,7 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 		for (int i = 0; i < HouseArray.Num(); i++)
 		{
 			HouseArray[i]->TargetWorkplaces.Add(Workplace);
+			UpdatePath();
 		}
 	} else {
 		// Failed to spawn
@@ -125,7 +138,7 @@ void AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 				SpawnCell = GridArray[RandomIndex];
 			}
 		}
-		SpawnAttemptCount++;
+		SpawnAttemptCount += 1;
 		SpawnSuccess = SpawnHouse(SpawnCell, BuildingClass);
 	}
 	if (SpawnSuccess) {
@@ -156,13 +169,15 @@ void AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 		int index = RandomNumberY * GridSizeX + RandomNumberX;
 
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE: index: %d"), index);
-		SpawnAttemptCount++;
+		SpawnAttemptCount += 1;
 		SpawnSuccess = SpawnWorkplace(GridArray[index], BuildingClass);
 	}
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
+		return;
 	} else {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN FAILED"));
+		return;
 	}
     
 }
@@ -181,6 +196,7 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
 	if (BuildingClass == EBuildingClass::None) {
 		BuildingClass = AvailableColours[FMath::RandRange(0, AvailableColours.Num() - 1)];
 	}
+	
 	// Spawn a random colour set from the available colours
 	SpawnHouseAtRandomLocation(BuildingClass);
 	SpawnWorkplaceAtRandomLocation(BuildingClass);
@@ -192,10 +208,22 @@ void AGameManager::AddScore(int Score)
 {
 	TotalScore += Score;
 	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
+	ScoreFunction();
+	
+}
 
-	if (TotalScore == 5) {
-		AvailableColours.Add(EBuildingClass::Blue);
-		SpawnColourSet(EBuildingClass::Blue);
+void AGameManager::ScoreFunction() {
+	if (TotalScore % 10 == 0 && RemainingColours.Num() > 0) {
+		EBuildingClass random = RemainingColours[FMath::RandRange(0, RemainingColours.Num() - 1)];
+		AvailableColours.Add(random);
+		RemainingColours.Remove(random);
+		SpawnColourSet();
+	}
+	if (TotalScore % 5 == 0) {
+		SpawnHouseAtRandomLocation();
+	}
+	if (TotalScore % 20 == 0) {
+		SpawnWorkplaceAtRandomLocation();
 	}
 }
 

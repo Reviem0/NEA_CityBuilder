@@ -33,6 +33,7 @@ public:
 	FTransform PlacementTransform;
 	bool PlacementModeEnabled = false;
 
+	float GameSpeed = 1.f;
 
 	bool bDeletingBuilding;
     FTimerHandle DeleteBuildingTimerHandle;
@@ -51,6 +52,10 @@ public:
 
     void StopDeletingBuilding();
 	void PathTEST();
+
+	void IncreaseSpeed();
+	void ResetSpeed();
+	void UpdateSpeed();
 
 
 protected:

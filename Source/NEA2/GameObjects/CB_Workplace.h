@@ -75,6 +75,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")
 	TSubclassOf<AActor> CarToSpawn;
 
+	void DestroyWorkplace();
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

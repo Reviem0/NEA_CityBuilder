@@ -42,18 +42,22 @@ void ACB_RoadCell::Tick(float DeltaTime)
 
 void ACB_RoadCell::SpawnNewActor(UClass *ActorClass, FRotator Rotation)
 {
-    ACB_RoadTile* NewActor = GetWorld()->SpawnActor<ACB_RoadTile>(ActorClass, GetActorLocation(), Rotation);
+    ACB_RoadTile* NewActor = GetWorld()->SpawnActorDeferred<ACB_RoadTile>(ActorClass, FTransform(Rotation, GetActorLocation(), FVector(1, 1, 1)));
     if (NewActor){
+        NewActor->RoadCellOwner = this;
+        UGameplayStatics::FinishSpawningActor(NewActor, FTransform(Rotation, GetActorLocation(), FVector(1, 1, 1)));
         if (RoadRef)
         {
             RoadRef->Destroy();
         }
-        RoadRef = NewActor;
         GridCellRef->SetOccupied(BuildingType, this);
+        RoadRef = NewActor;
         UpdateNeighbours();
         IsUpdatingMesh = false;
     }
 }
+
+// Roads dont work because of the setOccupied system
 
 
 void ACB_RoadCell::UpdateRoadMesh()

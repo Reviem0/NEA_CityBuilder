@@ -21,6 +21,8 @@ void ACB_PlayerController::SetupInputComponent()
     InputComponent->BindAction("Remove", IE_Pressed, this, &ACB_PlayerController::StartDeletingBuilding);
     InputComponent->BindAction("Remove", IE_Released, this, &ACB_PlayerController::StopDeletingBuilding);
     InputComponent->BindAction("PathTEST", IE_Pressed, this, &ACB_PlayerController::PathTEST);
+    InputComponent->BindAction("IncreaseSpeed", IE_Pressed, this, &ACB_PlayerController::IncreaseSpeed);
+    InputComponent->BindAction("IncreaseSpeed", IE_Released, this, &ACB_PlayerController::ResetSpeed);
 
 }
 
@@ -150,4 +152,15 @@ void ACB_PlayerController::PathTEST() {
 		    Path[i]->DebugSetMAT();
 	    }
     }
+}
+
+void ACB_PlayerController::IncreaseSpeed() {
+    // set global time dilation to 2
+    GameSpeed = 2.f;
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), GameSpeed);
+}
+
+void ACB_PlayerController::ResetSpeed() {
+    GameSpeed = 1.f;
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), GameSpeed);
 }

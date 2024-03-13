@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
+
 #include "Components/SplineComponent.h"
 #include "Components/TimelineComponent.h"
+#include "Components/BoxComponent.h"
 
 #include "../CB_Workplace.h"
 
@@ -21,12 +23,24 @@ public:
 	// Sets default values for this actor's properties
 	ACB_CarAI();
 
+	UPROPERTY(EditAnywhere)
+	USceneComponent* Root;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* CarMesh;
+	// Create triggerbox for car to stop at
+	UPROPERTY(EditAnywhere)
+	UBoxComponent* TriggerBox;
+
+	bool Overlapping = false;
+
 	void FollowSpline(USplineComponent* Spline);
 
 	UPROPERTY()
     FTimeline MovementTimeline;
 
-	UPROPERTY()
+
+	UPROPERTY(VisibleAnywhere, Category = "Properties")
 	bool Returning = false;
 
     UFUNCTION()
@@ -35,12 +49,16 @@ public:
 	UFUNCTION()
     void OnTimelineFinished();
 
+	void PlayCar();
+
     UPROPERTY()
     USplineComponent* SplineToFollow;
 
 	UPROPERTY(EditAnywhere, Category = "Timeline")
 	UCurveFloat* CurveFloat;
 
+	UPROPERTY(EditAnywhere, Category = "Timeline")
+	float speed = 200.f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties")
 	AActor* OriginHouse;
@@ -55,6 +73,13 @@ public:
 	UMaterialInterface* BlueMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/GameObjects/Assets/House/Asset/HouseColour_Blue.HouseColour_Blue'"));
 	UMaterialInterface* GreenMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/GameObjects/Assets/House/Asset/HouseColour_Green.HouseColour_Green'"));
 
+	UFUNCTION()
+	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex);
 
 protected:
 	// Called when the game starts or when spawned

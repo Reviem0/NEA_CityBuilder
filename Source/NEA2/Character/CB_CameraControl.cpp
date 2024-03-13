@@ -14,7 +14,7 @@ ACB_CameraControl::ACB_CameraControl()
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300.0f;
 	SpringArmComponent->bUsePawnControlRotation = false;
-  	SpringArmComponent->SetWorldRotation(FRotator(330,0,0));
+  SpringArmComponent->SetWorldRotation(FRotator(330,0,0));
 	
 
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));

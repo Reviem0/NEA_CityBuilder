@@ -16,7 +16,7 @@ ACB_Workplace::ACB_Workplace()
 {
     PrimaryActorTick.bCanEverTick = true;
     BuildingType = EBuildingType::None;
-    BuildingClass = EBuildingClass::Red;
+    BuildingClass = EBuildingClass::None;
 }
 
 // Sets default values
@@ -26,9 +26,10 @@ void ACB_Workplace::BeginPlay()
     
     if (!GridCellRef) {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GridCellRef is null"));
-        Destroy();
+        DestroyWorkplace();
         return;
     }
+    
     int Orientation = FMath::RandRange(0, 3);
     //UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: %d"), Orientation);
 
@@ -105,7 +106,7 @@ void ACB_Workplace::BeginPlay()
     if ((!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement) || (BottomLeft->OccupyingType != EBuildingType::None || TopRight->OccupyingType != EBuildingType::None || TopLeft->OccupyingType != EBuildingType::None || BottomRight->OccupyingType != EBuildingType::None || RoadPlacement->OccupyingType != EBuildingType::None))
     {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: NOT ENOUGH CELLS"));
-        Destroy();
+        DestroyWorkplace();
         return;
     }
     
@@ -114,37 +115,45 @@ void ACB_Workplace::BeginPlay()
     
     if (BottomLeftActor)
     {
-        BottomLeftAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(BottomLeftActor, BottomLeft->GetActorLocation(), Rot, SpawnInfo);
+        BottomLeftAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(BottomLeftActor, FTransform(BottomLeft->GetActorLocation()));
         if (BottomLeftAsset) {
+            BottomLeft->SetActorRotation(Rot);
             BottomLeft->Manager = this;
             BottomLeftAsset->WorkplaceRef = this;
+            UGameplayStatics::FinishSpawningActor(BottomLeftAsset, BottomLeft->GetActorTransform());
         }
     }
 
     if (TopRightActor)
     {
-        TopRightAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(TopRightActor, TopRight->GetActorLocation(), Rot, SpawnInfo);
+        TopRightAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(TopRightActor,FTransform(BottomLeft->GetActorLocation()));
         if (TopRightAsset) {
+            TopRight->SetActorRotation(Rot);   
             TopRight->Manager = this;
             TopRightAsset->WorkplaceRef = this;
+            UGameplayStatics::FinishSpawningActor(TopRightAsset, TopRight->GetActorTransform());
         }
     }
 
     if (TopLeftActor)
     {
-        TopLeftAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(TopLeftActor, TopLeft->GetActorLocation(), Rot, SpawnInfo);
+        TopLeftAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(TopLeftActor, FTransform(BottomLeft->GetActorLocation()));
         if (TopLeftAsset) {
+            TopLeft->SetActorRotation(Rot);
             TopLeft->Manager = this;
             TopLeftAsset->WorkplaceRef = this;
+            UGameplayStatics::FinishSpawningActor(TopLeftAsset, TopLeft->GetActorTransform());
         }
     }
 
     if (BottomRightActor)
     {
-        BottomRightAsset = GetWorld()->SpawnActor<ACB_WorkplaceAsset>(BottomRightActor, BottomRight->GetActorLocation(), Rot, SpawnInfo);
+        BottomRightAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(BottomRightActor, FTransform(BottomLeft->GetActorLocation()));
         if (BottomRightAsset) {
+            BottomRight->SetActorRotation(Rot);
             BottomRight->Manager = this;
             BottomRightAsset->WorkplaceRef = this;
+            UGameplayStatics::FinishSpawningActor(BottomRightAsset, BottomRight->GetActorTransform());
         }
     }
 
@@ -154,9 +163,10 @@ void ACB_Workplace::BeginPlay()
             if (RoadTileActor)
                 {   
                     RoadPlacement->Manager = this;
-                    RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), Rot, SpawnInfo);
+                    RoadTileAsset = GetWorld()->SpawnActorDeferred<ACB_OwnedRoadCell>(RoadTileActor, FTransform(Rot,RoadPlacement->GetActorLocation()));
                     if (RoadTileAsset) {
                         RoadTileAsset->OwningCells.Add(BottomLeft);
+                        UGameplayStatics::FinishSpawningActor(RoadTileAsset, RoadPlacement->GetActorTransform());
                     }
                 }
     }
@@ -311,4 +321,9 @@ void ACB_Workplace::AddScore() {
     } else {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GameManager is null"));
     }
+}
+
+void ACB_Workplace::DestroyWorkplace() {
+    GridCellRef->SetUnoccupied();
+    Destroy();
 }

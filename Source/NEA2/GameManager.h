@@ -41,6 +41,7 @@ public:
 	TSubclassOf<ACB_Workplace> WorkplaceYellowClass;
 
 	TArray<EBuildingClass> AvailableColours;
+	TArray<EBuildingClass> RemainingColours;
 
 	bool SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass);
 	void SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
@@ -60,6 +61,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddScore(int Score);
+
+	void ScoreFunction();
 
 protected:
 	// Called when the game starts or when spawned

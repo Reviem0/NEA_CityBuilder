@@ -15,6 +15,7 @@ enum class EBuildingClass :uint8
 	Green = 2 UMETA(DisplayName = "Green"),
 	Blue   = 3 UMETA(DisplayName = "Blue"),
 	Yellow  = 4 UMETA(DisplayName = "Yellow")
+	
 };
 UCLASS()
 class NEA2_API UBuildingClassEnum : public UUserDefinedEnum

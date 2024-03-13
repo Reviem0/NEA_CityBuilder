@@ -2,6 +2,7 @@
 
 
 #include "CB_House.h"
+#include "Kismet/GameplayStatics.h"
 #include "../../Grid/GridManager.h"
 #include "DrawDebugHelpers.h"
 #include "../CB_OwnedRoadCell.h"
@@ -25,14 +26,17 @@ void ACB_House::BeginPlay()
     Super::BeginPlay();
 
     // Check if available rotations are valid
-    bool North = GridCellRef->NNeighbour != nullptr && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None; // 1
-    bool South = GridCellRef->SNeighbour != nullptr && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None; // 2
-    bool East  = GridCellRef->ENeighbour != nullptr && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None; // 3
-    bool West  = GridCellRef->WNeighbour != nullptr && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None; // 4
+    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road); // 1
+    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road); // 2
+    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road); // 3
+    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road); // 4
+
 
   // Destroy if no avaliable rotations
     if (!North && !South && !East && !West) {
+        GridCellRef->SetUnoccupied();
         Destroy();
+        UE_LOG(LogTemp, Warning, TEXT("No available rotations for house placement. Destroying actor."));
         return;
     }
 
@@ -67,32 +71,44 @@ void ACB_House::BeginPlay()
         {
             case 0:
             {
-                if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None)
+                if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road)
                     RoadPlacement = *(GridCellRef->ENeighbour);
+                    if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) {
+                        Cast<ACB_RoadCell>((*(GridCellRef->ENeighbour))->OccupyingActor)->DestroyRoad();
+                    }
                 else
                     AvailableRotations.RemoveAt(RandomIndex);
                 break;
             }
             case 90:
             {
-                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None)
+                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road)
                     RoadPlacement = *(GridCellRef->SNeighbour);
+                    if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
+                        Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
+                    }
                 else
                     AvailableRotations.RemoveAt(RandomIndex);
                 break;
             }
             case 180:
             {
-                if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None)
+                if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road)
                     RoadPlacement = *(GridCellRef->WNeighbour);
+                    if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) {
+                        Cast<ACB_RoadCell>((*(GridCellRef->WNeighbour))->OccupyingActor)->DestroyRoad();
+                    }
                 else
                     AvailableRotations.RemoveAt(RandomIndex);
                 break;
             }
             case 270:
             {
-                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None)
+                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road)
                     RoadPlacement = *(GridCellRef->NNeighbour);
+                    if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
+                        Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
+                    }
                 else
                     AvailableRotations.RemoveAt(RandomIndex);
                 break;
@@ -109,10 +125,11 @@ void ACB_House::BeginPlay()
     } else {
         if (RoadTileActor && RoadPlacement)
         {   
-            RoadTileAsset = GetWorld()->SpawnActor<ACB_OwnedRoadCell>(RoadTileActor, RoadPlacement->GetActorLocation(), FRotator(0,0,0), SpawnInfo);
+            RoadTileAsset = GetWorld()->SpawnActorDeferred<ACB_OwnedRoadCell>(RoadTileActor, FTransform(RoadPlacement->GetActorLocation()));
             if (RoadTileAsset) {
                 // Add the current cell to the road's list of owning cells
                 RoadTileAsset->OwningCells.Add(GridCellRef);
+                UGameplayStatics::FinishSpawningActor(RoadTileAsset, FTransform(RoadPlacement->GetActorLocation()));
             }
         }
     }
@@ -136,11 +153,13 @@ void ACB_House::BeginPlay()
             case EBuildingClass::Green:
                    MeshComponent->SetMaterial(1, GreenMAT);
                 break;
+            case EBuildingClass::Yellow:
+                break;
         }
     }
     
     FTimerHandle MemberTimerHandle;
-
+    UE_LOG(LogTemp, Display, TEXT("House Begin Play"));
     GetWorldTimerManager().SetTimer(MemberTimerHandle, this, &ACB_House::PathCheck, 10.0f, true, 2.0f);
 
 }
@@ -157,6 +176,8 @@ void ACB_House::CreatePath()
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     if (GridManager && TargetWorkplaces.Num() != 0){
         ACB_Workplace* TargetWorkplace = TargetWorkplaces[0];
+        
+
         if (TargetWorkplace == nullptr) return;
 
         AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
@@ -246,6 +267,7 @@ void ACB_House::PathCheck()
 {
     if(Spline && CarAvailability > 0) {
         ACB_CarAI* Car = GetWorld()->SpawnActor<ACB_CarAI>(CarAI, RoadTileAsset->GetActorLocation(), FRotator(0,0,0));
+        UE_LOG(LogTemp, Display, TEXT("Car spawned"));
         if (Car){
             Car->OriginHouse = this;
             Car->DestinationWorkplace = TargetWorkplaces[0];

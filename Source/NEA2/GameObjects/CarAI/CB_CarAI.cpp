@@ -4,12 +4,25 @@
 #include "CB_CarAI.h"
 #include "../House/CB_House.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/PrimitiveComponent.h"
 
-// Sets default values
+// Sets default values 
+
 ACB_CarAI::ACB_CarAI()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
+	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	RootComponent = Root;
+
+	CarMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CarMesh"));
+	CarMesh->SetupAttachment(RootComponent);
+	
+	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
+	TriggerBox->SetupAttachment(RootComponent);
+
+	TriggerBox->SetBoxExtent(FVector(14, 4, 2));
 
 }
 
@@ -17,6 +30,12 @@ ACB_CarAI::ACB_CarAI()
 void ACB_CarAI::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (TriggerBox) {
+		// Bind overlap events
+		TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &ACB_CarAI::OnOverlapBegin);
+		TriggerBox->OnComponentEndOverlap.AddDynamic(this, &ACB_CarAI::OnOverlapEnd);
+	}
 
 	if (CurveFloat)
 	{
@@ -37,6 +56,28 @@ void ACB_CarAI::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	MovementTimeline.TickTimeline(DeltaTime);
 
+}
+
+void ACB_CarAI::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
+{
+
+	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning){
+		Overlapping = true;
+		UE_LOG(LogTemp, Display, TEXT("Overlap Begin"));
+		// Stop the car
+		MovementTimeline.Stop();
+	}
+
+}
+
+void ACB_CarAI::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex)
+{
+	if (Overlapping == true){
+		Overlapping = false;
+		// Set delay to 0.5 seconds
+		FTimerHandle Delay;
+		GetWorldTimerManager().SetTimer(Delay, this, &ACB_CarAI::PlayCar, 0.5f, false);
+	}
 }
 
 void ACB_CarAI::FollowSpline(USplineComponent* Spline)
@@ -87,4 +128,9 @@ void ACB_CarAI::OnTimelineFinished()
 	Destroy();
 }
 
-
+void ACB_CarAI::PlayCar()
+{
+	UE_LOG(LogTemp, Display, TEXT("Overlap End"));
+	// Continue the car
+	MovementTimeline.Play();
+}
