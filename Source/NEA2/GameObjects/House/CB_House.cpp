@@ -26,10 +26,11 @@ void ACB_House::BeginPlay()
     Super::BeginPlay();
 
     // Check if available rotations are valid
-    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road); // 1
-    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road); // 2
-    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road); // 3
-    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road); // 4
+    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->NNeighbour)); // 1
+    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->SNeighbour)); // 2
+    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->ENeighbour)); // 3
+    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->WNeighbour)); // 4
 
 
   // Destroy if no avaliable rotations
@@ -171,29 +172,42 @@ void ACB_House::Tick(float DeltaTime)
     
 }
 
+void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
+{
+    TargetWorkplaces.Add(Workplace);
+    // sort the workplaces by distance
+    TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
+        FVector HouseLocation = RoadTileAsset->GridCellRef->GetActorLocation();
+        return (FVector::Dist(HouseLocation,A.RoadTileAsset->GridCellRef->GetActorLocation()) < FVector::Dist(HouseLocation,B.RoadTileAsset->GridCellRef->GetActorLocation()));
+    });
+    CreatePath();
+}
+
 void ACB_House::CreatePath()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     if (GridManager && TargetWorkplaces.Num() != 0){
-        ACB_Workplace* TargetWorkplace = TargetWorkplaces[0];
-        
+        for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
+            if (TargetWorkplace == nullptr) return;
 
-        if (TargetWorkplace == nullptr) return;
-
-        AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
-        if (TargetCell){
-            TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
-            if (Path.Num() != 0){
-                CreateSpline(Path);
-            } else {
-                if (Spline) {
-                    Spline->RemoveFromRoot();
-                    Spline->DestroyComponent();
-                    Spline = nullptr;
+            AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+            if (TargetCell){
+                TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
+                if (Path.Num() != 0){
+                    CreateSpline(Path);
+                    break;
+                } else {
+                    if (Spline) {
+                        Spline->RemoveFromRoot();
+                        Spline->DestroyComponent();
+                        Spline = nullptr;
+                    }
                 }
             }
-        }
-    } else {
+        }  
+    }
+
+    if (TargetWorkplaces.Num() == 0) {
         UE_LOG(LogTemp, Display, TEXT("NO WORKPLACES FOUND"));
     }
 }

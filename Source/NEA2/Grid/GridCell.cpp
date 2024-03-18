@@ -24,6 +24,14 @@ void AGridCell::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+void AGridCell::SetActive()
+{
+	TArray<UStaticMeshComponent*> MeshComponents;
+	GetComponents<UStaticMeshComponent>(MeshComponents);
+	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
+		MeshComponent->SetMaterial(0, DefaultMAT);
+	}
+}
 // Set Grid Cell as Occupied
 void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 {
@@ -34,7 +42,7 @@ void AGridCell::SetOccupied(EBuildingType NewBuildingType, AActor* NewActor)
 	if (NewBuildingType == EBuildingType::Road) {
 		bWalkable = true;
 	}
-	//DebugShowNeighbours();
+	// DebugShowNeighbours();
 }
 
 void AGridCell::SetUnoccupied()
@@ -63,7 +71,7 @@ void AGridCell::DebugShowNeighbours()
 	}
 }
 
-// Set current Grid Cell to debugMAT
+// Set current Grid Cell MAT to debugMAT
 void AGridCell::DebugSetMAT()
 {
 	TArray<UStaticMeshComponent*> MeshComponents;

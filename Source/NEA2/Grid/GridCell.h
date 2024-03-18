@@ -31,7 +31,9 @@ public:
 
 	UMaterialInterface* DebugMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/DebugTile_Mat.DebugTile_Mat'"));
 	UMaterialInterface* DefaultMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/Tile_Mat.Tile_Mat'"));
-	
+	UMaterialInterface* InactiveMAT = LoadObject<UMaterialInterface>(NULL, TEXT("/Script/Engine.Material'/Game/Grid/TextureAssets/InactiveTile_Mat.InactiveTile_Mat'"));
+
+	void SetActive();
 	UPROPERTY(EditAnywhere)
 	EBuildingType OccupyingType {EBuildingType::None};
 	UPROPERTY(EditAnywhere)

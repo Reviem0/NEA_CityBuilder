@@ -34,9 +34,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AGameManager> GameManagerClass;
 
+	
 
+	void SetSubGrid(int X, int Y);
+	void ExpandSubGrid(int X, int Y);
+	void UpdateTexture();
 
 	TArray<AGridCell*> GridArray;
+	TArray<AGridCell*> PlayGridArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PlayGridSizeX = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PlayGridSizeY = 5;
 
 	// Populate Grid
 	void PopulateGrid();

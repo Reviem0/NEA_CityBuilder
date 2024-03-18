@@ -22,7 +22,7 @@ class NEA2_API ACB_House : public ACB_BuildingAsset
 public:
 	ACB_House();
 
-	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Properties")
+	UPROPERTY(EditAnywhere, Category = "Properties")
 	EBuildingClass BuildingClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")
@@ -50,6 +50,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, Category = "Stats")
 	int CarAvailability = 2;
+
+	void AddTargetWorkplace(ACB_Workplace* Workplace);
 
 protected:
 	virtual void BeginPlay() override;

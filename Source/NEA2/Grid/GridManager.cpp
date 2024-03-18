@@ -19,7 +19,9 @@ void AGridManager::BeginPlay()
 	PopulateGrid();
 	PopulateGridNeighbours();
 	SetNeighbourArray();
+	SetSubGrid(PlayGridSizeX, PlayGridSizeY);
 	InitGameManager();
+	
 
 }
 
@@ -257,4 +259,41 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
 		GridArray[i]->ResetPathfinding();
 	}
     return path;
+}
+
+void AGridManager::SetSubGrid(int X, int Y) {
+	// Append GridArray to PlayGrid Array based on dimensions
+	for (int i = 0; i < Y; i++) {
+		for (int j = 0; j < X; j++) {
+			PlayGridArray.Add(GridArray[((i+(GridSizeY-Y)/2) * GridSizeX) + j+(GridSizeX-X)/2]);
+		}
+	}
+	PlayGridSizeX = X;
+	PlayGridSizeY = Y;
+	UpdateTexture();
+}
+
+void AGridManager::ExpandSubGrid(int X, int Y)
+{
+	X += PlayGridSizeX;
+	Y += PlayGridSizeY;
+
+	if (X > GridSizeX || Y > GridSizeY) {
+		return;
+	}pan
+    // Append GridArray to PlayGrid Array based on dimensions
+	for (int i = 0; i < Y; i++) {
+		for (int j = 0; j < X; j++) {
+			PlayGridArray.Add(GridArray[((i+(GridSizeY-Y)/2) * GridSizeX) + j+(GridSizeX-X)/2]);
+		}
+	}
+	PlayGridSizeX = X;
+	PlayGridSizeY = Y;
+	UpdateTexture();
+}
+
+void AGridManager::UpdateTexture() {
+	for (int i = 0; i < PlayGridArray.Num(); i++) {
+		PlayGridArray[i]->SetActive();
+	}
 }

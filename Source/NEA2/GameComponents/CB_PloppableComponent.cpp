@@ -44,8 +44,12 @@ void UCB_PloppableComponent::UpdateState()
 	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
 	if (GridManager->GridArray.Num() != 0) {
-		if (!(Owner->GridCellRef->isOccupied)) {
-			IsPlacementValid = true;
+		if (GridManager->PlayGridArray.Contains(Owner->GridCellRef)){
+			if (!(Owner->GridCellRef->isOccupied)) {
+				IsPlacementValid = true;
+			} else {
+				IsPlacementValid = false;
+		}
 		} else {
 			IsPlacementValid = false;
 		}

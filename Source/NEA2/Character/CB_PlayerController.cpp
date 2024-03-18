@@ -99,8 +99,9 @@ void ACB_PlayerController::SpawnBuilding() {
         AActor* NewActor = GetWorld()->SpawnActor<AActor>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
         PlopComp->UpdateState();
         LastPlaced = PlaceableActor->GridCellRef;
-
-        GridManager->GameManager->UpdatePath();
+        if (GridManager->GameManager) {
+            GridManager->GameManager->UpdatePath();
+        }
     }
 }
 
@@ -114,7 +115,9 @@ void ACB_PlayerController::DeleteBuilding() {
                 {
                     Cast<ACB_RoadCell>(Grid->OccupyingActor)->DestroyRoad();
                     PlopComp->UpdateState();
-                    GridManager->GameManager->UpdatePath();
+                    if (GridManager->GameManager) { 
+                        GridManager->GameManager->UpdatePath();
+                    }
                 }
             }
         }

@@ -20,9 +20,9 @@ void AGameManager::BeginPlay()
 	Super::BeginPlay();
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
 	if (GridManager) {
-		GridArray = GridManager->GridArray;
-		GridSizeX = GridManager->GridSizeX;
-		GridSizeY = GridManager->GridSizeY;
+		GridArray = GridManager->PlayGridArray;
+		GridSizeX = GridManager->PlayGridSizeX;
+		GridSizeY = GridManager->PlayGridSizeY;
 
 		Init();
 	}
@@ -42,6 +42,7 @@ void AGameManager::Tick(float DeltaTime)
 void AGameManager::Init()
 {
 	AvailableColours.Add(EBuildingClass::Red);
+	RemainingColours.Remove(EBuildingClass::Red);
 	SpawnColourSet();
 }
 
@@ -108,8 +109,9 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 		WorkplaceArray.Add(Workplace);
 		for (int i = 0; i < HouseArray.Num(); i++)
 		{
-			HouseArray[i]->TargetWorkplaces.Add(Workplace);
-			UpdatePath();
+			if (HouseArray[i]->BuildingClass == Workplace->BuildingClass) {
+				HouseArray[i]->AddTargetWorkplace(Workplace);
+			}
 		}
 	} else {
 		// Failed to spawn
@@ -200,7 +202,6 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
 	// Spawn a random colour set from the available colours
 	SpawnHouseAtRandomLocation(BuildingClass);
 	SpawnWorkplaceAtRandomLocation(BuildingClass);
-	
 
 }
 
@@ -213,6 +214,8 @@ void AGameManager::AddScore(int Score)
 }
 
 void AGameManager::ScoreFunction() {
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
+	GridManager->ExpandSubGrid(1,1);
 	if (TotalScore % 10 == 0 && RemainingColours.Num() > 0) {
 		EBuildingClass random = RemainingColours[FMath::RandRange(0, RemainingColours.Num() - 1)];
 		AvailableColours.Add(random);
@@ -221,6 +224,7 @@ void AGameManager::ScoreFunction() {
 	}
 	if (TotalScore % 5 == 0) {
 		SpawnHouseAtRandomLocation();
+
 	}
 	if (TotalScore % 20 == 0) {
 		SpawnWorkplaceAtRandomLocation();
