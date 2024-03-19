@@ -44,9 +44,9 @@ public:
 	TArray<EBuildingClass> RemainingColours;
 
 	bool SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass);
-	void SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+	bool SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
 	bool SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass);
-	void SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+	bool SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
 
 	void SpawnColourSet(EBuildingClass BuildingClass = EBuildingClass::None);
 

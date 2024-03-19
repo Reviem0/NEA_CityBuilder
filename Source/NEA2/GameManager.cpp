@@ -121,7 +121,7 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 	return true;
 }
 
-void AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass) 
+bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass) 
 {
 	// Ensure House is not spawned on another object
 	AGridCell* SpawnCell = nullptr;
@@ -145,14 +145,17 @@ void AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 	}
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN SUCCESSFUL"));
+		return true;
 	} else {
 		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN FAILED"));
+		return false;
 	}
+	return false;
 }
 
-void AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
+bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
 {
-	if (WorkplaceRedClass == nullptr) return;
+	if (WorkplaceRedClass == nullptr) return false;
 
 	// If no colour is specified, spawn a random colour
 	if (BuildingClass == EBuildingClass::None) {
@@ -176,11 +179,12 @@ void AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 	}
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
-		return;
+		return true;
 	} else {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN FAILED"));
-		return;
+		return false;
 	}
+	return false;
     
 }
 
@@ -200,9 +204,9 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
 	}
 	
 	// Spawn a random colour set from the available colours
-	SpawnHouseAtRandomLocation(BuildingClass);
-	SpawnWorkplaceAtRandomLocation(BuildingClass);
-
+	if (SpawnWorkplaceAtRandomLocation(BuildingClass)){
+		SpawnHouseAtRandomLocation(BuildingClass);
+	}
 }
 
 void AGameManager::AddScore(int Score) 
