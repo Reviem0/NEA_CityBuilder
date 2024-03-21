@@ -289,6 +289,10 @@ void AGridManager::ExpandSubGrid(int X, int Y)
 	}
 	PlayGridSizeX = X;
 	PlayGridSizeY = Y;
+
+	GameManager->GridArray = PlayGridArray;
+	GameManager->GridSizeX = PlayGridSizeX;
+	GameManager->GridSizeY = PlayGridSizeY;
 	UpdateTexture();
 }
 

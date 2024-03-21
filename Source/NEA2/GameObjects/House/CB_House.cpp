@@ -186,22 +186,35 @@ void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
 void ACB_House::CreatePath()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    if (GridManager && TargetWorkplaces.Num() != 0){
+
+    if (!GridManager) {
+        UE_LOG(LogTemp, Error, TEXT("GridManager is null"));
+        return;
+    }
+
+    if (Spline) {
+        Spline->RemoveFromRoot();
+        Spline->DestroyComponent();
+        Spline = nullptr;
+    }
+    if (TargetWorkplaces.Num() != 0){
         for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
-            if (TargetWorkplace == nullptr) return;
+            if (TargetWorkplace == nullptr) {
+                UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
+                continue;
+            }
+            
+            if (TargetWorkplace->RoadTileAsset == nullptr) {
+                UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
+                continue;
+            }
 
             AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
-            if (TargetCell){
+            if (TargetCell && TargetWorkplace->IsFull == false){
                 TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
                 if (Path.Num() != 0){
-                    CreateSpline(Path);
+                    CreateSpline(Path, TargetWorkplace);
                     break;
-                } else {
-                    if (Spline) {
-                        Spline->RemoveFromRoot();
-                        Spline->DestroyComponent();
-                        Spline = nullptr;
-                    }
                 }
             }
         }  
@@ -213,7 +226,7 @@ void ACB_House::CreatePath()
 }
 
 
-void ACB_House::CreateSpline(TArray<AGridCell*> Path) 
+void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkplace) 
 {
     if (Spline) {
         Spline->RemoveFromRoot();
@@ -234,7 +247,7 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path)
     // Add the origin road tile to the start of the path
     Path.Insert(RoadTileAsset->GridCellRef, 0); 
     // Add The target workplace to the end of the path
-    Path.Add(TargetWorkplaces[0]->BottomLeftAsset->GridCellRef);
+    Path.Add(TargetWorkplace->BottomLeftAsset->GridCellRef);
 
     // Make spline follow path
     for (int i = 0; i < Path.Num(); i++)
@@ -265,7 +278,7 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path)
         UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
 
         // draw debug line for right vector
-        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
         
         Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
         Spline->SetSplinePointType(i, ESplinePointType::Curve, true);

@@ -17,6 +17,8 @@ ACB_Workplace::ACB_Workplace()
     PrimaryActorTick.bCanEverTick = true;
     BuildingType = EBuildingType::None;
     BuildingClass = EBuildingClass::None;
+
+    Goal = 20;
 }
 
 // Sets default values
@@ -186,6 +188,10 @@ void ACB_Workplace::CarArrived(AActor * Car)
         AddToHouseQueue(Cast<AActor>(CarAI->OriginHouse));
     }
     UE_LOG(LogTemp, Display, TEXT("Car arrived at workplace"));
+    HoldingCurrent++;
+    if (HoldingCurrent >= HoldingCapacity) {
+        IsFull = true;
+    }
     
 
 
@@ -209,6 +215,10 @@ void ACB_Workplace::OnWaitFinished() {
             AddToHouseQueue(HouseQueue[0]);
         }
         HouseQueue.RemoveAt(0);
+        HoldingCurrent--;
+        if (HoldingCurrent < HoldingCapacity) {
+            IsFull = false;
+        }
     }
 
     // Do something when the wait is finished
@@ -216,22 +226,39 @@ void ACB_Workplace::OnWaitFinished() {
 
 bool ACB_Workplace::CreatePath(AActor* House) {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    if (GridManager && House){
-        ACB_House* HouseCell = Cast<ACB_House>(House);
-        if (HouseCell) {
-            TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, HouseCell->RoadTileAsset->GridCellRef);
-            if (Path.Num() > 0) {
-                CreateSpline(Path, House);
-            } else {
-                if (Spline) {
-                    Spline->RemoveFromRoot();
-                    Spline->DestroyComponent();
-                    Spline = nullptr;
-                    return false;
-                }
-            }
-        }
+    if (!GridManager) {
+        UE_LOG(LogTemp, Error, TEXT("GridManager is null"));
+        return false;
     }
+
+    if (!House) {
+        UE_LOG(LogTemp, Error, TEXT("House is null"));
+        return false;
+    }
+
+    ACB_House* HouseCell = Cast<ACB_House>(House);
+    if (!HouseCell) {
+        UE_LOG(LogTemp, Error, TEXT("HouseCell is null"));
+        return false;
+    }
+
+    if (!RoadTileAsset || !HouseCell->RoadTileAsset) {
+        UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
+        return false;
+    }
+
+    TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, HouseCell->RoadTileAsset->GridCellRef);
+    if (Path.Num() > 0) {
+        CreateSpline(Path, House);
+    } else {
+        if (Spline) {
+            Spline->RemoveFromRoot();
+            Spline->DestroyComponent();
+            Spline = nullptr;
+        }
+        return false;
+    }
+
     return true;
 }
 
@@ -295,8 +322,6 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
 
     SendCar(House);
 
-
-
 }
 
 void ACB_Workplace::SendCar(AActor* House) {
@@ -317,6 +342,10 @@ void ACB_Workplace::AddScore() {
     if (GameManager) {
         UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Score: %d"), Points);
         GameManager->AddScore(1);
+        CurrentScore++;
+        if (CurrentScore >= Goal) {
+            GameManager->WorkplaceIncreaseGoal(this);
+        }
     } else {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GameManager is null"));
     }

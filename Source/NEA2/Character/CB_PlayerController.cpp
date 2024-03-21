@@ -159,11 +159,9 @@ void ACB_PlayerController::PathTEST() {
 
 void ACB_PlayerController::IncreaseSpeed() {
     // set global time dilation to 2
-    GameSpeed = 2.f;
-    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), GameSpeed);
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), FastForward);
 }
 
 void ACB_PlayerController::ResetSpeed() {
-    GameSpeed = 1.f;
-    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), GameSpeed);
+    UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
 }

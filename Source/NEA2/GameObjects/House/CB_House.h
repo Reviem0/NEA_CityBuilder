@@ -41,7 +41,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Workplaces")
 	TArray<ACB_Workplace*> TargetWorkplaces;
 
-	void CreateSpline(TArray<AGridCell*> Path);
+	void CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkplace);
 
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;

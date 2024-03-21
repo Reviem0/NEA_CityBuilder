@@ -118,6 +118,7 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 		return false;
 	}
 	// Spawn successful
+	SatisfactionCheck();
 	return true;
 }
 
@@ -156,7 +157,21 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
 {
 	if (WorkplaceRedClass == nullptr) return false;
+	
+	TArray<AGridCell*> PossibleSpawnLocations;
+	// Workplace is 2x2
+	// Ensure Workplace is not spawned on another object
+	for (int i = 0; i < GridArray.Num(); i++) {
+		if (GridArray[i]->OccupyingType == EBuildingType::None) {
+			if (i % GridSizeX < GridSizeX - 1 && i / GridSizeX < GridSizeY - 1) {
+				if (GridArray[i + 1]->OccupyingType == EBuildingType::None && GridArray[i + GridSizeX]->OccupyingType == EBuildingType::None && GridArray[i + GridSizeX + 1]->OccupyingType == EBuildingType::None) {
+					PossibleSpawnLocations.Add(GridArray[i]);
+				}
+			}
+		}
+	}
 
+	
 	// If no colour is specified, spawn a random colour
 	if (BuildingClass == EBuildingClass::None) {
 		BuildingClass = AvailableColours[FMath::RandRange(0, AvailableColours.Num() - 1)];
@@ -165,17 +180,15 @@ bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 	bool SpawnSuccess = false;
 	int SpawnAttemptCount = 0;
 	// Attempt to spawn until successful
+	if (PossibleSpawnLocations.Num() == 0) return false;
+
 	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) 
 	{
 		// Ensure that the workplace is not spawned on the edge of the grid
 		// Workplace is 2x2 so it needs to be 2 away from the edge
-		int RandomNumberX = FMath::RandRange(0, GridSizeX - 2);
-		int RandomNumberY = FMath::RandRange(0, GridSizeY - 2);
-		int index = RandomNumberY * GridSizeX + RandomNumberX;
-
-		UE_LOG(LogTemp, Display, TEXT("WORKPLACE: index: %d"), index);
+		int RandomNumberX = FMath::RandRange(0, PossibleSpawnLocations.Num() - 1);
 		SpawnAttemptCount += 1;
-		SpawnSuccess = SpawnWorkplace(GridArray[index], BuildingClass);
+		SpawnSuccess = SpawnWorkplace(PossibleSpawnLocations[RandomNumberX], BuildingClass);
 	}
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
@@ -205,7 +218,7 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
 	
 	// Spawn a random colour set from the available colours
 	if (SpawnWorkplaceAtRandomLocation(BuildingClass)){
-		SpawnHouseAtRandomLocation(BuildingClass);
+		//SpawnHouseAtRandomLocation(BuildingClass);
 	}
 }
 
@@ -219,7 +232,6 @@ void AGameManager::AddScore(int Score)
 
 void AGameManager::ScoreFunction() {
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
-	GridManager->ExpandSubGrid(1,1);
 	if (TotalScore % 10 == 0 && RemainingColours.Num() > 0) {
 		EBuildingClass random = RemainingColours[FMath::RandRange(0, RemainingColours.Num() - 1)];
 		AvailableColours.Add(random);
@@ -227,14 +239,86 @@ void AGameManager::ScoreFunction() {
 		SpawnColourSet();
 	}
 	if (TotalScore % 5 == 0) {
-		SpawnHouseAtRandomLocation();
+		//SpawnHouseAtRandomLocation();
 
 	}
 	if (TotalScore % 20 == 0) {
 		SpawnWorkplaceAtRandomLocation();
+		GridManager->ExpandSubGrid(3,3);
 	}
 }
 
+void AGameManager::WorkplaceIncreaseGoal(ACB_Workplace* Workplace) 
+{
+	Workplace->Goal += 20;
+	SatisfactionCheck();
+}
+
+void AGameManager::SatisfactionCheck() 
+{
+	int redGoal = 0;
+	int blueGoal = 0;
+	int greenGoal = 0;
+	int yellowGoal = 0;
+
+	int redHouseCount = 0;
+	int blueHouseCount = 0;
+	int greenHouseCount = 0;
+	int yellowHouseCount = 0;
+
+	for (ACB_Workplace* Workplace : WorkplaceArray) {
+		if (Workplace->BuildingClass == EBuildingClass::Red) {
+			redGoal += Workplace->Goal;
+		} else if (Workplace->BuildingClass == EBuildingClass::Blue) {
+			blueGoal += Workplace->Goal;
+		} else if (Workplace->BuildingClass == EBuildingClass::Green) {
+			greenGoal += Workplace->Goal;
+		} else if (Workplace->BuildingClass == EBuildingClass::Yellow) {
+			yellowGoal += Workplace->Goal;
+		}
+	}
+	
+	for (ACB_House* House : HouseArray) {
+		if (House->BuildingClass == EBuildingClass::Red) {
+			redHouseCount += 1;
+		} else if (House->BuildingClass == EBuildingClass::Blue) {
+			blueHouseCount += 1;
+		} else if (House->BuildingClass == EBuildingClass::Green) {
+			greenHouseCount += 1;
+		} else if (House->BuildingClass == EBuildingClass::Yellow) {
+			yellowHouseCount += 1;
+		}
+	}
+
+	if (true) {
+		if (redGoal / 20 > redHouseCount) {
+			for (int i = 0; i < redGoal / 20 - redHouseCount; i++) {
+				SpawnHouseAtRandomLocation(EBuildingClass::Red);
+			}
+		}
+	}
+	if (true) {
+		if (blueGoal / 20 > blueHouseCount) {
+			for (int i = 0; i < blueGoal / 20 - blueHouseCount; i++) {
+				SpawnHouseAtRandomLocation(EBuildingClass::Blue);
+			}
+		}
+	}
+	if (true) {
+		if (greenGoal / 20 > greenHouseCount) {
+			for (int i = 0; i < greenGoal / 20 - greenHouseCount; i++) {
+				SpawnHouseAtRandomLocation(EBuildingClass::Green);
+			}
+		}
+	}
+	if (true) {
+		if (yellowGoal / 20 > yellowHouseCount) {
+			for (int i = 0; i < yellowGoal / 20 - yellowHouseCount; i++) {
+				SpawnHouseAtRandomLocation(EBuildingClass::Yellow);
+			}
+		}
+	}
+}
 /* 
 Calculating the total score inside the GameManager.cpp: 
 This approach is more straightforward and easier to implement. You would simply iterate over all the workplaces and sum their scores. 

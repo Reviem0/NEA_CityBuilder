@@ -37,5 +37,5 @@ public:
 
 	UFUNCTION()
 	void inPlacementMode();
-		
+	
 };

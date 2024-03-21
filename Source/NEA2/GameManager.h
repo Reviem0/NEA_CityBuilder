@@ -64,6 +64,9 @@ public:
 
 	void ScoreFunction();
 
+	void WorkplaceIncreaseGoal(ACB_Workplace* Workplace);
+	void SatisfactionCheck();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

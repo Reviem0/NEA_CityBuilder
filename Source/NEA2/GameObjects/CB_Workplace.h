@@ -69,6 +69,19 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;
 
+	int Goal;
+	int CurrentScore = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	int HoldingCapacity = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	int HoldingCurrent = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	bool IsFull = false;
+
+	
 	void CreateSpline(TArray<AGridCell*> Path, AActor* House);
 
 	void SendCar(AActor* House);

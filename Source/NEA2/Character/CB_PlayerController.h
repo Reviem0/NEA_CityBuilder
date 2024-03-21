@@ -33,7 +33,8 @@ public:
 	FTransform PlacementTransform;
 	bool PlacementModeEnabled = false;
 
-	float GameSpeed = 1.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Time")
+	float FastForward = 3.f;
 
 	bool bDeletingBuilding;
     FTimerHandle DeleteBuildingTimerHandle;

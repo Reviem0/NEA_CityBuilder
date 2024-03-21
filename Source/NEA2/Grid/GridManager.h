@@ -34,7 +34,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AGameManager> GameManagerClass;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ObstacleCount = 5;
+
+	void PlaceObstacles();
 
 	void SetSubGrid(int X, int Y);
 	void ExpandSubGrid(int X, int Y);
