@@ -160,7 +160,7 @@ void ACB_House::BeginPlay()
     }
     
     FTimerHandle MemberTimerHandle;
-    UE_LOG(LogTemp, Display, TEXT("House Begin Play"));
+    // Set a timer to check for a path every 10 seconds
     GetWorldTimerManager().SetTimer(MemberTimerHandle, this, &ACB_House::PathCheck, 10.0f, true, 2.0f);
 
 }
@@ -228,24 +228,29 @@ void ACB_House::CreatePath()
 
 void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkplace) 
 {
+    // If the spline exists, remove it
     if (Spline) {
         Spline->RemoveFromRoot();
         Spline->DestroyComponent();
         Spline = nullptr;
     }
     
+    // If the path is empty, return
     if (Path.Num() == 0) return;
 
+    // Create and setup new spline component
     Spline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
     Spline->RegisterComponent();
     Spline->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
     Spline->SetWorldLocation(RoadTileAsset->GetActorLocation()); // Set the spline's location to the house's location
     Spline->SetLocationAtSplinePoint(1, GetActorLocation(), ESplineCoordinateSpace::World); // Set the first point of the spline to the house's location
+    
     // Remove first point from spline
     Spline->RemoveSplinePoint(0);
 
     // Add the origin road tile to the start of the path
-    Path.Insert(RoadTileAsset->GridCellRef, 0); 
+    Path.Insert(RoadTileAsset->GridCellRef, 0);
+
     // Add The target workplace to the end of the path
     Path.Add(TargetWorkplace->BottomLeftAsset->GridCellRef);
 
@@ -253,35 +258,16 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkp
     for (int i = 0; i < Path.Num(); i++)
     {
         Spline->AddSplinePoint(Path[i]->GetActorLocation(), ESplineCoordinateSpace::World);
-        Spline->SetSplinePointType(i, ESplinePointType::Linear, true);
-
-        FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World); // Get the right vector at the point
-        FVector PreviousRightVector = FVector(0,0,0);
-        bool turning = false;
-        // check if the vector of the previous point is the same as the current point
-        if (i > 0) {
-            PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
-            if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
-                turning = true;
-                UE_LOG(LogTemp, Display, TEXT("Turning"));
-            } else {
-                PreviousRightVector = FVector(0,0,0);
-            }
-        }
 
         int multiplier = 10;
-        if (turning) {
-            multiplier = 20;
-        }
 
         // log the right vector with spline point for debugging purposes
         UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
 
         // draw debug line for right vector
-        // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
         
-        Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
-        Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
+        Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector) * multiplier, ESplineCoordinateSpace::World);
     }
 
     // Log the number of spline points
@@ -292,13 +278,18 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkp
 
 void ACB_House::PathCheck()
 {
+    // If the spline is valid, Send a car
     if(Spline && CarAvailability > 0) {
+        // Spawn a car
         ACB_CarAI* Car = GetWorld()->SpawnActor<ACB_CarAI>(CarAI, RoadTileAsset->GetActorLocation(), FRotator(0,0,0));
+        // Log that the car has been spawned for debugging purposes
         UE_LOG(LogTemp, Display, TEXT("Car spawned"));
+        // If the car spawns successfully, set the origin house and destination workplace, and make the car follow the spline
         if (Car){
             Car->OriginHouse = this;
             Car->DestinationWorkplace = TargetWorkplaces[0];
             Car->FollowSpline(Spline);
+            // Decrement the car availability
             CarAvailability--;
         }
     }
@@ -306,5 +297,6 @@ void ACB_House::PathCheck()
 
 void ACB_House::CarArrived(ACB_CarAI *Car)
 {
+    // Increment the car availability
     CarAvailability++;
 }

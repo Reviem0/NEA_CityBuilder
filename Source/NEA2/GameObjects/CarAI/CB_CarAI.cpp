@@ -13,15 +13,19 @@ ACB_CarAI::ACB_CarAI()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	
+	// Create the root component
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 
+	// Create the mesh
 	CarMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("CarMesh"));
 	CarMesh->SetupAttachment(RootComponent);
 	
+	// Define the trigger box
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("TriggerBox"));
 	TriggerBox->SetupAttachment(RootComponent);
 
+	// Change the size of the trigger box
 	TriggerBox->SetBoxExtent(FVector(14, 4, 2));
 
 }
