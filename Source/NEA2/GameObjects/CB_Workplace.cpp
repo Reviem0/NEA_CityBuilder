@@ -7,10 +7,9 @@
 #include "CarAI/CB_CarAI.h"
 #include "../Grid/GridManager.h"
 #include "../GameManager.h"
-
-#include "Kismet/GameplayStatics.h"
 #include "CarAI/CB_CarAI.h"
 #include "../Grid/GridManager.h"
+#include "../HUDElements/CB_CriticalBar.h"
 
 ACB_Workplace::ACB_Workplace() 
 {
@@ -18,8 +17,13 @@ ACB_Workplace::ACB_Workplace()
     BuildingType = EBuildingType::None;
     BuildingClass = EBuildingClass::None;
 
+    CriticalBarComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("CriticalBar"));
+    CriticalBarComp->SetupAttachment(RootComponent);
+
+
     Goal = 20;
 }
+
 
 // Sets default values
 void ACB_Workplace::BeginPlay()
@@ -171,6 +175,15 @@ void ACB_Workplace::BeginPlay()
                     }
                 }
     }
+
+    // Set the critical bar's owner workplace
+    UCB_CriticalBar* CriticalBar = Cast<UCB_CriticalBar>(CriticalBarComp->GetUserWidgetObject());
+    if (CriticalBar) {
+        CriticalBar->SetOwnerWorkplace(this);
+    } else {
+        UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: CriticalBar is null"));
+    }
+    GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, GoalTimer, false);
 }
 
 // Called every frame
@@ -213,11 +226,14 @@ void ACB_Workplace::OnWaitFinished() {
         // If Path was unsuccessful, add the house to the back of the queue
         if (!Success){
             AddToHouseQueue(HouseQueue[0]);
+        } else {
+            HoldingCurrent--;
         }
         HouseQueue.RemoveAt(0);
-        HoldingCurrent--;
         if (HoldingCurrent < HoldingCapacity) {
             IsFull = false;
+        } else {
+            IsFull = true;
         }
     }
 
@@ -309,7 +325,7 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
         // UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());36
 
         // draw debug line for right vector
-        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Blue, true, 10.0f, -1, 1.0f);
+        // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Blue, true, 10.0f, -1, 1.0f);
         
         Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
         Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
@@ -344,7 +360,13 @@ void ACB_Workplace::AddScore() {
         GameManager->AddScore(1);
         CurrentScore++;
         if (CurrentScore >= Goal) {
-            GameManager->WorkplaceIncreaseGoal(this);
+            IncreaseGoal();
+            // Reset goal timer
+            if (isCritical) {
+                isCritical = false;
+                GetWorld()->GetTimerManager().ClearTimer(CriticalTimerHandle);
+            }
+            GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, 240, false);
         }
     } else {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GameManager is null"));
@@ -354,4 +376,42 @@ void ACB_Workplace::AddScore() {
 void ACB_Workplace::DestroyWorkplace() {
     GridCellRef->SetUnoccupied();
     Destroy();
+}
+
+void ACB_Workplace::GoalNotMet()
+{
+    isCritical = true;
+    // print critical message with the workplace's name
+    UE_LOG(LogTemp, Display, TEXT("WORKPLACE: %s is critical"), *GetName());
+    // Set a timer for the loss condition
+    GetWorld()->GetTimerManager().SetTimer(CriticalTimerHandle, this, &ACB_Workplace::LossCondition, CriticalTime, false);
+
+
+}
+
+void ACB_Workplace::IncreaseGoal()
+{
+    AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+    Goal += 20;
+    GameManager->SatisfactionCheck();
+}
+
+void ACB_Workplace::LossCondition()
+{
+    AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+    if (isCritical) {
+        isLost = true;
+    }
+    if (GameManager) {
+        GameManager->LossFunction();
+    }
+}
+
+float ACB_Workplace::GetCriticalValue()
+{
+    if (CriticalTimerHandle.IsValid()) {
+        float TimeRemaining = GetWorld()->GetTimerManager().GetTimerRemaining(CriticalTimerHandle);
+        return TimeRemaining/CriticalTime;
+    }
+    return 0;
 }

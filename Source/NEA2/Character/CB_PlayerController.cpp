@@ -3,6 +3,7 @@
 #include "CB_PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
+
 ACB_PlayerController::ACB_PlayerController()
 {
     PrimaryActorTick.bCanEverTick = true;
@@ -10,7 +11,8 @@ ACB_PlayerController::ACB_PlayerController()
 
 void ACB_PlayerController::BeginPlay()
 {
-    PlacementCheck();
+    RoadInventory = 20;
+
 }
 
 void ACB_PlayerController::SetupInputComponent()
@@ -23,6 +25,7 @@ void ACB_PlayerController::SetupInputComponent()
     InputComponent->BindAction("PathTEST", IE_Pressed, this, &ACB_PlayerController::PathTEST);
     InputComponent->BindAction("IncreaseSpeed", IE_Pressed, this, &ACB_PlayerController::IncreaseSpeed);
     InputComponent->BindAction("IncreaseSpeed", IE_Released, this, &ACB_PlayerController::ResetSpeed);
+    InputComponent->BindAction("EnablePlacement", IE_Pressed, this, &ACB_PlayerController::PlacementCheck);
 
 }
 
@@ -37,9 +40,9 @@ void ACB_PlayerController::PlacementCheck()
 {
     GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     if (GridManager){
-        SetPlacementModeEnabled(true);
+        SetPlacementModeEnabled(!PlacementModeEnabled);
     } else {
-        PlacementCheck();
+        UE_LOG(LogTemp, Warning, TEXT("GridManager not found! Cannot place buildings!"));
     }
 }
 
@@ -59,16 +62,20 @@ void ACB_PlayerController::SetPlacementModeEnabled(bool bEnabled) {
             PlaceableActor->Destroy();
         }
     } else {
-        PlaceableActor = GetWorld()->SpawnActor<ACB_BuildingAsset>(ActorToPlace, RelativeTransform, SpawnParams);
-        PlaceableActor->SetActorScale3D(GridManager->GetGridScale());
-        if (PlaceableActor->GetComponentByClass<UCB_ClickComponent>()){
-            PlaceableActor->GetComponentByClass<UCB_ClickComponent>()->inPlacementMode();
-            FName CompName = "Ploppable";
-        }
-        NewComponent = NewObject<UCB_PloppableComponent>(PlaceableActor);
-        if (NewComponent){
-            NewComponent->RegisterComponent();
-            PlaceableActor->AddInstanceComponent(NewComponent);
+        PlaceableActor = GetWorld()->SpawnActorDeferred<ACB_BuildingAsset>(ActorToPlace, RelativeTransform);
+        if (PlaceableActor) {
+            PlaceableActor->SetActorScale3D(GridManager->GetGridScale());
+            if (PlaceableActor->GetComponentByClass<UCB_ClickComponent>()){
+                PlaceableActor->GetComponentByClass<UCB_ClickComponent>()->inPlacementMode();
+                FName CompName = "Ploppable";
+            }
+            NewComponent = NewObject<UCB_PloppableComponent>(PlaceableActor);
+            if (NewComponent){
+                NewComponent->RegisterComponent();
+                PlaceableActor->AddInstanceComponent(NewComponent);
+            }
+            PlaceableActor->isPlop = true;
+            PlaceableActor->FinishSpawning(RelativeTransform);
         }
     }
 }
@@ -91,6 +98,13 @@ void ACB_PlayerController::UpdatePlacement() {
 }
 
 void ACB_PlayerController::SpawnBuilding() {
+    if (PlacementModeEnabled == false) {
+        return;
+    }
+    if (RoadInventory <= 0) {
+        UE_LOG(LogTemp, Warning, TEXT("Road Inventory is empty!"));
+        return;
+    }
     UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -102,10 +116,14 @@ void ACB_PlayerController::SpawnBuilding() {
         if (GridManager->GameManager) {
             GridManager->GameManager->UpdatePath();
         }
+        UpdateRoadInventory(-1);
     }
 }
 
 void ACB_PlayerController::DeleteBuilding() {
+    if (PlacementModeEnabled == false) {
+        return;
+    }
     if (PlaceableActor) {
         if (GridManager){
             UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
@@ -118,6 +136,7 @@ void ACB_PlayerController::DeleteBuilding() {
                     if (GridManager->GameManager) { 
                         GridManager->GameManager->UpdatePath();
                     }
+                    UpdateRoadInventory(1);
                 }
             }
         }
@@ -164,4 +183,13 @@ void ACB_PlayerController::IncreaseSpeed() {
 
 void ACB_PlayerController::ResetSpeed() {
     UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1);
+}
+
+void ACB_PlayerController::UpdateRoadInventory(int Amount) {
+    RoadInventory += Amount;
+    if (PlaceableActor) {
+        if (PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()) {
+            PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()->UpdateState();
+        }
+    }
 }

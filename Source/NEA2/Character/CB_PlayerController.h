@@ -42,6 +42,10 @@ public:
 
 	AGridCell* LastPlaced;
 
+	int RoadInventory = 0;
+
+	void UpdateRoadInventory(int Amount);
+
 	UFUNCTION()
 	void SetPlacementModeEnabled(bool Enabled);
 	void PlacementCheck();
@@ -57,7 +61,6 @@ public:
 	void IncreaseSpeed();
 	void ResetSpeed();
 	void UpdateSpeed();
-
 
 protected:
 

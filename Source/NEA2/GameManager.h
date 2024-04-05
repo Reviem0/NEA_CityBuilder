@@ -41,7 +41,6 @@ public:
 	TSubclassOf<ACB_Workplace> WorkplaceYellowClass;
 
 	TArray<EBuildingClass> AvailableColours;
-	TArray<EBuildingClass> RemainingColours;
 
 	bool SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass);
 	bool SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
@@ -64,8 +63,19 @@ public:
 
 	void ScoreFunction();
 
-	void WorkplaceIncreaseGoal(ACB_Workplace* Workplace);
 	void SatisfactionCheck();
+
+	int LastScore = 0;
+	int LastTime = 0;
+
+	int GetScore();
+
+	void LossFunction();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "LossScreen")
+	TSubclassOf<UUserWidget> LossScreenClass;
+
+	bool hasLost = false;
 
 protected:
 	// Called when the game starts or when spawned

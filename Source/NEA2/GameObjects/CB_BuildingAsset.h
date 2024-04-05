@@ -18,8 +18,8 @@ public:
 	// Sets default values for this actor's properties
 	ACB_BuildingAsset();
 
-	UPROPERTY(EditAnywhere)
-	bool isPlop = true;
+	UPROPERTY(VisibleAnywhere)
+	bool isPlop = false;
 
 	UPROPERTY()
 	EBuildingType BuildingType {EBuildingType::Placed};

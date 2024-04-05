@@ -51,10 +51,11 @@ void ACB_House::BeginPlay()
     if (South) AvailableRotations.Add(90);
     if (West) AvailableRotations.Add(180);
 
-    // print all available rotations for debugging purposes 
-    for (int i = 0; i < AvailableRotations.Num(); i++)
-    {
-        UE_LOG(LogTemp, Display, TEXT("Available Rotation: %d"), AvailableRotations[i]);
+    if (AvailableRotations.Num() == 0) {
+        GridCellRef->SetUnoccupied();
+        Destroy();
+        UE_LOG(LogTemp, Warning, TEXT("No available rotations for house placement. Destroying actor."));
+        return;
     }
     AGridCell* RoadPlacement = nullptr;
 
@@ -72,7 +73,7 @@ void ACB_House::BeginPlay()
         {
             case 0:
             {
-                if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road)
+                if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->ENeighbour);
                     if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->ENeighbour))->OccupyingActor)->DestroyRoad();
@@ -83,7 +84,7 @@ void ACB_House::BeginPlay()
             }
             case 90:
             {
-                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road)
+                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->SNeighbour);
                     if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
@@ -94,7 +95,7 @@ void ACB_House::BeginPlay()
             }
             case 180:
             {
-                if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road)
+                if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->WNeighbour);
                     if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->WNeighbour))->OccupyingActor)->DestroyRoad();
@@ -105,7 +106,7 @@ void ACB_House::BeginPlay()
             }
             case 270:
             {
-                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road)
+                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->NNeighbour);
                     if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
@@ -125,12 +126,18 @@ void ACB_House::BeginPlay()
         Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
     } else {
         if (RoadTileActor && RoadPlacement)
-        {   
-            RoadTileAsset = GetWorld()->SpawnActorDeferred<ACB_OwnedRoadCell>(RoadTileActor, FTransform(RoadPlacement->GetActorLocation()));
-            if (RoadTileAsset) {
-                // Add the current cell to the road's list of owning cells
-                RoadTileAsset->OwningCells.Add(GridCellRef);
-                UGameplayStatics::FinishSpawningActor(RoadTileAsset, FTransform(RoadPlacement->GetActorLocation()));
+        {
+            if (RoadPlacement->OccupyingType == EBuildingType::OwnedRoad){
+                Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
+                Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->UpdateRoadMesh();
+            }
+            if (RoadPlacement->OccupyingType == EBuildingType::None){
+                RoadTileAsset = GetWorld()->SpawnActorDeferred<ACB_OwnedRoadCell>(RoadTileActor, FTransform(RoadPlacement->GetActorLocation()));
+                if (RoadTileAsset) {
+                    // Add the current cell to the road's list of owning cells
+                    RoadTileAsset->OwningCells.Add(GridCellRef);
+                    UGameplayStatics::FinishSpawningActor(RoadTileAsset, FTransform(RoadPlacement->GetActorLocation()));
+                }
             }
         }
     }
@@ -175,18 +182,24 @@ void ACB_House::Tick(float DeltaTime)
 void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
 {
     TargetWorkplaces.Add(Workplace);
+    CreatePath();
+}
+
+void ACB_House::SortWorkplaces()
+{
     // sort the workplaces by distance
     TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
         FVector HouseLocation = RoadTileAsset->GridCellRef->GetActorLocation();
-        return (FVector::Dist(HouseLocation,A.RoadTileAsset->GridCellRef->GetActorLocation()) < FVector::Dist(HouseLocation,B.RoadTileAsset->GridCellRef->GetActorLocation()));
+        int pointDisparity = A.Points - B.Points;
+        int ACritical = A.isCritical ? 1000 : 0;
+        int BCritical = B.isCritical ? 1000 : 0;
+        return (FVector::Dist(HouseLocation,A.RoadTileAsset->GridCellRef->GetActorLocation()) + pointDisparity*5 - ACritical < FVector::Dist(HouseLocation,B.RoadTileAsset->GridCellRef->GetActorLocation()) - BCritical);
     });
-    CreatePath();
 }
 
 void ACB_House::CreatePath()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-
     if (!GridManager) {
         UE_LOG(LogTemp, Error, TEXT("GridManager is null"));
         return;
@@ -197,6 +210,7 @@ void ACB_House::CreatePath()
         Spline->DestroyComponent();
         Spline = nullptr;
     }
+    SortWorkplaces();
     if (TargetWorkplaces.Num() != 0){
         for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
             if (TargetWorkplace == nullptr) {

@@ -61,9 +61,10 @@ void ACB_CarAI::Tick(float DeltaTime)
 void ACB_CarAI::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
 
-	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning){
+	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning && OtherActor != this){
 		Overlapping = true;
-		UE_LOG(LogTemp, Display, TEXT("Overlap Begin"));
+		// Log what the car overlapped with
+		UE_LOG(LogTemp, Display, TEXT("Overlap Begin with %s"), *OtherActor->GetName());
 		// Stop the car
 		MovementTimeline.Stop();
 	}

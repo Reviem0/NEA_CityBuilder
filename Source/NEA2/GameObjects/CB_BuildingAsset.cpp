@@ -27,13 +27,6 @@ void ACB_BuildingAsset::BeginPlay()
     if (GridManager) {
         GridCellRef = GridManager->GetClosestGridCell(GetActorLocation());
     }
-	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(GetWorld()->GetFirstPlayerController());
-	if (PlayerController->PlaceableActor == this || PlayerController->PlaceableActor == nullptr) {
-		isPlop = true;
-	} else
-	{
-		isPlop = false;
-	}
 
 	if (GridCellRef && !isPlop) {
         GridCellRef->SetOccupied(BuildingType, this);

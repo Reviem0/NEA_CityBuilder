@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "../GameObjects/CB_BuildingAsset.h"
 #include "../Enum/BuildingTypeEnum.h"
+#include "../Character/CB_PlayerController.h"
 
 
 // Sets default values for this component's properties
@@ -43,9 +44,10 @@ void UCB_PloppableComponent::UpdateState()
 {
 	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (GridManager->GridArray.Num() != 0) {
 		if (GridManager->PlayGridArray.Contains(Owner->GridCellRef)){
-			if (!(Owner->GridCellRef->isOccupied)) {
+			if (!(Owner->GridCellRef->isOccupied) && PlayerController->RoadInventory > 0) {
 				IsPlacementValid = true;
 			} else {
 				IsPlacementValid = false;

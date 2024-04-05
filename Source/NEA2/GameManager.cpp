@@ -4,6 +4,10 @@
 #include "GameManager.h"
 #include "Grid/GridManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/CB_PlayerController.h"
+#include "GameComponents/CB_PloppableComponent.h"
+#include "GameFramework/HUD.h"
+#include "NEA2GameModeBase.h"
 
 // Sets default values
 AGameManager::AGameManager()
@@ -11,6 +15,7 @@ AGameManager::AGameManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	TotalScore = 0;
+	AvailableColours = {EBuildingClass::Red, EBuildingClass::Blue, EBuildingClass::Green, EBuildingClass::Yellow};
 
 }
 
@@ -26,8 +31,6 @@ void AGameManager::BeginPlay()
 
 		Init();
 	}
-
-	RemainingColours = {EBuildingClass::Red, EBuildingClass::Blue, EBuildingClass::Green, EBuildingClass::Yellow};
 	
 }
 
@@ -35,19 +38,18 @@ void AGameManager::BeginPlay()
 void AGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	ScoreFunction();
 }
 
 
 void AGameManager::Init()
 {
-	AvailableColours.Add(EBuildingClass::Red);
-	RemainingColours.Remove(EBuildingClass::Red);
-	SpawnColourSet();
+	SpawnWorkplaceAtRandomLocation(EBuildingClass::Red);
 }
 
 bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass) 
 {
+	if (GridCell == nullptr) return false;
 	if (GridCell->OccupyingType != EBuildingType::None) return false;
 	TSubclassOf<ACB_House> HouseClass = nullptr;
 	if (BuildingClass == EBuildingClass::None) return false;
@@ -135,13 +137,15 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 	int SpawnAttemptCount = 0;
 	bool SpawnSuccess = false;
 	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) {
-		while (!SpawnCell) {
+		SpawnAttemptCount++;
+		int Attempts = 0;
+		while (!SpawnCell && Attempts < 3) {
+			Attempts++;
 			int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
 			if (GridArray[RandomIndex]->OccupyingType == EBuildingType::None) {
 				SpawnCell = GridArray[RandomIndex];
 			}
 		}
-		SpawnAttemptCount += 1;
 		SpawnSuccess = SpawnHouse(SpawnCell, BuildingClass);
 	}
 	if (SpawnSuccess) {
@@ -226,32 +230,30 @@ void AGameManager::AddScore(int Score)
 {
 	TotalScore += Score;
 	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
-	ScoreFunction();
 	
 }
 
 void AGameManager::ScoreFunction() {
+	//Get player controller
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	// Get grid manager
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
-	if (TotalScore % 10 == 0 && RemainingColours.Num() > 0) {
-		EBuildingClass random = RemainingColours[FMath::RandRange(0, RemainingColours.Num() - 1)];
-		AvailableColours.Add(random);
-		RemainingColours.Remove(random);
-		SpawnColourSet();
-	}
-	if (TotalScore % 5 == 0) {
-		//SpawnHouseAtRandomLocation();
 
-	}
-	if (TotalScore % 20 == 0) {
+	// Get GameMode
+	ANEA2GameModeBase* GameMode = Cast<ANEA2GameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+	if (GameMode->time % 60 == 0 && GameMode->time != LastTime) {
 		SpawnWorkplaceAtRandomLocation();
-		GridManager->ExpandSubGrid(3,3);
 	}
-}
+	if (GameMode->time % 240 == 0 && GameMode->time != LastTime) {
+		PlayerController->UpdateRoadInventory(20);
 
-void AGameManager::WorkplaceIncreaseGoal(ACB_Workplace* Workplace) 
-{
-	Workplace->Goal += 20;
-	SatisfactionCheck();
+	}
+	if (GameMode->time % 300 == 0 && GameMode->time != LastTime) {
+		SpawnWorkplaceAtRandomLocation();
+		GridManager->ExpandSubGrid(2,2);
+	}
+	LastTime = GameMode->time;
 }
 
 void AGameManager::SatisfactionCheck() 
@@ -318,6 +320,29 @@ void AGameManager::SatisfactionCheck()
 			}
 		}
 	}
+}
+
+int AGameManager::GetScore() 
+{
+	return TotalScore;
+}
+
+void AGameManager::LossFunction() 
+{r
+	if (hasLost) return;
+	hasLost = true;
+	// Get player controlle
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	PlayerController->SetInputMode(FInputModeUIOnly());
+	PlayerController->bShowMouseCursor = true;
+
+	if (LossScreenClass) {
+		UUserWidget* LossScreen = CreateWidget<UUserWidget>(GetWorld(), LossScreenClass);
+		if (LossScreen) {
+			LossScreen->AddToViewport();
+		}
+	}
+
 }
 /* 
 Calculating the total score inside the GameManager.cpp: 

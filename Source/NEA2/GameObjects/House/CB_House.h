@@ -43,6 +43,8 @@ public:
 
 	void CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkplace);
 
+	void SortWorkplaces();
+
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;
 

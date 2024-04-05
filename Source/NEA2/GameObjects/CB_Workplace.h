@@ -8,6 +8,7 @@
 #include "../Enum/BuildingClassEnum.h"
 #include "CB_OwnedRoadCell.h"
 #include "Components/SplineComponent.h"
+#include "Components/WidgetComponent.h"
 
 #include "CB_Workplace.generated.h"
 
@@ -89,7 +90,33 @@ public:
 	TSubclassOf<AActor> CarToSpawn;
 
 	void DestroyWorkplace();
+
+	FTimerHandle GoalTimerHandle;
+
+	void GoalNotMet();
+
+	void IncreaseGoal();
+
+	UPROPERTY(EditAnywhere, Category = "HUDElements")
+	bool isCritical = false;
+
+	FTimerHandle CriticalTimerHandle;
+
+	void LossCondition();
 	
+	bool isLost = false;
+
+	UPROPERTY(VisibleAnywhere, Category = "HUDElements")
+	UWidgetComponent* CriticalBarComp;
+	
+	float GetCriticalValue();
+
+	UPROPERTY(EditAnywhere, Category = "LossConditions")
+	float CriticalTime = 60;
+
+	UPROPERTY(EditAnywhere, Category = "LossConditions")
+	float GoalTimer = 60*5;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
