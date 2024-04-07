@@ -32,6 +32,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	UBoxComponent* TriggerBox;
 
+	ACB_CarAI* CollidingCar;
+
 	bool Overlapping = false;
 
 	void FollowSpline(USplineComponent* Spline);

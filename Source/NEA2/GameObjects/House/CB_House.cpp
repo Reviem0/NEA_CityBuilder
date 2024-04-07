@@ -187,13 +187,35 @@ void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
 
 void ACB_House::SortWorkplaces()
 {
-    // sort the workplaces by distance
-    TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
-        FVector HouseLocation = RoadTileAsset->GridCellRef->GetActorLocation();
-        int pointDisparity = A.Points - B.Points;
-        int ACritical = A.isCritical ? 1000 : 0;
-        int BCritical = B.isCritical ? 1000 : 0;
-        return (FVector::Dist(HouseLocation,A.RoadTileAsset->GridCellRef->GetActorLocation()) + pointDisparity*5 - ACritical < FVector::Dist(HouseLocation,B.RoadTileAsset->GridCellRef->GetActorLocation()) - BCritical);
+    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
+        if (TargetWorkplace == nullptr) {
+            UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
+            continue;
+        }
+        
+        if (TargetWorkplace->RoadTileAsset == nullptr) {
+            UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
+            continue;
+        }
+
+        AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+        if (TargetCell && TargetWorkplace->IsFull == false){
+            TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
+            if (Path.Num() != 0){
+                WorkplaceDistances.Add(TargetWorkplace, Path);
+            }
+        }
+    }
+    // sort the dictionary by the distance between the house and the workplace
+    WorkplaceDistances.ValueSort([this](const TArray<AGridCell*>& A, const TArray<AGridCell*>& B) {
+        // get workplace by key
+        const ACB_Workplace* AWorkplace = *WorkplaceDistances.FindKey(A);
+        const ACB_Workplace* BWorkplace = *WorkplaceDistances.FindKey(B);
+        int AcriticalPoints = AWorkplace->isCritical ? 10 : 0;
+        int BcriticalPoints = BWorkplace->isCritical ? 10 : 0;
+        int pointDisparity = AWorkplace->Goal - AWorkplace->CurrentScore - BWorkplace->Goal + BWorkplace->CurrentScore;
+        return A.Num() - pointDisparity - AcriticalPoints < B.Num() - BcriticalPoints;
     });
 }
 
@@ -211,30 +233,10 @@ void ACB_House::CreatePath()
         Spline = nullptr;
     }
     SortWorkplaces();
-    if (TargetWorkplaces.Num() != 0){
-        for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
-            if (TargetWorkplace == nullptr) {
-                UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
-                continue;
-            }
-            
-            if (TargetWorkplace->RoadTileAsset == nullptr) {
-                UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
-                continue;
-            }
-
-            AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
-            if (TargetCell && TargetWorkplace->IsFull == false){
-                TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
-                if (Path.Num() != 0){
-                    CreateSpline(Path, TargetWorkplace);
-                    break;
-                }
-            }
-        }  
-    }
-
-    if (TargetWorkplaces.Num() == 0) {
+    if (WorkplaceDistances.Num() != 0){
+        // Create a spline to the closest workplace
+        CreateSpline(WorkplaceDistances.begin().Value(), WorkplaceDistances.begin().Key());
+    } else {
         UE_LOG(LogTemp, Display, TEXT("NO WORKPLACES FOUND"));
     }
 }
@@ -272,16 +274,35 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkp
     for (int i = 0; i < Path.Num(); i++)
     {
         Spline->AddSplinePoint(Path[i]->GetActorLocation(), ESplineCoordinateSpace::World);
+        Spline->SetSplinePointType(i, ESplinePointType::Linear, true);
+
+        FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World); // Get the right vector at the point
+        FVector PreviousRightVector = FVector(0,0,0);
+        bool turning = false;
+        // check if the vector of the previous point is the same as the current point
+        if (i > 0) {
+            PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
+            if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
+                turning = true;
+                UE_LOG(LogTemp, Display, TEXT("Turning"));
+            } else {
+                PreviousRightVector = FVector(0,0,0);
+            }
+        }
 
         int multiplier = 10;
+        if (turning) {
+            multiplier = 20;
+        }
 
         // log the right vector with spline point for debugging purposes
         UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
 
         // draw debug line for right vector
-        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
         
-        Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector) * multiplier, ESplineCoordinateSpace::World);
+        Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
+        Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
     }
 
     // Log the number of spline points
@@ -301,7 +322,7 @@ void ACB_House::PathCheck()
         // If the car spawns successfully, set the origin house and destination workplace, and make the car follow the spline
         if (Car){
             Car->OriginHouse = this;
-            Car->DestinationWorkplace = TargetWorkplaces[0];
+            Car->DestinationWorkplace = WorkplaceDistances.begin().Key();
             Car->FollowSpline(Spline);
             // Decrement the car availability
             CarAvailability--;

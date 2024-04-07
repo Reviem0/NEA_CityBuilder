@@ -126,6 +126,7 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 
 bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass) 
 {
+	UE_LOG(LogTemp, Display, TEXT("SPAWNING HOUSE"));
 	// Ensure House is not spawned on another object
 	AGridCell* SpawnCell = nullptr;
 
@@ -160,6 +161,7 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 
 bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
 {
+	UE_LOG(LogTemp, Display, TEXT("SPAWNING WORKPLACE"));
 	if (WorkplaceRedClass == nullptr) return false;
 	
 	TArray<AGridCell*> PossibleSpawnLocations;
@@ -182,20 +184,21 @@ bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 	}
 
 	bool SpawnSuccess = false;
-	int SpawnAttemptCount = 0;
 	// Attempt to spawn until successful
 	if (PossibleSpawnLocations.Num() == 0) return false;
 
-	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) 
+	for (int i = 0; i < 3; i++)
 	{
 		// Ensure that the workplace is not spawned on the edge of the grid
 		// Workplace is 2x2 so it needs to be 2 away from the edge
 		int RandomNumberX = FMath::RandRange(0, PossibleSpawnLocations.Num() - 1);
-		SpawnAttemptCount += 1;
 		SpawnSuccess = SpawnWorkplace(PossibleSpawnLocations[RandomNumberX], BuildingClass);
+		if (SpawnSuccess) {
+			UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
+			break;
+		}
 	}
 	if (SpawnSuccess) {
-		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN SUCCESSFUL"));
 		return true;
 	} else {
 		UE_LOG(LogTemp, Display, TEXT("WORKPLACE SPAWN FAILED"));
@@ -250,8 +253,8 @@ void AGameManager::ScoreFunction() {
 
 	}
 	if (GameMode->time % 300 == 0 && GameMode->time != LastTime) {
-		SpawnWorkplaceAtRandomLocation();
 		GridManager->ExpandSubGrid(2,2);
+		SpawnWorkplaceAtRandomLocation();
 	}
 	LastTime = GameMode->time;
 }
@@ -295,6 +298,7 @@ void AGameManager::SatisfactionCheck()
 	if (true) {
 		if (redGoal / 20 > redHouseCount) {
 			for (int i = 0; i < redGoal / 20 - redHouseCount; i++) {
+				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
 				SpawnHouseAtRandomLocation(EBuildingClass::Red);
 			}
 		}
@@ -302,6 +306,7 @@ void AGameManager::SatisfactionCheck()
 	if (true) {
 		if (blueGoal / 20 > blueHouseCount) {
 			for (int i = 0; i < blueGoal / 20 - blueHouseCount; i++) {
+				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
 				SpawnHouseAtRandomLocation(EBuildingClass::Blue);
 			}
 		}
@@ -309,6 +314,7 @@ void AGameManager::SatisfactionCheck()
 	if (true) {
 		if (greenGoal / 20 > greenHouseCount) {
 			for (int i = 0; i < greenGoal / 20 - greenHouseCount; i++) {
+				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
 				SpawnHouseAtRandomLocation(EBuildingClass::Green);
 			}
 		}
@@ -316,6 +322,7 @@ void AGameManager::SatisfactionCheck()
 	if (true) {
 		if (yellowGoal / 20 > yellowHouseCount) {
 			for (int i = 0; i < yellowGoal / 20 - yellowHouseCount; i++) {
+				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
 				SpawnHouseAtRandomLocation(EBuildingClass::Yellow);
 			}
 		}
@@ -328,7 +335,7 @@ int AGameManager::GetScore()
 }
 
 void AGameManager::LossFunction() 
-{r
+{
 	if (hasLost) return;
 	hasLost = true;
 	// Get player controlle

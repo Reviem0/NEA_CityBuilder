@@ -10,6 +10,7 @@
 void UCB_LossScreen::NativeConstruct()
 {
     Super::NativeConstruct();
+    MainMenuButton->OnClicked.AddUniqueDynamic(this, &UCB_LossScreen::OnMainMenuButtonClicked);
     GetTime();
     GetPoints();
 
@@ -42,4 +43,9 @@ void UCB_LossScreen::GetPoints()
         int Score = GameManager->GetScore();
         PointsLabel->SetText(FText::AsNumber(Score));
     }
+}
+
+void UCB_LossScreen::OnMainMenuButtonClicked()
+{
+    UGameplayStatics::OpenLevel(GetWorld(), "MainMenu");
 }

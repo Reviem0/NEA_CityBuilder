@@ -6,30 +6,32 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
-#include "Components/ProgressBar.h"
 
-
-#include "CB_LossScreen.generated.h"
+#include "CB_MainMenu.generated.h"
 UCLASS()
-class NEA2_API UCB_LossScreen : public UUserWidget
+class NEA2_API UCB_MainMenu : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* PointsLabel;
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* TimeLabel;
+	class UButton* StartGameButton;
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* MainMenuButton;
-	
+	class UButton* QuitButton;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* TutorialButton;
+
 	void NativeConstruct() override;
+
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
-	void GetTime();
-	void GetPoints();
+	UFUNCTION()
+	void OnStartGameButtonClicked();
 
 	UFUNCTION()
-	void OnMainMenuButtonClicked();
-	
+	void OnQuitButtonClicked();
+
+
 };

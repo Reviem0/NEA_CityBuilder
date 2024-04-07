@@ -205,6 +205,9 @@ void ACB_Workplace::CarArrived(AActor * Car)
     if (HoldingCurrent >= HoldingCapacity) {
         IsFull = true;
     }
+    if (isCritical) {
+        GetWorld()->GetTimerManager().SetTimer(CriticalTimerHandle, this, &ACB_Workplace::LossCondition, GetWorld()->GetTimerManager().GetTimerRemaining(CriticalTimerHandle)+3  , false);
+    }
     
 
 

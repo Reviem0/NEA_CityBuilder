@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "324112880246",
+    "firebase_url": "https://nealogin1-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "nealogin1",
+    "storage_bucket": "nealogin1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324112880246:android:6eef5e3afea93560ae4557",
+        "android_client_info": {
+          "package_name": "com.iftee.NEA"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAkBf2E7rt4NQqA3Z-iFfeIfh2i-ECKL1o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
