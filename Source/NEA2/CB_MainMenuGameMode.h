@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "HUDElements/CB_MainMenu.h"
-#include "FirebaseAuthentication.h"
 
 #include "CB_MainMenuGameMode.generated.h"
 

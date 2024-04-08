@@ -11,6 +11,7 @@ ACB_PlayerController::ACB_PlayerController()
 
 void ACB_PlayerController::BeginPlay()
 {
+    SetInputMode(FInputModeGameAndUI());
     RoadInventory = 20;
 
 }
@@ -26,6 +27,7 @@ void ACB_PlayerController::SetupInputComponent()
     InputComponent->BindAction("IncreaseSpeed", IE_Pressed, this, &ACB_PlayerController::IncreaseSpeed);
     InputComponent->BindAction("IncreaseSpeed", IE_Released, this, &ACB_PlayerController::ResetSpeed);
     InputComponent->BindAction("EnablePlacement", IE_Pressed, this, &ACB_PlayerController::PlacementCheck);
+    InputComponent->BindAction("ForceLoss", IE_Pressed, this, &ACB_PlayerController::ForceLoss);
 
 }
 
@@ -191,5 +193,11 @@ void ACB_PlayerController::UpdateRoadInventory(int Amount) {
         if (PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()) {
             PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()->UpdateState();
         }
+    }
+}
+
+void ACB_PlayerController::ForceLoss() {
+    if (GridManager) {
+        GridManager->GameManager->LossFunction();
     }
 }

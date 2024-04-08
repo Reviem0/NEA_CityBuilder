@@ -7,22 +7,6 @@
 void ACB_MainMenuGameMode::BeginPlay()
 {
     Super::BeginPlay();
-    // enable cursor
-    GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
-    // check if logged in
-    if (UFirebaseAuthenticationSubsystem::GetFirebaseUser() != nullptr)
-    {
-        // if logged in, go to main menu
-        LoadMainMenu();
-    }
-    else
-    {
-        
-    }
-}
-
-void ACB_MainMenuGameMode::LoadMainMenu()
-{
     if (MainMenuWidgetClass)
     {
         UUserWidget* MainMenuWidget = CreateWidget<UUserWidget>(GetWorld(), MainMenuWidgetClass);
@@ -31,4 +15,6 @@ void ACB_MainMenuGameMode::LoadMainMenu()
             MainMenuWidget->AddToViewport();
         }
     }
+    // enable cursor
+    GetWorld()->GetFirstPlayerController()->bShowMouseCursor = true;
 }

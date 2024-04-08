@@ -252,7 +252,7 @@ void AGameManager::ScoreFunction() {
 		PlayerController->UpdateRoadInventory(20);
 
 	}
-	if (GameMode->time % 300 == 0 && GameMode->time != LastTime) {
+	if (GameMode->time % 200 == 0 && GameMode->time != LastTime) {
 		GridManager->ExpandSubGrid(2,2);
 		SpawnWorkplaceAtRandomLocation();
 	}

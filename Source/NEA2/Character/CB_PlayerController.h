@@ -62,6 +62,8 @@ public:
 	void ResetSpeed();
 	void UpdateSpeed();
 
+	void ForceLoss();
+
 protected:
 
 	virtual void SetupInputComponent() override;

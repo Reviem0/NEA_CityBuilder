@@ -1,35 +1,37 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CB_MainMenu.h"
+#include "CB_LoginPage.h"
 #include "../Character/CB_PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "../GameManager.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 
-void UCB_MainMenu::NativeConstruct()
+void UCB_LoginPage::NativeConstruct()
 {
     Super::NativeConstruct();
-    StartGameButton->OnClicked.AddUniqueDynamic(this, &UCB_MainMenu::OnStartGameButtonClicked);
-    QuitButton->OnClicked.AddUniqueDynamic(this, &UCB_MainMenu::OnQuitButtonClicked);
+    LoginButton->OnClicked.AddDynamic(this, &UCB_LoginPage::OnLoginButtonClicked);
+    RegisterButton->OnClicked.AddDynamic(this, &UCB_LoginPage::OnRegisterButtonClicked);
+    ResetPasswordButton->OnClicked.AddDynamic(this, &UCB_LoginPage::OnResetPasswordButtonClicked);
+
 
 }
 
-void UCB_MainMenu::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UCB_LoginPage::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
     Super::NativeTick(MyGeometry, InDeltaTime);
 
 }
 
-void UCB_MainMenu::OnStartGameButtonClicked()
+void UCB_LoginPage::OnLoginButtonClicked()
 {
-    // Start Level
-    UGameplayStatics::OpenLevel(GetWorld(), "MAIN");
 }
 
-void UCB_MainMenu::OnQuitButtonClicked()
+void UCB_LoginPage::OnRegisterButtonClicked()
 {
-    // Quit Game
-    UKismetSystemLibrary::QuitGame(GetWorld(), nullptr, EQuitPreference::Quit, false);
+}
+
+void UCB_LoginPage::OnResetPasswordButtonClicked()
+{
 }

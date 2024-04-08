@@ -6,32 +6,36 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Components/EditableTextBox.h"
 
-#include "CB_MainMenu.generated.h"
+#include "CB_LoginPage.generated.h"
 UCLASS()
-class NEA2_API UCB_MainMenu : public UUserWidget
+class NEA2_API UCB_LoginPage : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	
-	UPROPERTY(meta = (BindWidget))
-	class UButton* StartGameButton;
-
-	UPROPERTY(meta = (BindWidget))
-	class UButton* QuitButton;
-
-	UPROPERTY(meta = (BindWidget))
-	class UButton* TutorialButton;
 
 	void NativeConstruct() override;
 
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UEditableTextBox* EmailTextBox;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UEditableTextBox* PasswordTextBox;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* LoginButton;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* RegisterButton;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* ResetPasswordButton;
+	
 	UFUNCTION()
-	void OnStartGameButtonClicked();
-
+	void OnLoginButtonClicked();
 	UFUNCTION()
-	void OnQuitButtonClicked();
+	void OnRegisterButtonClicked();
+	UFUNCTION()
+	void OnResetPasswordButtonClicked();
 
 
 };
