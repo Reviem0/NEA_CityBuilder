@@ -15,6 +15,7 @@ void UCB_LossScreen::NativeConstruct()
     Super::NativeConstruct();
     MainMenuButton->OnClicked.AddUniqueDynamic(this, &UCB_LossScreen::OnMainMenuButtonClicked);
     SubmitScoreButton->OnClicked.AddUniqueDynamic(this, &UCB_LossScreen::OnSubmitScoreButtonClicked);
+
     GetTime();
     GetPoints();
 
@@ -31,7 +32,10 @@ void UCB_LossScreen::NativeConstruct()
         { Player10, Score_10 }
     };
 
-    UpdateLeaderboard();
+    // Get the leaderboard every second
+    GetLeaderboard();
+    FTimerHandle LeaderboardTimer;
+    GetWorld()->GetTimerManager().SetTimer(LeaderboardTimer, this, &UCB_LossScreen::GetLeaderboard, 1.0f, true);
 
 }
 
@@ -66,82 +70,84 @@ void UCB_LossScreen::OnMainMenuButtonClicked()
 
 void UCB_LossScreen::OnSubmitScoreButtonClicked()
 {
+    // Get the player name and score
+    FString pname = PlayerName->GetText().ToString();
+    int score = FinalScore;
     UE_LOG(LogTemp, Warning, TEXT("Submit score button clicked"));
-    ReadWrite* rw = new ReadWrite();
-    TCHAR path[MAX_PATH];
-    HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, path);
 
-    if (FAILED(hr)) {
-        UE_LOG(LogTemp, Error, TEXT("Failed to get the documents folder path"));
-    }
-    // Convert the TCHAR array to a FString
-    FString pathString = FString(path);
-    // log the path to the console
-    
-    FString filePath = pathString + TEXT("\\NEA\\Scores.txt");
-    UE_LOG(LogTemp, Warning, TEXT("Path: %s"), *filePath);
-    FString playerNameString = PlayerName->GetText().ToString();
-    // READ THE FILE
-    FString fileContent = rw->ReadFile(filePath);
-    // Append the new score to the file
-    fileContent += playerNameString + TEXT(" ") + FString::FromInt(FinalScore) + TEXT("\n");
-    // Write the new content to the file
-    rw->WriteFile(filePath, fileContent);
+    // Format the URL to include the player name and score
+    FString url = FString::Printf(TEXT("http://dreamlo.com/lb/p_oRtzwC5kG87-JML4pFXwaQpwt7gjE0KlWrFeYUfIAw/add/%s/%d"), *pname, score);
 
-    UpdateLeaderboard();
+    FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+    Request->SetURL(url);
+    Request->SetVerb("POST");
+    Request->ProcessRequest();
+    GetLeaderboard();
 
-    // delete button
     SubmitScoreButton->SetVisibility(ESlateVisibility::Hidden);
-
 }
 
-void UCB_LossScreen::UpdateLeaderboard()
+
+void UCB_LossScreen::GetLeaderboard()
 {
-    ReadWrite* rw = new ReadWrite();
-    TCHAR path[MAX_PATH];
-    HRESULT hr = SHGetFolderPath(NULL, CSIDL_COMMON_DOCUMENTS, NULL, SHGFP_TYPE_CURRENT, path);
+    FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+    Request->SetURL("http://dreamlo.com/lb/6614785b8f40bb8118153adb/json");
+    Request->SetVerb("GET");
+    Request->OnProcessRequestComplete().BindUObject(this, &UCB_LossScreen::UpdateLeaderboardEntry);
+    Request->ProcessRequest();
+}
 
-    if (FAILED(hr)) {
-        UE_LOG(LogTemp, Error, TEXT("Failed to get the documents folder path"));
+void UCB_LossScreen::UpdateLeaderboardEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+    FString fileContent;
+    if (bWasSuccessful) {
+        fileContent = Response->GetContentAsString();
     }
-    // Convert the TCHAR array to a FString
-    FString pathString = FString(path);
-    // log the path to the console
+    else {
+        fileContent = "Failed to get leaderboard";
+    }
 
-    FString filePath = pathString + TEXT("\\NEA\\Scores.txt");
-    UE_LOG(LogTemp, Warning, TEXT("Path: %s"), *filePath);
-    // READ THE FILE
-    FString fileContent = rw->ReadFile(filePath);
-    // Split the file content into lines
-    TArray<FString> lines;
-    fileContent.ParseIntoArray(lines, TEXT("\n"), true);
-    // Create a map to store the player names and scores
-    TMap<FString, int> playerScores;
-    // Iterate through the lines and split them into player name and score
-    for (FString line : lines) {
-        TArray<FString> parts;
-        line.ParseIntoArray(parts, TEXT(" "), true);
-        if (parts.Num() == 2) {
-            FString playerName = parts[0];
-            int score = FCString::Atoi(*parts[1]);
+    // Parse the JSON data
+    TSharedPtr<FJsonObject> JsonObject;
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(fileContent);
+    if (FJsonSerializer::Deserialize(Reader, JsonObject))
+    {
+        // Get the leaderboard entries
+        TArray<TSharedPtr<FJsonValue>> entries = JsonObject->GetObjectField("dreamlo")->GetObjectField("leaderboard")->GetArrayField("entry");
+
+        // Create a map to store player names and scores
+        TMap<FString, int> playerScores;
+
+        // Iterate over each entry
+        for (auto& entryVal : entries) {
+            TSharedPtr<FJsonObject> entry = entryVal->AsObject();
+
+            // Get the player name and score
+            FString playerName = entry->GetStringField("name");
+            int score = FCString::Atoi(*entry->GetStringField("score"));
+
+            // Add the player name and score to the map
             playerScores.Add(playerName, score);
         }
-    }
-    // Sort the map by value
-    playerScores.ValueSort([this](int A, int B) {
-        return A > B;
-    });
-    // Iterate through the map and update the leaderboard
-    int i = 0;
-    for (auto& elem : PlayerScoreMap) {
-        int v = 0;
-        for (auto& playerScore : playerScores) {
-            if (v == i) {
-                elem.Key->SetText(FText::FromString(playerScore.Key));
-                elem.Value->SetText(FText::AsNumber(playerScore.Value));
+
+        // Sort the map by value
+        playerScores.ValueSort([](const int& A, const int& B) {
+            return A > B;
+            });
+
+        int i = 0;
+        for (auto& elem : PlayerScoreMap) {
+            int v = 0;
+            for (auto& playerScore : playerScores) {
+                if (v == i) {
+                    elem.Key->SetText(FText::FromString(playerScore.Key));
+                    elem.Value->SetText(FText::AsNumber(playerScore.Value));
+                }
+                v++;
             }
-            v++;
+            i++;
         }
-        i++;
     }
 }
+
+

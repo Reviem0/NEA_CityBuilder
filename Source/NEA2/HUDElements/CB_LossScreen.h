@@ -8,7 +8,7 @@
 #include "Components/Button.h"
 #include "Components/ProgressBar.h"
 #include "Components/EditableTextBox.h"
-
+#include <Http.h>
 
 #include "CB_LossScreen.generated.h"
 UCLASS()
@@ -107,7 +107,9 @@ public:
 	UFUNCTION()
 	void OnSubmitScoreButtonClicked();
 
-	void UpdateLeaderboard();
+	void GetLeaderboard();
+
+	void UpdateLeaderboardEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 
 

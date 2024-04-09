@@ -20,9 +20,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* QuitButton;
 
-	UPROPERTY(meta = (BindWidget))
-	class UButton* TutorialButton;
-
 	void NativeConstruct() override;
 
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;

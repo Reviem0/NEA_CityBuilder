@@ -6,11 +6,6 @@
 #include "HAL/PlatformFileManager.h"
 #include <iostream>
 #include <string>
-#include "../../ThirdParty/cryptopp/Includes/aes.h"
-#include "../../ThirdParty/cryptopp/Includes/modes.h"
-#include "../../ThirdParty/cryptopp/Includes/filters.h"
-#include "../../ThirdParty/cryptopp/Includes/osrng.h"
-#include "../../ThirdParty/cryptopp/Includes/hex.h"
 #include <fstream>
 #include <Shlobj.h> 
 
