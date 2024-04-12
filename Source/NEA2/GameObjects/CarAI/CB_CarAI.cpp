@@ -96,24 +96,32 @@ void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 	// Set Material based on class
 	TArray<UStaticMeshComponent*> MeshComponents;
 	GetComponents<UStaticMeshComponent>(MeshComponents);
+
+	// Set the material based on the class
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
 		switch (CarClass)
 		{
+			// If the car is red
 			case EBuildingClass::Red:
 				MeshComponent->SetMaterial(0, RedMAT);
 				break;
+			// If the car is blue
 			case EBuildingClass::Blue:
 				MeshComponent->SetMaterial(0, BlueMAT);
 				break;
+			// If the car is green
 			case EBuildingClass::Green:
 				MeshComponent->SetMaterial(0, GreenMAT);
 				break;
 		}
 	}
-
+	// Set the spline to follow
 	SplineToFollow = Spline;
+	// Set the speed of the car
 	float Playrate = (1/ SplineToFollow->GetSplineLength()) * 200;
 	MovementTimeline.SetPlayRate(Playrate);
+
+	// Play the timeline
     MovementTimeline.PlayFromStart();
 }
 
@@ -121,20 +129,28 @@ void ACB_CarAI::TimelineFloatReturn(float value)
 {
     if (SplineToFollow)
     {
+		// Get the transform of the spline and apply it to the car
         FTransform NewTransform = SplineToFollow->GetTransformAtDistanceAlongSpline(value * SplineToFollow->GetSplineLength(), ESplineCoordinateSpace::World);
         SetActorTransform(NewTransform);
     }
 }
 
+// Called when the car has reached the end of the spline
 void ACB_CarAI::OnTimelineFinished()
 {
+	// Log that the timeline has finished for debugging
 	UE_LOG(LogTemp, Warning, TEXT("OnTimelineFinished called for %s"), *GetName());
+
+	// If the car is not returning home
 	if (!Returning){
+		// Call the car arrived function in the destination workplace
 		DestinationWorkplace->CarArrived(this);
 	} else {
+		// Otherwise, all the car arrived function in the origin house
 		Cast<ACB_House>(OriginHouse)->CarArrived(this);
 	}
 	
+	// Destroy the car after it has finished its journey
 	Destroy();
 }
 

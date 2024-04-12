@@ -248,7 +248,7 @@ void AGameManager::ScoreFunction() {
 	if (GameMode->time % 60 == 0 && GameMode->time != LastTime) {
 		SpawnWorkplaceAtRandomLocation();
 	}
-	if (GameMode->time % 240 == 0 && GameMode->time != LastTime) {
+	if (GameMode->time % 160 == 0 && GameMode->time != LastTime) {
 		PlayerController->UpdateRoadInventory(20);
 
 	}
