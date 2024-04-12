@@ -358,29 +358,29 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 
-	if (redGoal / 15 > redHouseCount) {
-		for (int i = 0; i < redGoal / 15 - redHouseCount; i++) {
+	if (redGoal / 20.0f > redHouseCount) {
+		for (int i = 0; i < ceil(redGoal / 20.0f) - redHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
 			SpawnHouseAtRandomLocation(EBuildingClass::Red);
 		}
 	}
 	
-	if (blueGoal / 15 > blueHouseCount) {
-		for (int i = 0; i < blueGoal / 15 - blueHouseCount; i++) {
+	if (blueGoal / 20.0f > blueHouseCount) {
+		for (int i = 0; i < ceil(blueGoal / 20.0f) - blueHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
 			SpawnHouseAtRandomLocation(EBuildingClass::Blue);
 		}
 	}
 	
-	if (greenGoal / 15 > greenHouseCount) {
-		for (int i = 0; i < greenGoal / 15 - greenHouseCount; i++) {
+	if (greenGoal / 20.0f > greenHouseCount) {
+		for (int i = 0; i < ceil(greenGoal / 20.0f) - greenHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
 			SpawnHouseAtRandomLocation(EBuildingClass::Green);
 		}
 	}
 	
-	if (yellowGoal / 15 > yellowHouseCount) {
-		for (int i = 0; i < yellowGoal / 15 - yellowHouseCount; i++) {
+	if (yellowGoal / 20.0f > yellowHouseCount) {
+		for (int i = 0; i < ceil(yellowGoal / 20.0f) - yellowHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
 			SpawnHouseAtRandomLocation(EBuildingClass::Yellow);
 		}
