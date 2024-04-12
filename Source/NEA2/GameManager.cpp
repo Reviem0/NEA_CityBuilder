@@ -14,6 +14,8 @@ AGameManager::AGameManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	// Set default values
 	TotalScore = 0;
 	AvailableColours = {EBuildingClass::Red, EBuildingClass::Blue, EBuildingClass::Green, EBuildingClass::Yellow};
 
@@ -23,12 +25,15 @@ AGameManager::AGameManager()
 void AGameManager::BeginPlay()
 {
 	Super::BeginPlay();
+	// Get grid manager
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
 	if (GridManager) {
+		// Get grid array and size
 		GridArray = GridManager->PlayGridArray;
 		GridSizeX = GridManager->PlayGridSizeX;
 		GridSizeY = GridManager->PlayGridSizeY;
 
+		// Initialise the game
 		Init();
 	}
 	
@@ -38,43 +43,64 @@ void AGameManager::BeginPlay()
 void AGameManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Call the score function every frame
 	ScoreFunction();
 }
 
 
 void AGameManager::Init()
 {
+	// Spawn Red Workplace
 	SpawnWorkplaceAtRandomLocation(EBuildingClass::Red);
 }
 
 bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass) 
 {
+	// Check if the grid cell is valid and not occupied
 	if (GridCell == nullptr) return false;
+
+	// If the specified grid cell is already occupied, return false
 	if (GridCell->OccupyingType != EBuildingType::None) return false;
+
+	// Check if the house classes are valid
 	TSubclassOf<ACB_House> HouseClass = nullptr;
-	if (BuildingClass == EBuildingClass::None) return false;
-	if (BuildingClass == EBuildingClass::Red) {
+	switch (BuildingClass)
+	{
+	case EBuildingClass::Red: // If specified colour is red, spawn red house
 		HouseClass = HouseRedClass;
-	} else if (BuildingClass == EBuildingClass::Blue) {
+		break;
+		
+	case EBuildingClass::Blue: // If specified colour is blue, spawn blue house
 		HouseClass = HouseBlueClass;
-	} else if (BuildingClass == EBuildingClass::Green) {
+		break;
+		
+	case EBuildingClass::Green: // If specified colour is green, spawn green house
 		HouseClass = HouseGreenClass;
-	} else if (BuildingClass == EBuildingClass::Yellow) {
+		break;
+		
+	case EBuildingClass::Yellow: // If specified colour is yellow, spawn yellow house
 		HouseClass = HouseYellowClass;
-	} else {
+		break;
+
+	default: // If no colour is specified, return false
 		return false;
 	}
 
+	// Spawn the house at the specified grid cell location
 	ACB_House* House = GetWorld()->SpawnActor<ACB_House>(HouseClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
 	if (House) {
+		// Add the house to the house array
 		HouseArray.Add(House);
+		// Add the workspaces to the house's target workplaces
 		for (auto& Workplace : WorkplaceArray)
 		{
+			// Check if the workplace and house are of the same class
 			if (Workplace->BuildingClass == House->BuildingClass) {
 				House->TargetWorkplaces.Add(Workplace);
-				UpdatePath();
 			}
 		}
+		UpdatePath();
 	} else {
 		// Failed to spawn
 		return false;
@@ -86,31 +112,40 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass)
 
 bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass) // Default parameter value
 {	
+	// Check if the grid cell is valid and not occupied
 	if (GridCell->OccupyingType != EBuildingType::None) return false;
+	// Check if the workplace classes are valid
 	if (WorkplaceRedClass == nullptr) return false;
 	if (WorkplaceBlueClass == nullptr) return false;
 	if (WorkplaceGreenClass == nullptr) return false;
 	if (WorkplaceYellowClass == nullptr) return false;
 
 	TSubclassOf<ACB_Workplace> WorkplaceClass = nullptr;
-	if (BuildingClass == EBuildingClass::None) return false;
-	if (BuildingClass == EBuildingClass::Red) {
+	switch (BuildingClass)
+	{
+	case EBuildingClass::Red: // If specified colour is red, spawn red workplace
 		WorkplaceClass = WorkplaceRedClass;
-	} else if (BuildingClass == EBuildingClass::Blue) {
+		break;
+	case EBuildingClass::Blue: // If specified colour is blue, spawn blue workplace
 		WorkplaceClass = WorkplaceBlueClass;
-	} else if (BuildingClass == EBuildingClass::Green) {
+		break;
+	case EBuildingClass::Green: // If specified colour is green, spawn green workplace
 		WorkplaceClass = WorkplaceGreenClass;
-	} else if (BuildingClass == EBuildingClass::Yellow) {
+		break;
+	case EBuildingClass::Yellow: // If specified colour is yellow, spawn yellow workplace
 		WorkplaceClass = WorkplaceYellowClass;
-	} else {
+		break;
+	default: // If no colour is specified, return false
 		return false;
 	}
-
 	ACB_Workplace* Workplace = GetWorld()->SpawnActor<ACB_Workplace>(WorkplaceClass, GridCell->GetActorLocation(), FRotator::ZeroRotator);
 	if (Workplace) {
+		// Add the workplace to the workplace array
 		WorkplaceArray.Add(Workplace);
+		// Add the workplace to the house's target workplaces
 		for (int i = 0; i < HouseArray.Num(); i++)
 		{
+			// Check if the house and workplace are of the same class
 			if (HouseArray[i]->BuildingClass == Workplace->BuildingClass) {
 				HouseArray[i]->AddTargetWorkplace(Workplace);
 			}
@@ -119,8 +154,9 @@ bool AGameManager::SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingCl
 		// Failed to spawn
 		return false;
 	}
-	// Spawn successful
+	// Check if the houses need to be spawned
 	SatisfactionCheck();
+	// Spawn successful
 	return true;
 }
 
@@ -137,9 +173,11 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 
 	int SpawnAttemptCount = 0;
 	bool SpawnSuccess = false;
+	// Attempt to spawn until successful or limit reached
 	while (!SpawnSuccess && SpawnAttemptCount < SpawnAttemptLimit) {
 		SpawnAttemptCount++;
 		int Attempts = 0;
+		// Find a valid grid cell to spawn the house on three attempts
 		while (!SpawnCell && Attempts < 3) {
 			Attempts++;
 			int RandomIndex = FMath::RandRange(0, GridArray.Num()-1);
@@ -147,8 +185,12 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 				SpawnCell = GridArray[RandomIndex];
 			}
 		}
-		SpawnSuccess = SpawnHouse(SpawnCell, BuildingClass);
+		// If a valid grid cell is found, attempt to spawn the house
+		if (SpawnCell){
+			SpawnSuccess = SpawnHouse(SpawnCell, BuildingClass);
+		}
 	}
+	// if the house is successfully spawned, return true
 	if (SpawnSuccess) {
 		UE_LOG(LogTemp, Display, TEXT("HOUSE SPAWN SUCCESSFUL"));
 		return true;
@@ -162,13 +204,12 @@ bool AGameManager::SpawnHouseAtRandomLocation(EBuildingClass BuildingClass)
 bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass) 
 {
 	UE_LOG(LogTemp, Display, TEXT("SPAWNING WORKPLACE"));
-	if (WorkplaceRedClass == nullptr) return false;
-	
+
 	TArray<AGridCell*> PossibleSpawnLocations;
-	// Workplace is 2x2
-	// Ensure Workplace is not spawned on another object
+	// Create a list of possible spawn locations
 	for (int i = 0; i < GridArray.Num(); i++) {
 		if (GridArray[i]->OccupyingType == EBuildingType::None) {
+			// Ensure that the workplace is not spawned on the edge of the grid
 			if (i % GridSizeX < GridSizeX - 1 && i / GridSizeX < GridSizeY - 1) {
 				if (GridArray[i + 1]->OccupyingType == EBuildingType::None && GridArray[i + GridSizeX]->OccupyingType == EBuildingType::None && GridArray[i + GridSizeX + 1]->OccupyingType == EBuildingType::None) {
 					PossibleSpawnLocations.Add(GridArray[i]);
@@ -189,7 +230,6 @@ bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 
 	for (int i = 0; i < 3; i++)
 	{
-		// Ensure that the workplace is not spawned on the edge of the grid
 		// Workplace is 2x2 so it needs to be 2 away from the edge
 		int RandomNumberX = FMath::RandRange(0, PossibleSpawnLocations.Num() - 1);
 		SpawnSuccess = SpawnWorkplace(PossibleSpawnLocations[RandomNumberX], BuildingClass);
@@ -198,6 +238,7 @@ bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 			break;
 		}
 	}
+	// if the workplace is successfully spawned, return true
 	if (SpawnSuccess) {
 		return true;
 	} else {
@@ -210,13 +251,14 @@ bool AGameManager::SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass)
 
 void AGameManager::UpdatePath() 
 {
+	// Update the path for all houses
 	for (int i = 0; i < HouseArray.Num(); i++) {
 		HouseArray[i]->CreatePath();
 		UE_LOG(LogTemp, Display, TEXT("UPDATING PATH FOR HOUSE: %s"), *HouseArray[i]->GetName());
 	}
 }
 
-void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
+void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundat function
 
 	// If no colour is specified, spawn a random colour
 	if (BuildingClass == EBuildingClass::None) {
@@ -231,7 +273,9 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) {
 
 void AGameManager::AddScore(int Score) 
 {
+	// Add the score to the total score
 	TotalScore += Score;
+	// Log the total score
 	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
 	
 }
@@ -245,13 +289,16 @@ void AGameManager::ScoreFunction() {
 	// Get GameMode
 	ANEA2GameModeBase* GameMode = Cast<ANEA2GameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 
+	// Spawn a workplace every 60 seconds
 	if (GameMode->time % 60 == 0 && GameMode->time != LastTime) {
 		SpawnWorkplaceAtRandomLocation();
 	}
+	// Update the road inventory every 160 seconds
 	if (GameMode->time % 160 == 0 && GameMode->time != LastTime) {
 		PlayerController->UpdateRoadInventory(20);
 
 	}
+	// Expand the grid every 200 seconds
 	if (GameMode->time % 200 == 0 && GameMode->time != LastTime) {
 		GridManager->ExpandSubGrid(2,2);
 		SpawnWorkplaceAtRandomLocation();
@@ -261,6 +308,7 @@ void AGameManager::ScoreFunction() {
 
 void AGameManager::SatisfactionCheck() 
 {
+	// Initialise the goal and house count for each colour
 	int redGoal = 0;
 	int blueGoal = 0;
 	int greenGoal = 0;
@@ -271,60 +319,70 @@ void AGameManager::SatisfactionCheck()
 	int greenHouseCount = 0;
 	int yellowHouseCount = 0;
 
+	// Calculate the total goal and house count for each colour
 	for (ACB_Workplace* Workplace : WorkplaceArray) {
-		if (Workplace->BuildingClass == EBuildingClass::Red) {
-			redGoal += Workplace->Goal;
-		} else if (Workplace->BuildingClass == EBuildingClass::Blue) {
-			blueGoal += Workplace->Goal;
-		} else if (Workplace->BuildingClass == EBuildingClass::Green) {
-			greenGoal += Workplace->Goal;
-		} else if (Workplace->BuildingClass == EBuildingClass::Yellow) {
-			yellowGoal += Workplace->Goal;
+		switch (Workplace->BuildingClass) {
+			case EBuildingClass::Red:
+				redGoal += Workplace->Goal;
+				break;
+			case EBuildingClass::Blue:
+				blueGoal += Workplace->Goal;
+				break;
+			case EBuildingClass::Green:
+				greenGoal += Workplace->Goal;
+				break;
+			case EBuildingClass::Yellow:
+				yellowGoal += Workplace->Goal;
+				break;
+			default:
+				break;
 		}
 	}
 	
 	for (ACB_House* House : HouseArray) {
-		if (House->BuildingClass == EBuildingClass::Red) {
-			redHouseCount += 1;
-		} else if (House->BuildingClass == EBuildingClass::Blue) {
-			blueHouseCount += 1;
-		} else if (House->BuildingClass == EBuildingClass::Green) {
-			greenHouseCount += 1;
-		} else if (House->BuildingClass == EBuildingClass::Yellow) {
-			yellowHouseCount += 1;
+		switch (House->BuildingClass) {
+			case EBuildingClass::Red:
+				redHouseCount += 1;
+				break;
+			case EBuildingClass::Blue:
+				blueHouseCount += 1;
+				break;
+			case EBuildingClass::Green:
+				greenHouseCount += 1;
+				break;
+			case EBuildingClass::Yellow:
+				yellowHouseCount += 1;
+				break;
+			default:
+				break;
 		}
 	}
 
-	if (true) {
-		if (redGoal / 20 > redHouseCount) {
-			for (int i = 0; i < redGoal / 20 - redHouseCount; i++) {
-				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
-				SpawnHouseAtRandomLocation(EBuildingClass::Red);
-			}
+	if (redGoal / 15 > redHouseCount) {
+		for (int i = 0; i < redGoal / 15 - redHouseCount; i++) {
+			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
+			SpawnHouseAtRandomLocation(EBuildingClass::Red);
 		}
 	}
-	if (true) {
-		if (blueGoal / 20 > blueHouseCount) {
-			for (int i = 0; i < blueGoal / 20 - blueHouseCount; i++) {
-				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
-				SpawnHouseAtRandomLocation(EBuildingClass::Blue);
-			}
+	
+	if (blueGoal / 15 > blueHouseCount) {
+		for (int i = 0; i < blueGoal / 15 - blueHouseCount; i++) {
+			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
+			SpawnHouseAtRandomLocation(EBuildingClass::Blue);
 		}
 	}
-	if (true) {
-		if (greenGoal / 20 > greenHouseCount) {
-			for (int i = 0; i < greenGoal / 20 - greenHouseCount; i++) {
-				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
-				SpawnHouseAtRandomLocation(EBuildingClass::Green);
-			}
+	
+	if (greenGoal / 15 > greenHouseCount) {
+		for (int i = 0; i < greenGoal / 15 - greenHouseCount; i++) {
+			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
+			SpawnHouseAtRandomLocation(EBuildingClass::Green);
 		}
 	}
-	if (true) {
-		if (yellowGoal / 20 > yellowHouseCount) {
-			for (int i = 0; i < yellowGoal / 20 - yellowHouseCount; i++) {
-				UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
-				SpawnHouseAtRandomLocation(EBuildingClass::Yellow);
-			}
+	
+	if (yellowGoal / 15 > yellowHouseCount) {
+		for (int i = 0; i < yellowGoal / 15 - yellowHouseCount; i++) {
+			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
+			SpawnHouseAtRandomLocation(EBuildingClass::Yellow);
 		}
 	}
 }
@@ -336,14 +394,21 @@ int AGameManager::GetScore()
 
 void AGameManager::LossFunction() 
 {
+	// Check if the game has already been lost
 	if (hasLost) return;
+
+	// Set the game to lost
 	hasLost = true;
-	// Get player controlle
+	// Get player controller
 	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
+	// Disable player input and show the mouse cursor
 	PlayerController->SetInputMode(FInputModeUIOnly());
 	PlayerController->bShowMouseCursor = true;
 
+	// Get the loss screen class
 	if (LossScreenClass) {
+		// Create the loss screen widget and add it to the viewport
 		UUserWidget* LossScreen = CreateWidget<UUserWidget>(GetWorld(), LossScreenClass);
 		if (LossScreen) {
 			LossScreen->AddToViewport();
