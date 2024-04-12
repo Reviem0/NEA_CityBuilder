@@ -36,9 +36,7 @@ void ACB_Workplace::BeginPlay()
         DestroyWorkplace();
         return;
     }
-    
-    // Choose a random orientation for the workplace
-    int Orientation = FMath::RandRange(0, 3);
+
     //UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: %d"), Orientation);
 
     // 
@@ -50,8 +48,8 @@ void ACB_Workplace::BeginPlay()
     AGridCell* RoadPlacement = BottomLeft->SNeighbour ? *(BottomLeft->SNeighbour) : nullptr;
     FRotator* Rotation = new FRotator(0,0,0);
 
-    // Random rotation
-    Orientation = FMath::RandRange(0, 3);
+       // Choose a random orientation for the workplace
+    int Orientation = FMath::RandRange(0, 3);
 
     switch (Orientation)
     {
@@ -105,13 +103,22 @@ void ACB_Workplace::BeginPlay()
         }
     }
 
+
     // Create an FRotator from Rotation
     FRotator Rot(0, Rotation->Yaw, 0);
+
 
     // Get the GridManager
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     // Check if all the cells are valid and unoccupied and if not, destroy the workplace
-    if ((!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement) || (BottomLeft->OccupyingType != EBuildingType::None || TopRight->OccupyingType != EBuildingType::None || TopLeft->OccupyingType != EBuildingType::None || BottomRight->OccupyingType != EBuildingType::None || RoadPlacement->OccupyingType != EBuildingType::None || GridManager->PlayGridArray.Contains(RoadPlacement) == false))
+    if (
+        (!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement) || // Check if the cells are valid
+        (BottomLeft->OccupyingType != EBuildingType::None || TopRight->OccupyingType != EBuildingType::None || // Check if the cells are unoccupied
+        TopLeft->OccupyingType != EBuildingType::None || 
+        BottomRight->OccupyingType != EBuildingType::None || 
+        RoadPlacement->OccupyingType != EBuildingType::None || 
+        GridManager->GridArray.Contains(RoadPlacement) == false) // Check if the road placement is valid
+        )
     {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: NOT ENOUGH CELLS"));
         DestroyWorkplace();
