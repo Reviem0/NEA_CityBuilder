@@ -30,15 +30,18 @@ void ACB_Workplace::BeginPlay()
 {
     Super::BeginPlay();
     
+    // If the workplace is not valid, destroy it
     if (!GridCellRef) {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GridCellRef is null"));
         DestroyWorkplace();
         return;
     }
     
+    // Choose a random orientation for the workplace
     int Orientation = FMath::RandRange(0, 3);
     //UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: %d"), Orientation);
 
+    // 
     AGridCell* BottomLeft = GridCellRef;
     AGridCell* BottomRight = GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
     AGridCell* TopLeft = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
@@ -49,12 +52,10 @@ void ACB_Workplace::BeginPlay()
 
     // Random rotation
     Orientation = FMath::RandRange(0, 3);
-    // Random rotation
-    Orientation = FMath::RandRange(0, 3);
 
     switch (Orientation)
     {
-        case 0:
+        case 0: // South Facing
         {
             UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: 0"));
             BottomLeft = GridCellRef;
@@ -66,7 +67,7 @@ void ACB_Workplace::BeginPlay()
             Rotation = new FRotator(0,0,0);
             break;
         }
-        case 1:
+        case 1: // West Facing
         {
             UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: 1"));
             BottomLeft = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
@@ -78,7 +79,7 @@ void ACB_Workplace::BeginPlay()
             Rotation = new FRotator(0,90,0);
             break;
         }
-        case 2:
+        case 2: // East Facing
         {
             UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: 2"));
             BottomLeft = GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
@@ -90,7 +91,7 @@ void ACB_Workplace::BeginPlay()
             Rotation = new FRotator(0,270,0);
             break;
         }
-        case 3:
+        case 3: // North Facing
         {
             UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: 3"));
             BottomRight = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
@@ -107,8 +108,9 @@ void ACB_Workplace::BeginPlay()
     // Create an FRotator from Rotation
     FRotator Rot(0, Rotation->Yaw, 0);
 
-    
+    // Get the GridManager
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    // Check if all the cells are valid and unoccupied and if not, destroy the workplace
     if ((!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement) || (BottomLeft->OccupyingType != EBuildingType::None || TopRight->OccupyingType != EBuildingType::None || TopLeft->OccupyingType != EBuildingType::None || BottomRight->OccupyingType != EBuildingType::None || RoadPlacement->OccupyingType != EBuildingType::None || GridManager->PlayGridArray.Contains(RoadPlacement) == false))
     {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: NOT ENOUGH CELLS"));
@@ -118,6 +120,7 @@ void ACB_Workplace::BeginPlay()
     FActorSpawnParameters SpawnInfo;
     SpawnInfo.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
     
+    // Spawn the BottomLeftAsset
     if (BottomLeftActor)
     {
         BottomLeftAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(BottomLeftActor, FTransform(BottomLeft->GetActorLocation()));
@@ -129,6 +132,7 @@ void ACB_Workplace::BeginPlay()
         }
     }
 
+    // Spawn the TopRightAsset
     if (TopRightActor)
     {
         TopRightAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(TopRightActor,FTransform(BottomLeft->GetActorLocation()));
@@ -140,6 +144,7 @@ void ACB_Workplace::BeginPlay()
         }
     }
 
+    // Spawn the TopLeftAsset
     if (TopLeftActor)
     {
         TopLeftAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(TopLeftActor, FTransform(BottomLeft->GetActorLocation()));
@@ -151,6 +156,7 @@ void ACB_Workplace::BeginPlay()
         }
     }
 
+    // Spawn the BottomRightAsset
     if (BottomRightActor)
     {
         BottomRightAsset = GetWorld()->SpawnActorDeferred<ACB_WorkplaceAsset>(BottomRightActor, FTransform(BottomLeft->GetActorLocation()));
@@ -162,9 +168,10 @@ void ACB_Workplace::BeginPlay()
         }
     }
 
+    // Check if the RoadPlacement is occupied by an owned road cell, if so, add the workplace to the owning cells
     if (RoadPlacement->OccupyingActor->StaticClass() == ACB_OwnedRoadCell::StaticClass()) {
         Cast<ACB_OwnedRoadCell>(RoadPlacement->OccupyingActor)->OwningCells.Add(GridCellRef);
-    } else {
+    } else { // Otherwise, spawn a new road cell and add the workplace to the owning cells
             if (RoadTileActor)
                 {   
                     RoadPlacement->Manager = this;
@@ -183,6 +190,7 @@ void ACB_Workplace::BeginPlay()
     } else {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: CriticalBar is null"));
     }
+    // Set how long the workplace has to reach the goal
     GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, GoalTimer, false);
 }
 
@@ -201,11 +209,14 @@ void ACB_Workplace::CarArrived(AActor * Car)
         AddToHouseQueue(Cast<AActor>(CarAI->OriginHouse));
     }
     UE_LOG(LogTemp, Display, TEXT("Car arrived at workplace"));
+    // Increment the amount of cars that have arrived
     HoldingCurrent++;
     if (HoldingCurrent >= HoldingCapacity) {
+        // Set the workplace to full
         IsFull = true;
     }
     if (isCritical) {
+        // Add 3 seconds to the timer
         GetWorld()->GetTimerManager().SetTimer(CriticalTimerHandle, this, &ACB_Workplace::LossCondition, GetWorld()->GetTimerManager().GetTimerRemaining(CriticalTimerHandle)+3  , false);
     }
     
@@ -214,8 +225,10 @@ void ACB_Workplace::CarArrived(AActor * Car)
 }
 void ACB_Workplace::AddToHouseQueue(AActor *House)
 {
+    // Add to the back of the queue
     HouseQueue.Add(House);
     FTimerHandle TimerHandle;
+    // Set a timer for the wait time
     GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ACB_Workplace::OnWaitFinished, cooldown, false);
 
 }
@@ -224,32 +237,35 @@ void ACB_Workplace::OnWaitFinished() {
     UE_LOG(LogTemp, Display, TEXT("RAN"));
     // Remove the first item from the queue
     if (HouseQueue.Num() > 0) {
+        // Create a path to the house
         bool Success = CreatePath(HouseQueue[0]);
 
-        // If Path was unsuccessful, add the house to the back of the queue
-        if (!Success){
+        if (!Success){ // If Path was unsuccessful, add the house to the back of the queue
             AddToHouseQueue(HouseQueue[0]);
-        } else {
+        } else { // Otherwise, decrement the amount of cars in the workplace
             HoldingCurrent--;
         }
+
+        // Pop the first item from the queue
         HouseQueue.RemoveAt(0);
+        // Recheck if the workplace is full
         if (HoldingCurrent < HoldingCapacity) {
             IsFull = false;
         } else {
             IsFull = true;
         }
     }
-
-    // Do something when the wait is finished
 }
 
 bool ACB_Workplace::CreatePath(AActor* House) {
+    // Get the GridManager
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+
+    // Check if the GridManager and House are valid
     if (!GridManager) {
         UE_LOG(LogTemp, Error, TEXT("GridManager is null"));
         return false;
     }
-
     if (!House) {
         UE_LOG(LogTemp, Error, TEXT("House is null"));
         return false;
@@ -266,10 +282,13 @@ bool ACB_Workplace::CreatePath(AActor* House) {
         return false;
     }
 
+    // Find the path from the workplace to the house
     TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, HouseCell->RoadTileAsset->GridCellRef);
     if (Path.Num() > 0) {
+        // Create the spline
         CreateSpline(Path, House);
     } else {
+        // If the path is empty, delete spline and return false
         if (Spline) {
             Spline->RemoveFromRoot();
             Spline->DestroyComponent();
@@ -283,44 +302,61 @@ bool ACB_Workplace::CreatePath(AActor* House) {
 
 void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
 {
+    // If the spline exists, remove it
     if (Spline) {
         Spline->RemoveFromRoot();
         Spline->DestroyComponent();
         Spline = nullptr;
     }
     
+    // If the path is empty, return
     if (Path.Num() == 0) return;
+
+    // Create and setup new spline component
     Spline = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
     Spline->RegisterComponent();
     Spline->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
     Spline->SetWorldLocation(RoadTileAsset->GetActorLocation()); // Set the spline's location to the house's location
     Spline->SetLocationAtSplinePoint(1, BottomLeftAsset->GetActorLocation(), ESplineCoordinateSpace::World); // Set the first point of the spline to the house's location
+    
     // Remove first point from spline
     Spline->RemoveSplinePoint(0);
 
+    // Add the origin road tile to the start of the path
     Path.Insert(RoadTileAsset->GridCellRef, 0);
+
+    // Add The target workplace to the end of the path
     Path.Add(Cast<ACB_House>(House)->GridCellRef);
+
     // Make spline follow path
     for (int i = 0; i < Path.Num(); i++)
     {
+        // Add the spline point to the spline
         Spline->AddSplinePoint(Path[i]->GetActorLocation(), ESplineCoordinateSpace::World);
+        
+        // Set the spline point type to linear to check for turns
         Spline->SetSplinePointType(i, ESplinePointType::Linear, true);
 
+        // Get the right vector at the spline point
         FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World); // Get the right vector at the point
+        // Get the right vector at the previous spline point
         FVector PreviousRightVector = FVector(0,0,0);
         bool turning = false;
         // check if the vector of the previous point is the same as the current point
         if (i > 0) {
             PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
-            if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
+            // If the right vector is not the same, the car is turning
+            if (!PreviousRightVector.Equals(RightVector, 1)) { // .Equals() Helps compensate for floating point errors by checking if the vectors are within 1 unit of each other
                 turning = true;
             } else {
+                // If the car is not turning, set the previous right vector to 0
                 PreviousRightVector = FVector(0,0,0);
             }
         }
-
+        // Set the multiplier for how far to shift the spline point
         int multiplier = 10;
         if (turning) {
+            // If the car is turning, set the multiplier to 20
             multiplier = 20;
         }
 
@@ -330,7 +366,9 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
         // draw debug line for right vector
         // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Blue, true, 10.0f, -1, 1.0f);
         
+        // Shift the spline point to the left by subtracting the right vector from the spline point
         Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
+        // Reset the spline point type to curve
         Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
     }
 
@@ -338,13 +376,15 @@ void ACB_Workplace::CreateSpline(TArray<AGridCell *> Path, AActor* House)
     UE_LOG(LogTemp, Display, TEXT("Number of spline points: %d"), Spline->GetNumberOfSplinePoints());
 
     UE_LOG(LogTemp, Display, TEXT("Spline created"));
-
+    
+    // Send the car to the house
     SendCar(House);
 
 }
 
 void ACB_Workplace::SendCar(AActor* House) {
     if (Spline) {
+        // Spawn the car at the start of the spline
         ACB_CarAI* Car = GetWorld()->SpawnActor<ACB_CarAI>(CarToSpawn, Spline->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World), FRotator(0,0,0));
         if (Car){
             Car->OriginHouse = Cast<ACB_House>(House);
@@ -356,12 +396,21 @@ void ACB_Workplace::SendCar(AActor* House) {
 }
 
 void ACB_Workplace::AddScore() {
+    // Increase the score by 1
     Points++;
+
+    // Get the GameManager
     AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+
+    // If the GameManager is valid, add 1 to the score
     if (GameManager) {
         UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Score: %d"), Points);
+        // Increase the score by 1
         GameManager->AddScore(1);
+        // Increase the current score by 1
         CurrentScore++;
+
+        // If the current score is greater than or equal to the goal, increase the goal
         if (CurrentScore >= Goal) {
             IncreaseGoal();
             // Reset goal timer
@@ -369,6 +418,8 @@ void ACB_Workplace::AddScore() {
                 isCritical = false;
                 GetWorld()->GetTimerManager().ClearTimer(CriticalTimerHandle);
             }
+
+            // Set a timer for the goal
             GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, 240, false);
         }
     } else {
@@ -377,7 +428,9 @@ void ACB_Workplace::AddScore() {
 }
 
 void ACB_Workplace::DestroyWorkplace() {
+    // Set the grid cell to unoccupied
     GridCellRef->SetUnoccupied();
+    // Destroy the workplace
     Destroy();
 }
 
@@ -394,17 +447,24 @@ void ACB_Workplace::GoalNotMet()
 
 void ACB_Workplace::IncreaseGoal()
 {
+    // Get the GameManager
     AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+    // Increase the goal by 20
+    CurrentScore = 0;
     Goal += 20;
+    // Satisfaction check
     GameManager->SatisfactionCheck();
 }
 
 void ACB_Workplace::LossCondition()
 {
+    // Get the GameManager
     AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+    // Set the workplace to lost
     if (isCritical) {
         isLost = true;
     }
+    // Call the loss function in the GameManager
     if (GameManager) {
         GameManager->LossFunction();
     }
@@ -412,6 +472,7 @@ void ACB_Workplace::LossCondition()
 
 float ACB_Workplace::GetCriticalValue()
 {
+    // Get the remaining time on the critical timer
     if (CriticalTimerHandle.IsValid()) {
         float TimeRemaining = GetWorld()->GetTimerManager().GetTimerRemaining(CriticalTimerHandle);
         return TimeRemaining/CriticalTime;
