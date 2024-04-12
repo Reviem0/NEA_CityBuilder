@@ -27,10 +27,10 @@ void ACB_House::BeginPlay()
 
     // Check if available rotations are valid
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->NNeighbour)); // 1
-    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->SNeighbour)); // 2
-    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->ENeighbour)); // 3
-    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->WNeighbour)); // 4
+    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->NNeighbour)); // 1
+    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->SNeighbour)); // 2
+    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->ENeighbour)); // 3
+    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->WNeighbour)); // 4
 
 
   // Destroy if no avaliable rotations
@@ -51,6 +51,11 @@ void ACB_House::BeginPlay()
     if (South) AvailableRotations.Add(90);
     if (West) AvailableRotations.Add(180);
 
+    // Log the available rotations for debugging purposes
+    for (int i = 0; i < AvailableRotations.Num(); i++) {
+        UE_LOG(LogTemp, Display, TEXT("Available Rotation: %d"), AvailableRotations[i]);
+    }
+
     if (AvailableRotations.Num() == 0) {
         GridCellRef->SetUnoccupied();
         Destroy();
@@ -66,15 +71,19 @@ void ACB_House::BeginPlay()
         int RandomIndex = FMath::RandRange(0, AvailableRotations.Num() - 1);
 
         // Use the random index to select a rotation from the list
+
         int yaw = AvailableRotations[RandomIndex];
+        // Log the selected rotation for debugging purposes
+        UE_LOG(LogTemp, Display, TEXT("Selected Rotation: %d"), yaw);
         SetActorRotation(FRotator(0, yaw, 0));
 
-        switch (static_cast<int>(GetActorRotation().Yaw))
+        switch (yaw)
         {
             case 0:
             {
                 if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->ENeighbour);
+                    UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at east neighbour."))
                     if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->ENeighbour))->OccupyingActor)->DestroyRoad();
                     }
@@ -84,19 +93,23 @@ void ACB_House::BeginPlay()
             }
             case 90:
             {
-                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
-                    RoadPlacement = *(GridCellRef->SNeighbour);
-                    if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
-                        Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
-                    }
-                else
+                RoadPlacement = *(GridCellRef->SNeighbour);
+                UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at south neighbour."))
+                if (RoadPlacement == nullptr) {
+                    UE_LOG(LogTemp, Warning, TEXT("RoadPlacement is null. Removing rotation south"));
                     AvailableRotations.RemoveAt(RandomIndex);
+                    break;
+                }
+                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
+                    Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
+                }
                 break;
             }
             case 180:
             {
                 if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->WNeighbour);
+                    UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at west neighbour."))
                     if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->WNeighbour))->OccupyingActor)->DestroyRoad();
                     }
@@ -106,16 +119,26 @@ void ACB_House::BeginPlay()
             }
             case 270:
             {
-                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
-                    RoadPlacement = *(GridCellRef->NNeighbour);
-                    if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
-                        Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
-                    }
-                else
+                RoadPlacement = *(GridCellRef->NNeighbour);
+                UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at north neighbour."))
+                if (RoadPlacement == nullptr) {
+                    UE_LOG(LogTemp, Warning, TEXT("RoadPlacement is null. Removing rotation north"));
                     AvailableRotations.RemoveAt(RandomIndex);
+                    break;
+                }
+                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
+                    Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
+                }
                 break;
             }
         }
+    }
+
+    if (AvailableRotations.Num() == 0) {
+        GridCellRef->SetUnoccupied();
+        Destroy();
+        UE_LOG(LogTemp, Warning, TEXT("No available rotations for house placement. Destroying actor."));
+        return;
     }
     
 
