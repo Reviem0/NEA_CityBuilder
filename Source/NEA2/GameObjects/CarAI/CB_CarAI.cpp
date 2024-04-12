@@ -58,6 +58,7 @@ void ACB_CarAI::BeginPlay()
 void ACB_CarAI::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	// Advance the timeline every frame
 	MovementTimeline.TickTimeline(DeltaTime);
 
 }
@@ -117,6 +118,7 @@ void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 	}
 	// Set the spline to follow
 	SplineToFollow = Spline;
+
 	// Set the speed of the car
 	float Playrate = (1/ SplineToFollow->GetSplineLength()) * 200;
 	MovementTimeline.SetPlayRate(Playrate);

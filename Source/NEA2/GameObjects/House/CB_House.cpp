@@ -273,35 +273,46 @@ void ACB_House::CreateSpline(TArray<AGridCell*> Path, ACB_Workplace* TargetWorkp
     // Make spline follow path
     for (int i = 0; i < Path.Num(); i++)
     {
+        // Add the spline point to the spline
         Spline->AddSplinePoint(Path[i]->GetActorLocation(), ESplineCoordinateSpace::World);
+
+        // Set the spline point type to linear to check for turns
         Spline->SetSplinePointType(i, ESplinePointType::Linear, true);
 
-        FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World); // Get the right vector at the point
+        // Get the right vector at the spline point
+        FVector RightVector = Spline->GetRightVectorAtSplinePoint(i, ESplineCoordinateSpace::World);
+        // Get the right vector at the previous spline point
         FVector PreviousRightVector = FVector(0,0,0);
         bool turning = false;
-        // check if the vector of the previous point is the same as the current point
+        // check if the right vector of the previous point is the same as the current point
         if (i > 0) {
             PreviousRightVector = Spline->GetRightVectorAtSplinePoint(i-1, ESplineCoordinateSpace::World);
-            if (!PreviousRightVector.Equals(RightVector, 1)) { // Helps compensate for floating point errors
+            // If the right vector is not the same, the car is turning
+            if (!PreviousRightVector.Equals(RightVector, 1)) { // .Equals() Helps compensate for floating point errors by checking if the vectors are within 1 unit of each other
                 turning = true;
                 UE_LOG(LogTemp, Display, TEXT("Turning"));
             } else {
+                // If the car is not turning, set the previous right vector to 0
                 PreviousRightVector = FVector(0,0,0);
             }
         }
 
+        // Set the multiplier for how far to shift the spline point
         int multiplier = 10;
         if (turning) {
+            // If the car is turning, set the multiplier to 20
             multiplier = 20;
         }
 
         // log the right vector with spline point for debugging purposes
         UE_LOG(LogTemp, Display, TEXT("Spline point %d: %s"), i, *RightVector.ToString());
 
-        // draw debug line for right vector
-        // DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
+        // draw debug line to show the shift
+        DrawDebugLine(GetWorld(), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World), Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, FColor::Red, true, 10.0f, -1, 1.0f);
         
+        // Shift the spline point to the left by subtracting the right vector from the spline point
         Spline->SetLocationAtSplinePoint(i, Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World) - (RightVector + PreviousRightVector) * multiplier, ESplineCoordinateSpace::World);
+        // Reset the spline point type to curve
         Spline->SetSplinePointType(i, ESplinePointType::Curve, true);
     }
 
