@@ -65,9 +65,11 @@ void ACB_CarAI::Tick(float DeltaTime)
 
 void ACB_CarAI::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *OtherActor, UPrimitiveComponent *OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult &SweepResult)
 {
+	// If the car is already colliding with this car, return
 	if (Cast<ACB_CarAI>(OtherActor)->CollidingCar == this){
 		return;
 	}
+	// If the car is not already colliding and the car is not returning home
 	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning && OtherActor != this){
 		Overlapping = true;
 		// Set the colliding car
@@ -84,8 +86,10 @@ void ACB_CarAI::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherA
 {
 	if (Overlapping == true){
 		Overlapping = false;
+		// Reset the colliding car to null
 		CollidingCar = nullptr;
 		// Set delay to 0.5 seconds
+		// Play the car after a 0.5 second delay
 		FTimerHandle Delay;
 		GetWorldTimerManager().SetTimer(Delay, this, &ACB_CarAI::PlayCar, 0.5f, false);
 	}
