@@ -93,14 +93,16 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass)
 		// Add the house to the house array
 		HouseArray.Add(House);
 		// Add the workspaces to the house's target workplaces
+		TArray<ACB_Workplace*> TargetWorkplaces;
 		for (auto& Workplace : WorkplaceArray)
 		{
 			// Check if the workplace and house are of the same class
 			if (Workplace->BuildingClass == House->BuildingClass) {
-				House->TargetWorkplaces.Add(Workplace);
+				TargetWorkplaces.Add(Workplace);
 			}
 		}
-		UpdatePath();
+		// Add the target workplaces to the house
+		House->AddTargetWorkplace(TargetWorkplaces);
 	} else {
 		// Failed to spawn
 		return false;

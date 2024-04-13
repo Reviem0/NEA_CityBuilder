@@ -208,6 +208,12 @@ void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
     CreatePath();
 }
 
+void ACB_House::AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces)
+{
+    TargetWorkplaces.Append(Workplaces);
+    CreatePath();
+}
+
 void ACB_House::SortWorkplaces()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));

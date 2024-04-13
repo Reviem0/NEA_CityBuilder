@@ -54,6 +54,7 @@ public:
 	int CarAvailability = 2;
 
 	void AddTargetWorkplace(ACB_Workplace* Workplace);
+	void AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces);
 
 	// Dictionary to store the distance between the house and the workplace
     TMap<ACB_Workplace*, TArray<AGridCell*>> WorkplaceDistances;

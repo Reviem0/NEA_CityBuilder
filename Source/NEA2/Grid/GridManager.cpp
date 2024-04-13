@@ -253,12 +253,24 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
     }
 
     Algo::Reverse(path);
-	
+	// DebugShowPath(path);
+
 	// Reset Pathfinding
 	for (int i = 0; i < GridArray.Num(); i++) {
 		GridArray[i]->ResetPathfinding();
 	}
     return path;
+}
+
+void AGridManager::DebugShowPath(TArray<AGridCell*> Path) {
+	// reset all cells
+	for (AGridCell* Cell : GridArray) {
+		Cell->ResetMAT();
+	}
+	// show path
+	for (AGridCell* Cell : Path) {
+		Cell->DebugSetMAT();
+	}
 }
 
 void AGridManager::SetSubGrid(int X, int Y) {
