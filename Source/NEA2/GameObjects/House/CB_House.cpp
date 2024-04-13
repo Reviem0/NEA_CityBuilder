@@ -217,25 +217,48 @@ void ACB_House::AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces)
 void ACB_House::SortWorkplaces()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    // clear the dictionary
+    WorkplaceDistances.Empty();
+
+    // sort the workplaces by the distance between the house and the workplace not path distance
+    TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
+        return FVector::Dist(GetActorLocation(), A.GetActorLocation()) < FVector::Dist(GetActorLocation(), B.GetActorLocation());
+    });
+
+    // Create a dictionary to store the distance between the house and the workplace
+    int count = 0;
     for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
+        // Break the loop after the fifth workplace
+        if (count >= 5) {
+            break;
+        }
+
+        // Check if the workplace is valid
         if (TargetWorkplace == nullptr) {
             UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
             continue;
         }
-        
+        // Check if the workplace's road tile asset is valid
         if (TargetWorkplace->RoadTileAsset == nullptr) {
             UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
             continue;
         }
 
+        // Get the cell of the workplace's road tile asset
         AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+
+        // Find the path between the house and the workplace
         if (TargetCell && TargetWorkplace->IsFull == false){
             TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
+            // If the path is not empty, add the path to the dictionary
             if (Path.Num() != 0){
                 WorkplaceDistances.Add(TargetWorkplace, Path);
             }
         }
+
+        count++;
     }
+
     // sort the dictionary by the distance between the house and the workplace
     WorkplaceDistances.ValueSort([this](const TArray<AGridCell*>& A, const TArray<AGridCell*>& B) {
         // get workplace by key
@@ -263,7 +286,7 @@ void ACB_House::CreatePath()
     }
     SortWorkplaces();
     if (WorkplaceDistances.Num() != 0){
-        // Create a spline to the closest workplace
+        // Create a spline to first workplace in the dictionary
         CreateSpline(WorkplaceDistances.begin().Value(), WorkplaceDistances.begin().Key());
     } else {
         UE_LOG(LogTemp, Display, TEXT("NO WORKPLACES FOUND"));
@@ -362,6 +385,7 @@ void ACB_House::PathCheck()
         // If the car spawns successfully, set the origin house and destination workplace, and make the car follow the spline
         if (Car){
             Car->OriginHouse = this;
+            // Set the destination workplace to the first workplace in the dictionary
             Car->DestinationWorkplace = WorkplaceDistances.begin().Key();
             Car->FollowSpline(Spline);
             // Decrement the car availability

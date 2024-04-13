@@ -56,6 +56,8 @@ public:
 	void AddTargetWorkplace(ACB_Workplace* Workplace);
 	void AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces);
 
+	ACB_Workplace* DestinationWorkplace;
+
 	// Dictionary to store the distance between the house and the workplace
     TMap<ACB_Workplace*, TArray<AGridCell*>> WorkplaceDistances;
 
