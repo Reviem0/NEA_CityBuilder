@@ -115,7 +115,7 @@ void ACB_Workplace::BeginPlay()
         TopLeft->OccupyingType != EBuildingType::None || 
         BottomRight->OccupyingType != EBuildingType::None || 
         RoadPlacement->OccupyingType != EBuildingType::None || 
-        GridManager->GridArray.Contains(RoadPlacement) == false) // Check if the road placement is valid
+        GridManager->PlayGridArray.Contains(RoadPlacement) == false) // Check if the road placement is valid
         )
     {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: NOT ENOUGH CELLS"));
@@ -437,6 +437,15 @@ void ACB_Workplace::GoalNotMet()
 
 void ACB_Workplace::IncreaseGoal()
 {
+    // Reset goal timer
+    if (isCritical) {
+        isCritical = false;
+        GetWorld()->GetTimerManager().ClearTimer(CriticalTimerHandle);
+    }
+    // Set a timer for the goal
+    GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, 240, false);
+
+
     // Get the GameManager
     AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
     // Increase the goal by 20
