@@ -30,7 +30,8 @@ ACB_Camera::ACB_Camera()
 void ACB_Camera::BeginPlay()
 {
 	Super::BeginPlay();
-	// Get player controller
+
+	// Get player controller and set view target to this camera
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetViewTargetWithBlend(this, 0.0);
 	
 }
@@ -39,10 +40,14 @@ void ACB_Camera::BeginPlay()
 void ACB_Camera::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// If GridManager is not set, get GridManager
 	if (!GridManager) {
 		GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
 		if (GridManager){
 			UE_LOG(LogTemp, Warning, TEXT("GridManager Found"));
+		} else {
+			UE_LOG(LogTemp, Warning, TEXT("GridManager Not Found"));
 		}
 	}
 	else
@@ -52,6 +57,7 @@ void ACB_Camera::Tick(float DeltaTime)
 		AActor* FurthestCell = GridArray[0];
 		for (AActor* Cell : GridArray)
 		{
+			// If the distance between the current cell and the camera is greater than the distance between the furthest cell and the camera
 			if (FMath::Abs((Cell->GetActorLocation() - GetActorLocation()).Size()) > FMath::Abs((FurthestCell->GetActorLocation() - GetActorLocation()).Size()))
 			{
 				FurthestCell = Cell;
@@ -65,21 +71,22 @@ void ACB_Camera::Tick(float DeltaTime)
 			ActorGridArray.Add(GridCell);
 		}
 
-		// Set Camera Location
-		FVector Location = UGameplayStatics::GetActorArrayAverageLocation(ActorGridArray);
-		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Location, GetWorld()->DeltaTimeSeconds, 5));
+		// Set Camera Location. This aims to center the camera to the grid
+		FVector Location = UGameplayStatics::GetActorArrayAverageLocation(ActorGridArray); // Get the average location of all the grid cells
+		SetActorLocation(FMath::VInterpTo(GetActorLocation(), Location, GetWorld()->DeltaTimeSeconds, 5)); // Interpolate the camera location to the average location of all the grid cells
 
-		// Set Camera Distance
+		// Set Camera Distance. This aims to set the camera distance so that the furthest grid cell is visible
 		FVector Vec = (GetActorTransform().InverseTransformPosition(FurthestCell->GetActorLocation())).GetAbs();
 		CameraDistance = FVector::Dist(Vec, Vec*-1);
 
 		FVector Current = Camera->GetComponentLocation();
 		FVector Target = GetActorForwardVector()*-1*CameraDistance + GetActorLocation();
 		FVector CameraLocation = FMath::VInterpTo(Current, Target, GetWorld()->DeltaTimeSeconds, 5);
+
+		// Set Camera Location
 		Camera->SetWorldLocation(CameraLocation);
 
 		
 	}
-
 }
 
