@@ -219,6 +219,10 @@ void ACB_Workplace::CarArrived(ACB_CarAI* CarAI)
     UE_LOG(LogTemp, Display, TEXT("Car arrived at workplace"));
     // Add score
     AddScore();
+    if (isCritical) {
+        // Add 3 seconds to the timer
+        GetWorld()->GetTimerManager().SetTimer(CriticalTimerHandle, this, &ACB_Workplace::LossCondition, GetWorld()->GetTimerManager().GetTimerRemaining(CriticalTimerHandle)+3  , false);
+    }
 }
 void ACB_Workplace::EnqueueCar(ACB_House* House)
 {
@@ -435,7 +439,7 @@ void ACB_Workplace::IncreaseGoal()
         GetWorld()->GetTimerManager().ClearTimer(CriticalTimerHandle);
     }
     // Set a timer for the goal
-    GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, 240, false);
+    GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, GoalTimer, false);
 
 
     // Get the GameManager
