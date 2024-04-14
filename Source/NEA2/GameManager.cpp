@@ -312,6 +312,10 @@ void AGameManager::ScoreFunction() {
 	if (TotalScore % 5 == 0) {
 		SpawnWorkplaceAtRandomLocation();
 	}
+	if (TotalScore % 10 == 0) {
+		GridManager->ExpandSubGrid(2,2);
+		PlayerController->UpdateRoadInventory(20);
+	}
 } */
 
 void AGameManager::SatisfactionCheck() 
