@@ -38,13 +38,14 @@ void ACB_Workplace::BeginPlay()
 
     //UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Orientation: %d"), Orientation);
 
-    // 
+    // Get grid manager
+    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     AGridCell* BottomLeft = GridCellRef;
     AGridCell* BottomRight = GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
     AGridCell* TopLeft = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
     AGridCell* TopRight = BottomRight && BottomRight->NNeighbour ? *(BottomRight->NNeighbour) : nullptr;
     
-    AGridCell* RoadPlacement = BottomLeft->SNeighbour ? *(BottomLeft->SNeighbour) : nullptr;
+    AGridCell* RoadPlacement = BottomLeft->SNeighbour && GridManager->PlayGridArray.Contains(*(BottomLeft->SNeighbour)) ? *(BottomLeft->SNeighbour) : nullptr;
     FRotator* Rotation = new FRotator(0,0,0);
 
        // Choose a random orientation for the workplace
@@ -107,8 +108,6 @@ void ACB_Workplace::BeginPlay()
     FRotator Rot(0, Rotation->Yaw, 0);
 
 
-    // Get the GridManager
-    AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     // Check if all the cells are valid and unoccupied and if not, destroy the workplace
     if (
         (!BottomLeft || !TopRight || !TopLeft || !BottomRight || !RoadPlacement) || // Check if the cells are valid
@@ -443,6 +442,7 @@ void ACB_Workplace::IncreaseGoal()
     // Increase the goal by 20
     CurrentScore = 0;
     Goal += 20;
+    UE_LOG(LogTemp, Display, TEXT("WORKPLACE: Goal increased to %d"), Goal);
     // Satisfaction check
     GameManager->SatisfactionCheck();
 }

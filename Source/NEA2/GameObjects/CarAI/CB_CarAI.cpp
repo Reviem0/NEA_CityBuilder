@@ -69,8 +69,8 @@ void ACB_CarAI::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *Othe
 	if (Cast<ACB_CarAI>(OtherActor)->CollidingCar == this){
 		return;
 	}
-	// If the car is not already colliding and the car is not returning home
-	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning && OtherActor != this){
+	// If the car is not already colliding and the other actor is not itself
+	if (Overlapping == false && OtherActor != this){
 		Overlapping = true;
 		// Set the colliding car
 		CollidingCar = Cast<ACB_CarAI>(OtherActor);
@@ -147,7 +147,14 @@ void ACB_CarAI::OnTimelineFinished()
 	// Log that the timeline has finished for debugging
 	UE_LOG(LogTemp, Warning, TEXT("OnTimelineFinished called for %s"), *GetName());
 
-	DestinationWorkplace->CarArrived(this);
+	// If the car is not returning home
+	if (!Returning){
+		// Call the car arrived function in the destination workplace
+		DestinationWorkplace->CarArrived(this);
+	} else {
+		// Otherwise, all the car arrived function in the origin house
+		Cast<ACB_House>(OriginHouse)->CarArrived(this);
+	}
 	
 	// Destroy the car after it has finished its journey
 	Destroy();

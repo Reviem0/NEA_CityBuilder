@@ -81,7 +81,9 @@ public:
 
 	int Goal;
 	int CurrentScore = 0;
+	void IncreaseGoal();
 
+	
 	UPROPERTY(EditAnywhere, Category = "Stats")
 	bool IsFull = false;
 
@@ -97,7 +99,6 @@ public:
 
 	void GoalNotMet();
 
-	void IncreaseGoal();
 
 	UPROPERTY(EditAnywhere, Category = "HUDElements")
 	bool isCritical = false;

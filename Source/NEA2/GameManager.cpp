@@ -308,6 +308,15 @@ void AGameManager::ScoreFunction() {
 	LastTime = GameMode->time;
 }
 
+/* void AGameManager::ScoreFunction() {
+	if (TotalScore % 5 == 0) {
+		SpawnHouseAtRandomLocation();
+	}
+	if (TotalScore % 20 == 0) {
+		SpawnWorkplaceAtRandomLocation();
+	}
+} */
+
 void AGameManager::SatisfactionCheck() 
 {
 	// Initialise the goal and house count for each colour
