@@ -217,35 +217,25 @@ void ACB_House::AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces)
 void ACB_House::SortWorkplaces()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    // clear the dictionary
-    WorkplaceDistances.Empty();
+    if (!GridManager) {
+        UE_LOG(LogTemp, Error, TEXT("GridManager is null"));
+        return;
+    }
 
-    // sort the workplaces by the distance between the house and the workplace not path distance
-    TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
-        return FVector::Dist(GetActorLocation(), A.GetActorLocation()) < FVector::Dist(GetActorLocation(), B.GetActorLocation());
-    });
-
-    // Create a dictionary to store the distance between the house and the workplace
     int count = 0;
     for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
-        // Break the loop after the fifth workplace
-        if (count >= 5) {
-            break;
-        }
-
-        // Check if the workplace is valid
-        if (TargetWorkplace == nullptr) {
+        if (!TargetWorkplace) {
             UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
             continue;
         }
-        // Check if the workplace's road tile asset is valid
-        if (TargetWorkplace->RoadTileAsset == nullptr) {
+
+        AGridCell* TargetCell = nullptr;
+        if (TargetWorkplace->RoadTileAsset) {
+            TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+        } else {
             UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
             continue;
         }
-
-        // Get the cell of the workplace's road tile asset
-        AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
 
         // Find the path between the house and the workplace
         if (TargetCell && TargetWorkplace->IsFull == false){
@@ -261,9 +251,13 @@ void ACB_House::SortWorkplaces()
 
     // sort the dictionary by the distance between the house and the workplace
     WorkplaceDistances.ValueSort([this](const TArray<AGridCell*>& A, const TArray<AGridCell*>& B) {
-        // get workplace by key
-        const ACB_Workplace* AWorkplace = *WorkplaceDistances.FindKey(A);
-        const ACB_Workplace* BWorkplace = *WorkplaceDistances.FindKey(B);
+        const ACB_Workplace* AWorkplace = WorkplaceDistances.FindKey(A) ? *WorkplaceDistances.FindKey(A) : nullptr;
+        const ACB_Workplace* BWorkplace = WorkplaceDistances.FindKey(B) ? *WorkplaceDistances.FindKey(B) : nullptr;
+        if (!AWorkplace || !BWorkplace) {
+            UE_LOG(LogTemp, Error, TEXT("AWorkplace or BWorkplace is null"));
+            return false;
+        }
+
         int AcriticalPoints = AWorkplace->isCritical ? 10 : 0;
         int BcriticalPoints = BWorkplace->isCritical ? 10 : 0;
         int pointDisparity = AWorkplace->Goal - AWorkplace->CurrentScore - BWorkplace->Goal + BWorkplace->CurrentScore;

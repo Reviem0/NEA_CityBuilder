@@ -61,7 +61,7 @@ void ACB_Workplace::BeginPlay()
             TopLeft = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
             TopRight = BottomRight && BottomRight->NNeighbour ? *(BottomRight->NNeighbour) : nullptr;
     
-            RoadPlacement = BottomLeft->SNeighbour ? *(BottomLeft->SNeighbour) : nullptr;
+            RoadPlacement = BottomLeft->SNeighbour && GridManager->PlayGridArray.Contains(*(BottomLeft->SNeighbour))  ? *(BottomLeft->SNeighbour) : nullptr;
             Rotation = new FRotator(0,0,0);
             break;
         }
@@ -73,7 +73,7 @@ void ACB_Workplace::BeginPlay()
             TopRight = GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
             TopLeft = BottomLeft && BottomLeft->ENeighbour ? *(BottomLeft->ENeighbour) : nullptr;
 
-            RoadPlacement = BottomLeft->WNeighbour ? *(BottomLeft->WNeighbour) : nullptr;
+            RoadPlacement = BottomLeft->WNeighbour && GridManager->PlayGridArray.Contains(*(BottomLeft->WNeighbour)) ? *(BottomLeft->WNeighbour) : nullptr;
             Rotation = new FRotator(0,90,0);
             break;
         }
@@ -85,7 +85,7 @@ void ACB_Workplace::BeginPlay()
             TopRight = GridCellRef->NNeighbour ? *(GridCellRef->NNeighbour) : nullptr;
             TopLeft = GridCellRef;
 
-            RoadPlacement = BottomLeft->ENeighbour ? *(BottomLeft->ENeighbour) : nullptr;
+            RoadPlacement = BottomLeft->ENeighbour && GridManager->PlayGridArray.Contains(*(BottomLeft->ENeighbour)) ? *(BottomLeft->ENeighbour) : nullptr;
             Rotation = new FRotator(0,270,0);
             break;
         }
@@ -97,7 +97,7 @@ void ACB_Workplace::BeginPlay()
             TopLeft = GridCellRef && GridCellRef->ENeighbour ? *(GridCellRef->ENeighbour) : nullptr;
             BottomLeft = BottomRight && BottomRight->ENeighbour ? *(BottomRight->ENeighbour) : nullptr;
 
-            RoadPlacement = BottomLeft && BottomLeft->NNeighbour ? *(BottomLeft->NNeighbour) : nullptr;
+            RoadPlacement = BottomLeft && BottomLeft->NNeighbour && GridManager->PlayGridArray.Contains(*(BottomLeft->NNeighbour)) ? *(BottomLeft->NNeighbour) : nullptr;
             Rotation = new FRotator(0,180,0);
             break;
         }
