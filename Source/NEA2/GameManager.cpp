@@ -279,6 +279,8 @@ void AGameManager::AddScore(int Score)
 	TotalScore += Score;
 	// Log the total score
 	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
+	// Call the score function
+	// ScoreFunction();
 	
 }
 
@@ -306,15 +308,20 @@ void AGameManager::ScoreFunction() {
 		SpawnWorkplaceAtRandomLocation();
 	}
 	LastTime = GameMode->time;
-}
+} 
 
 /* void AGameManager::ScoreFunction() {
+	//Get player controller
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	// Get grid manager
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
 	if (TotalScore % 5 == 0) {
 		SpawnWorkplaceAtRandomLocation();
 	}
 	if (TotalScore % 10 == 0) {
 		GridManager->ExpandSubGrid(2,2);
 		PlayerController->UpdateRoadInventory(20);
+		UE_LOG(LogTemp, Display, TEXT("New Road Inventory: %d"), PlayerController->RoadInventory);
 	}
 } */
 
