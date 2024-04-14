@@ -73,7 +73,7 @@ public:
 
 	int GetScore();
 
-	void LossFunction();
+	void GameOver();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "LossScreen")
 	TSubclassOf<UUserWidget> LossScreenClass;

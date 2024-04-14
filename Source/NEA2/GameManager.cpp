@@ -416,7 +416,7 @@ int AGameManager::GetScore()
 	return TotalScore;
 }
 
-void AGameManager::LossFunction() 
+void AGameManager::GameOver() 
 {
 	// Check if the game has already been lost
 	if (hasLost) return;

@@ -223,6 +223,6 @@ void ACB_PlayerController::UpdateRoadInventory(int Amount) {
 
 void ACB_PlayerController::ForceLoss() {
     if (GridManager) {
-        GridManager->GameManager->LossFunction();
+        GridManager->GameManager->GameOver();
     }
 }

@@ -457,7 +457,7 @@ void ACB_Workplace::LossCondition()
     }
     // Call the loss function in the GameManager
     if (GameManager) {
-        GameManager->LossFunction();
+        GameManager->GameOver();
     }
 }
 
