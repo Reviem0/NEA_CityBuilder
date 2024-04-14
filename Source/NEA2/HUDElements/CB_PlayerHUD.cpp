@@ -10,7 +10,6 @@
 void UCB_PlayerHUD::NativeConstruct()
 {
     Super::NativeConstruct();
-    UpdateRoadInventory();
     FastForwardButton->OnClicked.AddUniqueDynamic(this, &UCB_PlayerHUD::OnFastForwardButtonClicked);
     NormalButton->OnClicked.AddUniqueDynamic(this, &UCB_PlayerHUD::OnNormalButtonClicked);
 
@@ -36,10 +35,13 @@ void UCB_PlayerHUD::UpdateRoadInventory()
 {
     // Get the player controller
     ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    // Get the road inventory
     int Inventory = 0;
     if (PlayerController) {
         Inventory = PlayerController->RoadInventory;
     }
+
+    // Update the road inventory label
     RoadInventoryLabel->SetText(FText::AsNumber(Inventory));
 }
 

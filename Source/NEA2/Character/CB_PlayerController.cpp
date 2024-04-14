@@ -204,7 +204,7 @@ void ACB_PlayerController::PathTEST() {
 }
 
 void ACB_PlayerController::IncreaseSpeed() {
-    // set global time dilation to 2
+    // set global time dilation to fast forward speed
     UGameplayStatics::SetGlobalTimeDilation(GetWorld(), FastForward);
 }
 
