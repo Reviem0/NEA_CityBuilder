@@ -410,14 +410,6 @@ void ACB_Workplace::AddScore() {
         // If the current score is greater than or equal to the goal, increase the goal
         if (CurrentScore >= Goal) {
             IncreaseGoal();
-            // Reset goal timer
-            if (isCritical) {
-                isCritical = false;
-                GetWorld()->GetTimerManager().ClearTimer(CriticalTimerHandle);
-            }
-
-            // Set a timer for the goal
-            GetWorld()->GetTimerManager().SetTimer(GoalTimerHandle, this, &ACB_Workplace::GoalNotMet, 240, false);
         }
     } else {
         UE_LOG(LogTemp, Warning, TEXT("WORKPLACE: GameManager is null"));
