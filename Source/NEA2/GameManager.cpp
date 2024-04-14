@@ -260,7 +260,7 @@ void AGameManager::UpdatePath()
 	}
 }
 
-void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundat function
+void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundant function
 
 	// If no colour is specified, spawn a random colour
 	if (BuildingClass == EBuildingClass::None) {
@@ -269,7 +269,7 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundat fu
 	
 	// Spawn a random colour set from the available colours
 	if (SpawnWorkplaceAtRandomLocation(BuildingClass)){
-		//SpawnHouseAtRandomLocation(BuildingClass);
+		// SpawnHouseAtRandomLocation(BuildingClass);
 	}
 }
 
@@ -418,14 +418,3 @@ void AGameManager::LossFunction()
 	}
 
 }
-/* 
-Calculating the total score inside the GameManager.cpp: 
-This approach is more straightforward and easier to implement. You would simply iterate over all the workplaces and sum their scores. 
-However, this could be inefficient if there are a large number of workplaces and the score needs to be updated frequently, as you would be recalculating the 
-entire sum every time.
-
-Having the workplaces update the GameManager's total score: This approach is more efficient, as it only requires a single addition operation 
-whenever a workplace's score increases. However, it's more complex to implement, as you need to ensure that every workplace has a reference to 
-the GameManager and calls the appropriate method whenever its score changes. It also introduces tighter coupling between the workplaces and the
- GameManager, which could make the code harder to maintain and reason about.
-  */
