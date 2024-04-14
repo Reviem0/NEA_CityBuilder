@@ -11,7 +11,10 @@ ACB_PlayerController::ACB_PlayerController()
 
 void ACB_PlayerController::BeginPlay()
 {
+    // Set input mode to game and UI
     SetInputMode(FInputModeGameAndUI());
+
+    // Set default road inventory
     RoadInventory = 20;
 
 }

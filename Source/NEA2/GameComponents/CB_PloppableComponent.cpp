@@ -45,30 +45,27 @@ void UCB_PloppableComponent::UpdateState()
 	ACB_BuildingAsset* Owner = Cast<ACB_BuildingAsset>(GetOwner());
 	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
 	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
 	if (GridManager->GridArray.Num() != 0) {
-		if (GridManager->PlayGridArray.Contains(Owner->GridCellRef)){
-			if (!(Owner->GridCellRef->isOccupied) && PlayerController->RoadInventory > 0) {
-				IsPlacementValid = true;
+		if (GridManager->PlayGridArray.Contains(Owner->GridCellRef)){ // If the GridCellRef is in the PlayGridArray
+			if (!(Owner->GridCellRef->isOccupied) && PlayerController->RoadInventory > 0) { // If the GridCellRef is not occupied and the player has road inventory
+				IsPlacementValid = true; // Placement is valid
 			} else {
-				IsPlacementValid = false;
+				IsPlacementValid = false; // Placement is invalid
 		}
 		} else {
-			IsPlacementValid = false;
+			IsPlacementValid = false; // Placement is invalid
 		}
-		//RoadPlaceableCheck();
 	}
 
-/* 	TArray<AActor*> OverlappingActors;
-	GetOwner()->GetOverlappingActors(OverlappingActors, AActor::StaticClass());
-	IsPlacementValid = OverlappingActors.Num() == 0; */
-
+	// Change Material based on Placement Validity
 	TArray<UStaticMeshComponent*> MeshComponents; 
 	GetOwner()->GetComponents<UStaticMeshComponent>(MeshComponents);
 	for (UStaticMeshComponent* MeshComponent : MeshComponents) {
 		if (IsPlacementValid) {
-			MeshComponent->SetMaterial(0, ValidMAT);
+			MeshComponent->SetMaterial(0, ValidMAT); // Set Material to ValidMAT
 		} else {
-			MeshComponent->SetMaterial(0, InvalidMAT);
+			MeshComponent->SetMaterial(0, InvalidMAT); // Set Material to InvalidMAT
 		}
 	}
 }
