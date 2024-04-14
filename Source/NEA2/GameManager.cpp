@@ -310,21 +310,19 @@ void AGameManager::ScoreFunction() {
 
 /* void AGameManager::ScoreFunction() {
 	if (TotalScore % 5 == 0) {
-		SpawnHouseAtRandomLocation();
-	}
-	if (TotalScore % 20 == 0) {
 		SpawnWorkplaceAtRandomLocation();
 	}
 } */
 
 void AGameManager::SatisfactionCheck() 
 {
-	// Initialise the goal and house count for each colour
+	// Initialise the total goal for each colour
 	int redGoal = 0;
 	int blueGoal = 0;
 	int greenGoal = 0;
 	int yellowGoal = 0;
 
+	// Initialise the total house count for each colour
 	int redHouseCount = 0;
 	int blueHouseCount = 0;
 	int greenHouseCount = 0;
@@ -333,42 +331,43 @@ void AGameManager::SatisfactionCheck()
 	// Calculate the total goal and house count for each colour
 	for (ACB_Workplace* Workplace : WorkplaceArray) {
 		switch (Workplace->BuildingClass) {
-			case EBuildingClass::Red:
+			case EBuildingClass::Red:    // If the workplace is red, add the goal to the red goal
 				redGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Blue:
+			case EBuildingClass::Blue:   // If the workplace is blue, add the goal to the blue goal
 				blueGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Green:
+			case EBuildingClass::Green:  // If the workplace is green, add the goal to the green goal
 				greenGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Yellow:
+			case EBuildingClass::Yellow: // If the workplace is yellow, add the goal to the yellow goal
 				yellowGoal += Workplace->Goal;
 				break;
-			default:
+			default: // If the workplace is not of a valid colour, skip
 				break;
 		}
 	}
 	
 	for (ACB_House* House : HouseArray) {
 		switch (House->BuildingClass) {
-			case EBuildingClass::Red:
+			case EBuildingClass::Red:   // If the house is red, add to the red house count
 				redHouseCount += 1;
 				break;
-			case EBuildingClass::Blue:
+			case EBuildingClass::Blue:  // If the house is blue, add to the blue house count
 				blueHouseCount += 1;
 				break;
-			case EBuildingClass::Green:
+			case EBuildingClass::Green: // If the house is green, add to the green house count
 				greenHouseCount += 1;
 				break;
-			case EBuildingClass::Yellow:
+			case EBuildingClass::Yellow:// If the house is yellow, add to the yellow house count
 				yellowHouseCount += 1;
 				break;
-			default:
+			default: // If the house is not of a valid colour, skip
 				break;
 		}
 	}
 
+	// Spawn red houses if the goal cannot be met with the current number of red houses
 	if (redGoal / 20.0f > redHouseCount) {
 		for (int i = 0; i < ceil(redGoal / 20.0f) - redHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
@@ -376,6 +375,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn blue houses if the goal cannot be met with the current number of blue houses
 	if (blueGoal / 20.0f > blueHouseCount) {
 		for (int i = 0; i < ceil(blueGoal / 20.0f) - blueHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
@@ -383,6 +383,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn green houses if the goal cannot be met with the current number of green houses
 	if (greenGoal / 20.0f > greenHouseCount) {
 		for (int i = 0; i < ceil(greenGoal / 20.0f) - greenHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
@@ -390,6 +391,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn yellow houses if the goal cannot be met with the current number of yellow houses
 	if (yellowGoal / 20.0f > yellowHouseCount) {
 		for (int i = 0; i < ceil(yellowGoal / 20.0f) - yellowHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
