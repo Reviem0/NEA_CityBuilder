@@ -97,7 +97,7 @@ void ACB_CarAI::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherA
 
 void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 {
-	CarClass = Cast<ACB_House>(OriginHouse)->BuildingClass;
+	CarClass = OriginHouse->BuildingClass;
 	// Set Material based on class
 	TArray<UStaticMeshComponent*> MeshComponents;
 	GetComponents<UStaticMeshComponent>(MeshComponents);
@@ -147,14 +147,7 @@ void ACB_CarAI::OnTimelineFinished()
 	// Log that the timeline has finished for debugging
 	UE_LOG(LogTemp, Warning, TEXT("OnTimelineFinished called for %s"), *GetName());
 
-	// If the car is not returning home
-	if (!Returning){
-		// Call the car arrived function in the destination workplace
-		DestinationWorkplace->CarArrived(this);
-	} else {
-		// Otherwise, all the car arrived function in the origin house
-		Cast<ACB_House>(OriginHouse)->CarArrived(this);
-	}
+	DestinationWorkplace->CarArrived(this);
 	
 	// Destroy the car after it has finished its journey
 	Destroy();

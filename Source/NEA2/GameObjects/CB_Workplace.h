@@ -50,22 +50,31 @@ public:
 	ACB_OwnedRoadCell* RoadTileAsset;
 
 	UFUNCTION(BlueprintCallable)
-	void CarArrived(AActor* Car);
-	void AddToHouseQueue(AActor* House);
+	void CarArrived(class ACB_CarAI* CarAI);
+
+	TArray<class ACB_House*> HouseQueue;
+	void EnqueueCar(class ACB_House* House);
+	void DequeueCar();
+	
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	int HoldingCapacity = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	int HoldingCurrent = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Stats")
+	float cooldown = 15.0f;
+
 
 	void AddScore();
 
 	
 	UPROPERTY(VisibleAnywhere, Category = "Stats")
 	int Points = 0;
-	UPROPERTY(EditAnywhere, Category = "Stats")
-	float cooldown = 15.0f;
+	
 
-	TArray<AActor*> HouseQueue;
-
-	void OnWaitFinished();
-
-	bool CreatePath(AActor* House);
+	bool CreatePath(class ACB_House* House);
+	void CreateSpline(TArray<AGridCell*> Path, class ACB_House* House);
 	
 	UPROPERTY(VisibleAnywhere)
 	USplineComponent* Spline;
@@ -74,20 +83,13 @@ public:
 	int CurrentScore = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Stats")
-	int HoldingCapacity = 5;
-
-	UPROPERTY(EditAnywhere, Category = "Stats")
-	int HoldingCurrent = 0;
-
-	UPROPERTY(EditAnywhere, Category = "Stats")
 	bool IsFull = false;
 
 	
-	void CreateSpline(TArray<AGridCell*> Path, AActor* House);
 
-	void SendCar(AActor* House);
+	void SendCar(class ACB_House* House);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CarAI")
-	TSubclassOf<AActor> CarToSpawn;
+	TSubclassOf<class ACB_CarAI> CarToSpawn;
 
 	void DestroyWorkplace();
 
