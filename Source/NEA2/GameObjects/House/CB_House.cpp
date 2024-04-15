@@ -219,11 +219,19 @@ void ACB_House::SortWorkplaces()
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
     // clear the dictionary
     WorkplaceDistances.Empty();
-
+    if (TargetWorkplaces.Num() == 0) {
+        UE_LOG(LogTemp, Error, TEXT("TargetWorkplaces is empty"));
+        return;
+    }
     // sort the workplaces by the distance between the house and the workplace not path distance
     TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
         return FVector::Dist(GetActorLocation(), A.GetActorLocation()) < FVector::Dist(GetActorLocation(), B.GetActorLocation());
     });
+
+    if (RoadTileAsset == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
+        return;
+    }
 
     // Create a dictionary to store the distance between the house and the workplace
     int count = 0;
@@ -246,6 +254,10 @@ void ACB_House::SortWorkplaces()
 
         // Get the cell of the workplace's road tile asset
         AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+        if (TargetCell == nullptr) {
+            UE_LOG(LogTemp, Error, TEXT("TargetCell is null"));
+            continue;
+        }
 
         // Find the path between the house and the workplace
         if (TargetCell && TargetWorkplace->IsFull == false){
