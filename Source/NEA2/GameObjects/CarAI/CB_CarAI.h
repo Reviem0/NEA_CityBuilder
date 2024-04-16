@@ -63,7 +63,7 @@ public:
 	float speed = 200.f;
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties")
-	AActor* OriginHouse;
+	class ACB_House* OriginHouse;
 
 	UPROPERTY(VisibleAnywhere, Category = "Properties")
 	ACB_Workplace* DestinationWorkplace;

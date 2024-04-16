@@ -11,7 +11,10 @@ ACB_PlayerController::ACB_PlayerController()
 
 void ACB_PlayerController::BeginPlay()
 {
+    // Set input mode to game and UI
     SetInputMode(FInputModeGameAndUI());
+
+    // Set default road inventory
     RoadInventory = 20;
 
 }
@@ -100,9 +103,12 @@ void ACB_PlayerController::UpdatePlacement() {
 }
 
 void ACB_PlayerController::SpawnBuilding() {
+    // Do not place building if placement mode is disabled
     if (PlacementModeEnabled == false) {
         return;
     }
+
+    // Do not place building if road inventory is empty
     if (RoadInventory <= 0) {
         UE_LOG(LogTemp, Warning, TEXT("Road Inventory is empty!"));
         return;
@@ -111,33 +117,50 @@ void ACB_PlayerController::SpawnBuilding() {
     FActorSpawnParameters SpawnParams;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+    // Only place building if placement is valid
     if (PlopComp->IsPlacementValid) {
+        // Place road
         AActor* NewActor = GetWorld()->SpawnActor<AActor>(ActorToPlace, PlaceableActor->GetActorTransform(), SpawnParams);
         PlopComp->UpdateState();
         LastPlaced = PlaceableActor->GridCellRef;
+
+        // Update path for houses
         if (GridManager->GameManager) {
             GridManager->GameManager->UpdatePath();
         }
+
+        // Update road inventory
         UpdateRoadInventory(-1);
     }
 }
 
 void ACB_PlayerController::DeleteBuilding() {
+    // Do not delete building if placement mode is disabled
     if (PlacementModeEnabled == false) {
         return;
     }
     if (PlaceableActor) {
         if (GridManager){
             UCB_PloppableComponent* PlopComp = PlaceableActor->GetComponentByClass<UCB_PloppableComponent>();
-            AGridCell* Grid = GridManager->GetClosestGridCell(PlaceableActor->GetActorLocation());
-            if (Grid->OccupyingActor){
-                if (Cast<ACB_BuildingAsset>(Grid->OccupyingActor) && Grid->OccupyingType == EBuildingType::Road && Cast<ACB_BuildingAsset>(Grid->OccupyingActor)->Ownership == EOwnership::Player)
+
+            // Get the cell that is under the mouse
+            AGridCell* Cell = PlaceableActor->GridCellRef;
+
+            // Check if the cell is occupied by a road and if it placed by the player
+            if (Cell->OccupyingActor){
+                if (Cast<ACB_BuildingAsset>(Cell->OccupyingActor) && Cell->OccupyingType == EBuildingType::Road && Cast<ACB_BuildingAsset>(Cell->OccupyingActor)->Ownership == EOwnership::Player)
                 {
-                    Cast<ACB_RoadCell>(Grid->OccupyingActor)->DestroyRoad();
+                    // Destroy the road
+                    Cast<ACB_RoadCell>(Cell->OccupyingActor)->DestroyRoad();
+
+                    // Update the state
                     PlopComp->UpdateState();
-                    if (GridManager->GameManager) { 
+                    if (GridManager->GameManager) {
+
+                        // Update path for houses
                         GridManager->GameManager->UpdatePath();
                     }
+                    // Update road inventory
                     UpdateRoadInventory(1);
                 }
             }
@@ -151,6 +174,7 @@ void ACB_PlayerController::StartDeletingBuilding()
     if (!bDeletingBuilding)
     {
         bDeletingBuilding = true;
+        // Set timer to delete building every interval
         GetWorldTimerManager().SetTimer(DeleteBuildingTimerHandle, this, &ACB_PlayerController::DeleteBuilding, DeleteBuildingInterval, true);
     }
 }
@@ -160,6 +184,7 @@ void ACB_PlayerController::StopDeletingBuilding()
     if (bDeletingBuilding)
     {
         bDeletingBuilding = false;
+        // Clear timer
         GetWorldTimerManager().ClearTimer(DeleteBuildingTimerHandle);
     }
 }
@@ -179,7 +204,7 @@ void ACB_PlayerController::PathTEST() {
 }
 
 void ACB_PlayerController::IncreaseSpeed() {
-    // set global time dilation to 2
+    // set global time dilation to fast forward speed
     UGameplayStatics::SetGlobalTimeDilation(GetWorld(), FastForward);
 }
 
@@ -198,6 +223,6 @@ void ACB_PlayerController::UpdateRoadInventory(int Amount) {
 
 void ACB_PlayerController::ForceLoss() {
     if (GridManager) {
-        GridManager->GameManager->LossFunction();
+        GridManager->GameManager->GameOver();
     }
 }

@@ -43,13 +43,16 @@ public:
 	TArray<EBuildingClass> AvailableColours;
 
 	bool SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass);
-	bool SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+	bool SpawnHouseAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None); // Default to None if no colour is specified
+	int SpawnAttemptLimit = 10;
 	bool SpawnWorkplace(AGridCell* GridCell, EBuildingClass BuildingClass);
-	bool SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None);
+	bool SpawnWorkplaceAtRandomLocation(EBuildingClass BuildingClass = EBuildingClass::None); // Default to None if no colour is specified
+	
+
 
 	void SpawnColourSet(EBuildingClass BuildingClass = EBuildingClass::None);
 
-	int SpawnAttemptLimit = 10;
+	
 
 	void UpdatePath();
 
@@ -70,7 +73,7 @@ public:
 
 	int GetScore();
 
-	void LossFunction();
+	void GameOver();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "LossScreen")
 	TSubclassOf<UUserWidget> LossScreenClass;

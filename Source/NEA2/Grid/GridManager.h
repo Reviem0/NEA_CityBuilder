@@ -74,6 +74,8 @@ public:
 
 	FVector GetGridScale();
 
+	void DebugShowPath(TArray<AGridCell*> Path);
+
 
 
 

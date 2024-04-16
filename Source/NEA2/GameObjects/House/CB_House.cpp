@@ -27,10 +27,10 @@ void ACB_House::BeginPlay()
 
     // Check if available rotations are valid
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
-    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->NNeighbour)); // 1
-    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->SNeighbour)); // 2
-    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->ENeighbour)); // 3
-    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) && GridManager->PlayGridArray.Contains(*(GridCellRef->WNeighbour)); // 4
+    bool North = (GridCellRef->NNeighbour != nullptr) && ((*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->NNeighbour)); // 1
+    bool South = (GridCellRef->SNeighbour != nullptr) && ((*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->SNeighbour)); // 2
+    bool East  = (GridCellRef->ENeighbour != nullptr) && ((*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->ENeighbour)); // 3
+    bool West  = (GridCellRef->WNeighbour != nullptr) && ((*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::OwnedRoad) && GridManager->PlayGridArray.Contains(*(GridCellRef->WNeighbour)); // 4
 
 
   // Destroy if no avaliable rotations
@@ -51,6 +51,11 @@ void ACB_House::BeginPlay()
     if (South) AvailableRotations.Add(90);
     if (West) AvailableRotations.Add(180);
 
+    // Log the available rotations for debugging purposes
+    for (int i = 0; i < AvailableRotations.Num(); i++) {
+        UE_LOG(LogTemp, Display, TEXT("Available Rotation: %d"), AvailableRotations[i]);
+    }
+
     if (AvailableRotations.Num() == 0) {
         GridCellRef->SetUnoccupied();
         Destroy();
@@ -66,15 +71,19 @@ void ACB_House::BeginPlay()
         int RandomIndex = FMath::RandRange(0, AvailableRotations.Num() - 1);
 
         // Use the random index to select a rotation from the list
+
         int yaw = AvailableRotations[RandomIndex];
+        // Log the selected rotation for debugging purposes
+        UE_LOG(LogTemp, Display, TEXT("Selected Rotation: %d"), yaw);
         SetActorRotation(FRotator(0, yaw, 0));
 
-        switch (static_cast<int>(GetActorRotation().Yaw))
+        switch (yaw)
         {
             case 0:
             {
                 if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->ENeighbour);
+                    UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at east neighbour."))
                     if (GridCellRef->ENeighbour && (*(GridCellRef->ENeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->ENeighbour))->OccupyingActor)->DestroyRoad();
                     }
@@ -84,19 +93,23 @@ void ACB_House::BeginPlay()
             }
             case 90:
             {
-                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
-                    RoadPlacement = *(GridCellRef->SNeighbour);
-                    if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
-                        Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
-                    }
-                else
+                RoadPlacement = *(GridCellRef->SNeighbour);
+                UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at south neighbour."))
+                if (RoadPlacement == nullptr) {
+                    UE_LOG(LogTemp, Warning, TEXT("RoadPlacement is null. Removing rotation south"));
                     AvailableRotations.RemoveAt(RandomIndex);
+                    break;
+                }
+                if (GridCellRef->SNeighbour && (*(GridCellRef->SNeighbour))->OccupyingType == EBuildingType::Road) {
+                    Cast<ACB_RoadCell>((*(GridCellRef->SNeighbour))->OccupyingActor)->DestroyRoad();
+                }
                 break;
             }
             case 180:
             {
                 if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
                     RoadPlacement = *(GridCellRef->WNeighbour);
+                    UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at west neighbour."))
                     if (GridCellRef->WNeighbour && (*(GridCellRef->WNeighbour))->OccupyingType == EBuildingType::Road) {
                         Cast<ACB_RoadCell>((*(GridCellRef->WNeighbour))->OccupyingActor)->DestroyRoad();
                     }
@@ -106,16 +119,26 @@ void ACB_House::BeginPlay()
             }
             case 270:
             {
-                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::None || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road || (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::OwnedRoad)
-                    RoadPlacement = *(GridCellRef->NNeighbour);
-                    if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
-                        Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
-                    }
-                else
+                RoadPlacement = *(GridCellRef->NNeighbour);
+                UE_LOG(LogTemp, Warning, TEXT("Attempting to place road at north neighbour."))
+                if (RoadPlacement == nullptr) {
+                    UE_LOG(LogTemp, Warning, TEXT("RoadPlacement is null. Removing rotation north"));
                     AvailableRotations.RemoveAt(RandomIndex);
+                    break;
+                }
+                if (GridCellRef->NNeighbour && (*(GridCellRef->NNeighbour))->OccupyingType == EBuildingType::Road) {
+                    Cast<ACB_RoadCell>((*(GridCellRef->NNeighbour))->OccupyingActor)->DestroyRoad();
+                }
                 break;
             }
         }
+    }
+
+    if (AvailableRotations.Num() == 0) {
+        GridCellRef->SetUnoccupied();
+        Destroy();
+        UE_LOG(LogTemp, Warning, TEXT("No available rotations for house placement. Destroying actor."));
+        return;
     }
     
 
@@ -185,37 +208,78 @@ void ACB_House::AddTargetWorkplace(ACB_Workplace* Workplace)
     CreatePath();
 }
 
+void ACB_House::AddTargetWorkplace(TArray<ACB_Workplace*> Workplaces)
+{
+    TargetWorkplaces.Append(Workplaces);
+    CreatePath();
+}
+
 void ACB_House::SortWorkplaces()
 {
     AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(),AGridManager::StaticClass()));
+    // clear the dictionary
+    WorkplaceDistances.Empty();
+    if (TargetWorkplaces.Num() == 0) {
+        UE_LOG(LogTemp, Error, TEXT("TargetWorkplaces is empty"));
+        return;
+    }
+    // sort the workplaces by the distance between the house and the workplace not path distance
+    TargetWorkplaces.Sort([this](const ACB_Workplace& A, const ACB_Workplace& B) {
+        return FVector::Dist(GetActorLocation(), A.GetActorLocation()) < FVector::Dist(GetActorLocation(), B.GetActorLocation());
+    });
+
+    if (RoadTileAsset == nullptr) {
+        UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
+        return;
+    }
+
+    // Create a dictionary to store the distance between the house and the workplace
+    int count = 0;
     for (ACB_Workplace* TargetWorkplace : TargetWorkplaces) {
+        // Break the loop after the fifth workplace
+        if (count >= 5) {
+            break;
+        }
+
+        // Check if the workplace is valid
         if (TargetWorkplace == nullptr) {
             UE_LOG(LogTemp, Error, TEXT("TargetWorkplace is null"));
             continue;
         }
-        
+        // Check if the workplace's road tile asset is valid
         if (TargetWorkplace->RoadTileAsset == nullptr) {
             UE_LOG(LogTemp, Error, TEXT("RoadTileAsset is null"));
             continue;
         }
 
+        // Get the cell of the workplace's road tile asset
         AGridCell* TargetCell = TargetWorkplace->RoadTileAsset->GridCellRef;
+        if (TargetCell == nullptr) {
+            UE_LOG(LogTemp, Error, TEXT("TargetCell is null"));
+            continue;
+        }
+
+        // Find the path between the house and the workplace
         if (TargetCell && TargetWorkplace->IsFull == false){
             TArray<AGridCell*> Path = GridManager->FindPath(RoadTileAsset->GridCellRef, TargetCell);
+            // If the path is not empty, add the path to the dictionary
             if (Path.Num() != 0){
                 WorkplaceDistances.Add(TargetWorkplace, Path);
             }
         }
+
+        count++;
     }
+
     // sort the dictionary by the distance between the house and the workplace
     WorkplaceDistances.ValueSort([this](const TArray<AGridCell*>& A, const TArray<AGridCell*>& B) {
         // get workplace by key
         const ACB_Workplace* AWorkplace = *WorkplaceDistances.FindKey(A);
         const ACB_Workplace* BWorkplace = *WorkplaceDistances.FindKey(B);
-        int AcriticalPoints = AWorkplace->isCritical ? 10 : 0;
-        int BcriticalPoints = BWorkplace->isCritical ? 10 : 0;
-        int pointDisparity = AWorkplace->Goal - AWorkplace->CurrentScore - BWorkplace->Goal + BWorkplace->CurrentScore;
-        return A.Num() - pointDisparity - AcriticalPoints < B.Num() - BcriticalPoints;
+        int AcriticalPoints = AWorkplace->isCritical ? 10 : 0; // if the workplace is critical, subtract 10 cells from the path
+        int BcriticalPoints = BWorkplace->isCritical ? 10 : 0; // if the workplace is critical, subtract 10 cells from the path
+        int pointDisparity = AWorkplace->CurrentScore - BWorkplace->CurrentScore; // if the workplace has a higher score, add the difference to the path
+        return A.Num() + pointDisparity - AcriticalPoints < B.Num() - BcriticalPoints;
     });
 }
 
@@ -234,7 +298,7 @@ void ACB_House::CreatePath()
     }
     SortWorkplaces();
     if (WorkplaceDistances.Num() != 0){
-        // Create a spline to the closest workplace
+        // Create a spline to first workplace in the dictionary
         CreateSpline(WorkplaceDistances.begin().Value(), WorkplaceDistances.begin().Key());
     } else {
         UE_LOG(LogTemp, Display, TEXT("NO WORKPLACES FOUND"));
@@ -333,6 +397,7 @@ void ACB_House::PathCheck()
         // If the car spawns successfully, set the origin house and destination workplace, and make the car follow the spline
         if (Car){
             Car->OriginHouse = this;
+            // Set the destination workplace to the first workplace in the dictionary
             Car->DestinationWorkplace = WorkplaceDistances.begin().Key();
             Car->FollowSpline(Spline);
             // Decrement the car availability

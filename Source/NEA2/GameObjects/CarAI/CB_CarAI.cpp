@@ -69,8 +69,8 @@ void ACB_CarAI::OnOverlapBegin(UPrimitiveComponent *OverlappedComp, AActor *Othe
 	if (Cast<ACB_CarAI>(OtherActor)->CollidingCar == this){
 		return;
 	}
-	// If the car is not already colliding and the car is not returning home
-	if (Overlapping == false && Cast<ACB_CarAI>(OtherActor)->Returning == this->Returning && OtherActor != this){
+	// If the car is not already colliding and the other actor is not itself
+	if (Overlapping == false && OtherActor != this){
 		Overlapping = true;
 		// Set the colliding car
 		CollidingCar = Cast<ACB_CarAI>(OtherActor);
@@ -97,7 +97,7 @@ void ACB_CarAI::OnOverlapEnd(UPrimitiveComponent *OverlappedComp, AActor *OtherA
 
 void ACB_CarAI::FollowSpline(USplineComponent* Spline)
 {
-	CarClass = Cast<ACB_House>(OriginHouse)->BuildingClass;
+	CarClass = OriginHouse->BuildingClass;
 	// Set Material based on class
 	TArray<UStaticMeshComponent*> MeshComponents;
 	GetComponents<UStaticMeshComponent>(MeshComponents);

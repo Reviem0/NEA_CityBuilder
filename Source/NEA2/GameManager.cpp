@@ -93,14 +93,16 @@ bool AGameManager::SpawnHouse(AGridCell* GridCell, EBuildingClass BuildingClass)
 		// Add the house to the house array
 		HouseArray.Add(House);
 		// Add the workspaces to the house's target workplaces
+		TArray<ACB_Workplace*> TargetWorkplaces;
 		for (auto& Workplace : WorkplaceArray)
 		{
 			// Check if the workplace and house are of the same class
 			if (Workplace->BuildingClass == House->BuildingClass) {
-				House->TargetWorkplaces.Add(Workplace);
+				TargetWorkplaces.Add(Workplace);
 			}
 		}
-		UpdatePath();
+		// Add the target workplaces to the house
+		House->AddTargetWorkplace(TargetWorkplaces);
 	} else {
 		// Failed to spawn
 		return false;
@@ -258,7 +260,7 @@ void AGameManager::UpdatePath()
 	}
 }
 
-void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundat function
+void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundant function
 
 	// If no colour is specified, spawn a random colour
 	if (BuildingClass == EBuildingClass::None) {
@@ -267,7 +269,7 @@ void AGameManager::SpawnColourSet(EBuildingClass BuildingClass) { // Redundat fu
 	
 	// Spawn a random colour set from the available colours
 	if (SpawnWorkplaceAtRandomLocation(BuildingClass)){
-		//SpawnHouseAtRandomLocation(BuildingClass);
+		// SpawnHouseAtRandomLocation(BuildingClass);
 	}
 }
 
@@ -277,6 +279,8 @@ void AGameManager::AddScore(int Score)
 	TotalScore += Score;
 	// Log the total score
 	UE_LOG(LogTemp, Display, TEXT("TOTAL SCORE: %d"), TotalScore);
+	// Call the score function
+	// ScoreFunction();
 	
 }
 
@@ -304,16 +308,32 @@ void AGameManager::ScoreFunction() {
 		SpawnWorkplaceAtRandomLocation();
 	}
 	LastTime = GameMode->time;
-}
+} 
+
+/* void AGameManager::ScoreFunction() {
+	//Get player controller
+	ACB_PlayerController* PlayerController = Cast<ACB_PlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	// Get grid manager
+	AGridManager* GridManager = Cast<AGridManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGridManager::StaticClass()));
+	if (TotalScore % 5 == 0) {
+		SpawnWorkplaceAtRandomLocation();
+	}
+	if (TotalScore % 10 == 0) {
+		GridManager->ExpandSubGrid(2,2);
+		PlayerController->UpdateRoadInventory(20);
+		UE_LOG(LogTemp, Display, TEXT("New Road Inventory: %d"), PlayerController->RoadInventory);
+	}
+} */
 
 void AGameManager::SatisfactionCheck() 
 {
-	// Initialise the goal and house count for each colour
+	// Initialise the total goal for each colour
 	int redGoal = 0;
 	int blueGoal = 0;
 	int greenGoal = 0;
 	int yellowGoal = 0;
 
+	// Initialise the total house count for each colour
 	int redHouseCount = 0;
 	int blueHouseCount = 0;
 	int greenHouseCount = 0;
@@ -322,42 +342,43 @@ void AGameManager::SatisfactionCheck()
 	// Calculate the total goal and house count for each colour
 	for (ACB_Workplace* Workplace : WorkplaceArray) {
 		switch (Workplace->BuildingClass) {
-			case EBuildingClass::Red:
+			case EBuildingClass::Red:    // If the workplace is red, add the goal to the red goal
 				redGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Blue:
+			case EBuildingClass::Blue:   // If the workplace is blue, add the goal to the blue goal
 				blueGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Green:
+			case EBuildingClass::Green:  // If the workplace is green, add the goal to the green goal
 				greenGoal += Workplace->Goal;
 				break;
-			case EBuildingClass::Yellow:
+			case EBuildingClass::Yellow: // If the workplace is yellow, add the goal to the yellow goal
 				yellowGoal += Workplace->Goal;
 				break;
-			default:
+			default: // If the workplace is not of a valid colour, skip
 				break;
 		}
 	}
 	
 	for (ACB_House* House : HouseArray) {
 		switch (House->BuildingClass) {
-			case EBuildingClass::Red:
+			case EBuildingClass::Red:   // If the house is red, add to the red house count
 				redHouseCount += 1;
 				break;
-			case EBuildingClass::Blue:
+			case EBuildingClass::Blue:  // If the house is blue, add to the blue house count
 				blueHouseCount += 1;
 				break;
-			case EBuildingClass::Green:
+			case EBuildingClass::Green: // If the house is green, add to the green house count
 				greenHouseCount += 1;
 				break;
-			case EBuildingClass::Yellow:
+			case EBuildingClass::Yellow:// If the house is yellow, add to the yellow house count
 				yellowHouseCount += 1;
 				break;
-			default:
+			default: // If the house is not of a valid colour, skip
 				break;
 		}
 	}
 
+	// Spawn red houses if the goal cannot be met with the current number of red houses
 	if (redGoal / 20.0f > redHouseCount) {
 		for (int i = 0; i < ceil(redGoal / 20.0f) - redHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING RED HOUSE"));
@@ -365,6 +386,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn blue houses if the goal cannot be met with the current number of blue houses
 	if (blueGoal / 20.0f > blueHouseCount) {
 		for (int i = 0; i < ceil(blueGoal / 20.0f) - blueHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING BLUE HOUSE"));
@@ -372,6 +394,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn green houses if the goal cannot be met with the current number of green houses
 	if (greenGoal / 20.0f > greenHouseCount) {
 		for (int i = 0; i < ceil(greenGoal / 20.0f) - greenHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING GREEN HOUSE"));
@@ -379,6 +402,7 @@ void AGameManager::SatisfactionCheck()
 		}
 	}
 	
+	// Spawn yellow houses if the goal cannot be met with the current number of yellow houses
 	if (yellowGoal / 20.0f > yellowHouseCount) {
 		for (int i = 0; i < ceil(yellowGoal / 20.0f) - yellowHouseCount; i++) {
 			UE_LOG(LogTemp, Display, TEXT("SATISFACTION SPAWNING YELLOW HOUSE"));
@@ -392,7 +416,7 @@ int AGameManager::GetScore()
 	return TotalScore;
 }
 
-void AGameManager::LossFunction() 
+void AGameManager::GameOver() 
 {
 	// Check if the game has already been lost
 	if (hasLost) return;
@@ -416,14 +440,3 @@ void AGameManager::LossFunction()
 	}
 
 }
-/* 
-Calculating the total score inside the GameManager.cpp: 
-This approach is more straightforward and easier to implement. You would simply iterate over all the workplaces and sum their scores. 
-However, this could be inefficient if there are a large number of workplaces and the score needs to be updated frequently, as you would be recalculating the 
-entire sum every time.
-
-Having the workplaces update the GameManager's total score: This approach is more efficient, as it only requires a single addition operation 
-whenever a workplace's score increases. However, it's more complex to implement, as you need to ensure that every workplace has a reference to 
-the GameManager and calls the appropriate method whenever its score changes. It also introduces tighter coupling between the workplaces and the
- GameManager, which could make the code harder to maintain and reason about.
-  */

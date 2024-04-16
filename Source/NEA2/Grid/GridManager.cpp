@@ -253,7 +253,8 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
     }
 
     Algo::Reverse(path);
-	
+	// DebugShowPath(path);
+
 	// Reset Pathfinding
 	for (int i = 0; i < GridArray.Num(); i++) {
 		GridArray[i]->ResetPathfinding();
@@ -261,8 +262,20 @@ TArray<AGridCell*> AGridManager::RetracePath(AGridCell* startCell, AGridCell* en
     return path;
 }
 
+void AGridManager::DebugShowPath(TArray<AGridCell*> Path) {
+	// reset all cells
+	for (AGridCell* Cell : GridArray) {
+		Cell->ResetMAT();
+	}
+	// show path
+	for (AGridCell* Cell : Path) {
+		Cell->DebugSetMAT();
+	}
+}
+
 void AGridManager::SetSubGrid(int X, int Y) {
-	// Append GridArray to PlayGrid Array based on dimensions
+
+	// Append GridArray to PlayGrid Array from the centre of the grid based on dimensions
 	for (int i = 0; i < Y; i++) {
 		for (int j = 0; j < X; j++) {
 			PlayGridArray.Add(GridArray[((i+(GridSizeY-Y)/2) * GridSizeX) + j+(GridSizeX-X)/2]);
@@ -275,9 +288,11 @@ void AGridManager::SetSubGrid(int X, int Y) {
 
 void AGridManager::ExpandSubGrid(int X, int Y)
 {
+	// Add to X and Y to get the new dimensions
 	X += PlayGridSizeX;
 	Y += PlayGridSizeY;
 
+	// If the new dimensions are greater than the grid size, return
 	if (X > GridSizeX || Y > GridSizeY) {
 		return;
 	}
@@ -290,9 +305,12 @@ void AGridManager::ExpandSubGrid(int X, int Y)
 	PlayGridSizeX = X;
 	PlayGridSizeY = Y;
 
+	// Update the Game Manager
 	GameManager->GridArray = PlayGridArray;
 	GameManager->GridSizeX = PlayGridSizeX;
 	GameManager->GridSizeY = PlayGridSizeY;
+
+	// Update the texture
 	UpdateTexture();
 }
 
