@@ -95,17 +95,20 @@ public:
 
 	void DestroyWorkplace();
 
-	FTimerHandle GoalTimerHandle;
-
-	void GoalNotMet();
-
 
 	UPROPERTY(EditAnywhere, Category = "HUDElements")
 	bool isCritical = false;
 
+	FTimerHandle GoalTimerHandle;
 	FTimerHandle CriticalTimerHandle;
 
+	UPROPERTY(EditAnywhere, Category = "LossConditions")
+	float CriticalTime = 60;
+	UPROPERTY(EditAnywhere, Category = "LossConditions")
+	float GoalTimer = 60*5;
+
 	void LossCondition();
+	void GoalNotMet();
 	
 	bool isLost = false;
 
@@ -113,12 +116,6 @@ public:
 	UWidgetComponent* CriticalBarComp;
 	
 	float GetCriticalValue();
-
-	UPROPERTY(EditAnywhere, Category = "LossConditions")
-	float CriticalTime = 60;
-
-	UPROPERTY(EditAnywhere, Category = "LossConditions")
-	float GoalTimer = 60*5;
 
 protected:
 	// Called when the game starts or when spawned

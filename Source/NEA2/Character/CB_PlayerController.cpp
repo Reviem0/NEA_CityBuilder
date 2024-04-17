@@ -214,7 +214,7 @@ void ACB_PlayerController::ResetSpeed() {
 
 void ACB_PlayerController::UpdateRoadInventory(int Amount) {
     RoadInventory += Amount;
-    if (PlaceableActor) {
+    if (PlaceableActor->IsValidLowLevel()) {
         if (PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()) {
             PlaceableActor->GetComponentByClass<UCB_PloppableComponent>()->UpdateState();
         }

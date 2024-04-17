@@ -13,12 +13,15 @@
 void UCB_LossScreen::NativeConstruct()
 {
     Super::NativeConstruct();
+    // Bind the buttons to their respective functions
     MainMenuButton->OnClicked.AddUniqueDynamic(this, &UCB_LossScreen::OnMainMenuButtonClicked);
     SubmitScoreButton->OnClicked.AddUniqueDynamic(this, &UCB_LossScreen::OnSubmitScoreButtonClicked);
 
+    // Get the player's time and points
     GetTime();
     GetPoints();
 
+    // Create a dictionary to store player names and scores
     PlayerScoreMap = {
         { Player1, Score_1 },
         { Player2, Score_2 },
@@ -35,6 +38,8 @@ void UCB_LossScreen::NativeConstruct()
     // Get the leaderboard every second
     GetLeaderboard();
     FTimerHandle LeaderboardTimer;
+
+    // Update the leaderboard every second
     GetWorld()->GetTimerManager().SetTimer(LeaderboardTimer, this, &UCB_LossScreen::GetLeaderboard, 1.0f, true);
 
 }
@@ -48,8 +53,11 @@ void UCB_LossScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void UCB_LossScreen::GetTime()
 {
     ANEA2GameModeBase* GameMode = Cast<ANEA2GameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+
+    // Get the final time
     if (GameMode) {
         FinalTime = GameMode->time;
+        // Display the final time
         TimeLabel->SetText(FText::AsNumber(FinalTime));
     }
 }
@@ -57,8 +65,11 @@ void UCB_LossScreen::GetTime()
 void UCB_LossScreen::GetPoints()
 {
     AGameManager* GameManager = Cast<AGameManager>(UGameplayStatics::GetActorOfClass(GetWorld(), AGameManager::StaticClass()));
+
+    // Get the final score
     if (GameManager) {
         FinalScore = GameManager->GetScore();
+        // Display the final score
         PointsLabel->SetText(FText::AsNumber(FinalScore));
     }
 }
@@ -70,40 +81,88 @@ void UCB_LossScreen::OnMainMenuButtonClicked()
 
 void UCB_LossScreen::OnSubmitScoreButtonClicked()
 {
-    // Get the player name and score
-    FString pname = PlayerName->GetText().ToString();
-    int score = FinalScore;
-    UE_LOG(LogTemp, Warning, TEXT("Submit score button clicked"));
+    try
+    {
+        // Get the player name and score
+        FString pname = PlayerName->GetText().ToString();
+        int score = FinalScore;
 
-    // Format the URL to include the player name and score
-    FString url = FString::Printf(TEXT("http://dreamlo.com/lb/p_oRtzwC5kG87-JML4pFXwaQpwt7gjE0KlWrFeYUfIAw/add/%s/%d"), *pname, score);
+        // Validate the player name
+        bool IsAlnum = true;
+        for (const TCHAR& Char : pname)
+        {
+            // Check if the character is alphanumeric
+            if (!FChar::IsAlnum(Char))
+            {
+                IsAlnum = false;
+                break;
+            }
+        }
+        if (!IsAlnum || pname.IsEmpty()) // If the player name is not alphanumeric or empty, throw an exception
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Invalid player name. Only alphanumeric characters are allowed."));
+            throw ("Invalid player name. \n Only alphanumeric characters are allowed.");
+        }
 
-    FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
-    Request->SetURL(url);
-    Request->SetVerb("POST");
-    Request->ProcessRequest();
-    GetLeaderboard();
+        // Log for debugging purposes
+        UE_LOG(LogTemp, Warning, TEXT("Submit score button clicked"));
 
-    SubmitScoreButton->SetVisibility(ESlateVisibility::Hidden);
+        // Format the URL to include the player name and score
+        FString url = FString::Printf(TEXT("http://dreamlo.com/lb/p_oRtzwC5kG87-JML4pFXwaQpwt7gjE0KlWrFeYUfIAw/add/%s/%d"), *pname, score);
+
+        // Create a POST request to submit the player name and score
+        FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+        Request->SetURL(url);
+        Request->SetVerb("POST");
+
+        // Bind the function to update the leaderboard once the request is complete
+        Request->ProcessRequest();
+
+        // Update the leaderboard
+        GetLeaderboard();
+
+        // Hide the submit score button and error label
+        SubmitScoreButton->SetVisibility(ESlateVisibility::Hidden);
+        ErrorLabel->SetVisibility(ESlateVisibility::Hidden);
+    }
+    catch(const char* e)
+    {
+        // Display the error message
+        ErrorLabel->SetText(FText::FromString(FString(e)));
+    }
+    catch(const std::exception& e)
+    {
+        // Display the error message
+        ErrorLabel->SetText(FText::FromString(FString(e.what())));
+    }
+    
+    
 }
 
 
 void UCB_LossScreen::GetLeaderboard()
 {
+    // Create a GET request to get the leaderboard
     FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
     Request->SetURL("http://dreamlo.com/lb/6614785b8f40bb8118153adb/json");
     Request->SetVerb("GET");
+
+    // Bind the function to update the leaderboard once the request is complete
     Request->OnProcessRequestComplete().BindUObject(this, &UCB_LossScreen::UpdateLeaderboardEntry);
+
+    // Process the request
     Request->ProcessRequest();
 }
 
 void UCB_LossScreen::UpdateLeaderboardEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
+    // Get the response content
     FString fileContent;
     if (bWasSuccessful) {
         fileContent = Response->GetContentAsString();
     }
     else {
+        // Display an error message if the request was unsuccessful
         fileContent = "Failed to get leaderboard";
     }
 
@@ -135,6 +194,7 @@ void UCB_LossScreen::UpdateLeaderboardEntry(FHttpRequestPtr Request, FHttpRespon
             return A > B;
             });
 
+        // Update the leaderboard
         int i = 0;
         for (auto& elem : PlayerScoreMap) {
             int v = 0;

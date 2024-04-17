@@ -104,12 +104,17 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UButton* SubmitScoreButton;
 
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* ErrorLabel;
+
 	UFUNCTION()
 	void OnSubmitScoreButtonClicked();
 
 	void GetLeaderboard();
 
 	void UpdateLeaderboardEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+
 
 
 
