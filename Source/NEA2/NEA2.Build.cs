@@ -29,6 +29,7 @@ public class NEA2 : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		bUseRTTI = true;
         bEnableUndefinedIdentifierWarnings = false;
+		bEnableExceptions = true;
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "DatabaseSupport", "SQLiteSupport", "SQLiteCore", "HTTP", "Json"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

@@ -13,6 +13,9 @@ void ACB_PlayerController::BeginPlay()
 {
     // Set input mode to game and UI
     SetInputMode(FInputModeGameAndUI());
+    FInputModeGameAndUI inputMode;
+    inputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(inputMode);
 
     // Set default road inventory
     RoadInventory = 20;

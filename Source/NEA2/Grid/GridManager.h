@@ -34,10 +34,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AGameManager> GameManagerClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int ObstacleCount = 5;
-
-	void PlaceObstacles();
 
 	void SetSubGrid(int X, int Y);
 	void ExpandSubGrid(int X, int Y);
@@ -62,7 +58,6 @@ public:
 	TArray<AGridCell*> FindPath(AGridCell* Start, AGridCell* End);
 	int GetDistance(AGridCell* cellA, AGridCell* cellB);
 	TArray<AGridCell*> RetracePath(AGridCell *startCell, AGridCell *endCell);
-	void PathTest(int Start, int End);
 
 
 	// Init Game Manager

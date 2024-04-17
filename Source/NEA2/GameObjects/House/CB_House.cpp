@@ -276,10 +276,10 @@ void ACB_House::SortWorkplaces()
         // get workplace by key
         const ACB_Workplace* AWorkplace = *WorkplaceDistances.FindKey(A);
         const ACB_Workplace* BWorkplace = *WorkplaceDistances.FindKey(B);
-        int AcriticalPoints = AWorkplace->isCritical ? 10 : 0; // if the workplace is critical, subtract 10 cells from the path
-        int BcriticalPoints = BWorkplace->isCritical ? 10 : 0; // if the workplace is critical, subtract 10 cells from the path
-        int pointDisparity = AWorkplace->CurrentScore - BWorkplace->CurrentScore; // if the workplace has a higher score, add the difference to the path
-        return A.Num() + pointDisparity - AcriticalPoints < B.Num() - BcriticalPoints;
+        int AcriticalPoints = AWorkplace->isCritical ? 20 : 0; // if the workplace is critical, subtract 20 cells from the path
+        int BcriticalPoints = BWorkplace->isCritical ? 20 : 0; // if the workplace is critical, subtract 20 cells from the path
+        int PointDisparity = AWorkplace->CurrentScore - BWorkplace->CurrentScore; // if the workplace has a higher score, add the difference to the path
+        return A.Num() + PointDisparity*1.5 - AcriticalPoints < B.Num() - BcriticalPoints;
     });
 }
 

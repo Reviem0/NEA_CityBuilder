@@ -57,8 +57,12 @@ void UCB_LossScreen::GetTime()
     // Get the final time
     if (GameMode) {
         FinalTime = GameMode->time;
+        // Format the time
+        int minutes = FinalTime / 60;
+        int seconds = FinalTime % 60;
+        FString timeString = FString::Printf(TEXT("%02d:%02d"), minutes, seconds);
         // Display the final time
-        TimeLabel->SetText(FText::AsNumber(FinalTime));
+        TimeLabel->SetText(FText::FromString(timeString));
     }
 }
 

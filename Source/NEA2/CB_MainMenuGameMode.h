@@ -19,7 +19,4 @@ public:
 	void BeginPlay() override;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Main Menu")
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-
-	void LoadMainMenu();
-	
 };
